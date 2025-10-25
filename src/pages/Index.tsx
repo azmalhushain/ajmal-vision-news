@@ -1,11 +1,7 @@
-import { NewsSection } from "@/components/NewsSection";
+import Home from "./Home";
 
 const Index = () => {
-  return (
-    <div className="min-h-screen">
-      <NewsSection />
-    </div>
-  );
+  return <Home />;
 };
 
 export default Index;
