@@ -11,6 +11,13 @@ import News from "./pages/News";
 import Gallery from "./pages/Gallery";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
+import Auth from "./pages/Auth";
+import AdminLayout from "./components/admin/AdminLayout";
+import Overview from "./pages/admin/Overview";
+import Posts from "./pages/admin/Posts";
+import Users from "./pages/admin/Users";
+import Analytics from "./pages/admin/Analytics";
+import Settings from "./pages/admin/Settings";
 
 const queryClient = new QueryClient();
 
@@ -20,14 +27,27 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Navigation />
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/vision" element={<Vision />} />
-          <Route path="/news" element={<News />} />
-          <Route path="/gallery" element={<Gallery />} />
-          <Route path="/contact" element={<Contact />} />
+          {/* Public routes */}
+          <Route path="/" element={<><Navigation /><Home /></>} />
+          <Route path="/about" element={<><Navigation /><About /></>} />
+          <Route path="/vision" element={<><Navigation /><Vision /></>} />
+          <Route path="/news" element={<><Navigation /><News /></>} />
+          <Route path="/gallery" element={<><Navigation /><Gallery /></>} />
+          <Route path="/contact" element={<><Navigation /><Contact /></>} />
+          
+          {/* Auth route */}
+          <Route path="/auth" element={<Auth />} />
+          
+          {/* Admin routes */}
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<Overview />} />
+            <Route path="posts" element={<Posts />} />
+            <Route path="users" element={<Users />} />
+            <Route path="analytics" element={<Analytics />} />
+            <Route path="settings" element={<Settings />} />
+          </Route>
+          
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
