@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Edit, Trash2, Eye } from "lucide-react";
+import PostModal from "@/components/admin/PostModal";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -28,8 +29,11 @@ import { Badge } from "@/components/ui/badge";
 interface Post {
   id: string;
   title: string;
-  status: string;
-  views: number;
+  content: string;
+  excerpt: string | null;
+  status: string | null;
+  views: number | null;
+  image_url: string | null;
   created_at: string;
 }
 
@@ -37,6 +41,8 @@ const Posts = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingPost, setEditingPost] = useState<Post | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -101,6 +107,21 @@ const Posts = () => {
     setDeleteId(null);
   };
 
+  const handleEdit = (post: Post) => {
+    setEditingPost(post);
+    setIsModalOpen(true);
+  };
+
+  const handleNewPost = () => {
+    setEditingPost(null);
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setEditingPost(null);
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -118,7 +139,7 @@ const Posts = () => {
             Manage your blog posts and articles
           </p>
         </div>
-        <Button>
+        <Button onClick={handleNewPost}>
           <Plus className="mr-2 h-4 w-4" />
           New Post
         </Button>
@@ -167,7 +188,11 @@ const Posts = () => {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
-                      <Button variant="ghost" size="icon">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEdit(post)}
+                      >
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button
@@ -185,6 +210,13 @@ const Posts = () => {
           </Table>
         </Card>
       </motion.div>
+
+      <PostModal
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        post={editingPost}
+        onSuccess={fetchPosts}
+      />
 
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
