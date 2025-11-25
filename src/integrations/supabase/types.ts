@@ -22,6 +22,7 @@ export type Database = {
           excerpt: string | null
           id: string
           image_url: string | null
+          scheduled_publish_at: string | null
           status: string | null
           title: string
           updated_at: string
@@ -34,6 +35,7 @@ export type Database = {
           excerpt?: string | null
           id?: string
           image_url?: string | null
+          scheduled_publish_at?: string | null
           status?: string | null
           title: string
           updated_at?: string
@@ -46,6 +48,7 @@ export type Database = {
           excerpt?: string | null
           id?: string
           image_url?: string | null
+          scheduled_publish_at?: string | null
           status?: string | null
           title?: string
           updated_at?: string
@@ -103,6 +106,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      auto_publish_scheduled_posts: { Args: never; Returns: undefined }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

@@ -39,6 +39,7 @@ interface Post {
   excerpt: string | null;
   status: string | null;
   image_url: string | null;
+  scheduled_publish_at?: string | null;
 }
 
 interface PostEditorProps {
@@ -52,6 +53,7 @@ const PostEditor = ({ open, onOpenChange, post, onSuccess }: PostEditorProps) =>
   const [title, setTitle] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [status, setStatus] = useState("draft");
+  const [scheduledDate, setScheduledDate] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -84,12 +86,18 @@ const PostEditor = ({ open, onOpenChange, post, onSuccess }: PostEditorProps) =>
       setTitle(post.title);
       setExcerpt(post.excerpt || "");
       setStatus(post.status || "draft");
+      setScheduledDate(
+        post.scheduled_publish_at
+          ? new Date(post.scheduled_publish_at).toISOString().slice(0, 16)
+          : ""
+      );
       setImageUrl(post.image_url);
       editor?.commands.setContent(post.content);
     } else {
       setTitle("");
       setExcerpt("");
       setStatus("draft");
+      setScheduledDate("");
       setImageUrl(null);
       editor?.commands.setContent("");
     }
@@ -157,6 +165,10 @@ const PostEditor = ({ open, onOpenChange, post, onSuccess }: PostEditorProps) =>
         content,
         excerpt,
         status,
+        scheduled_publish_at:
+          status === "scheduled" && scheduledDate
+            ? new Date(scheduledDate).toISOString()
+            : null,
         image_url: imageUrl,
         author_id: user.id,
       };
@@ -253,10 +265,25 @@ const PostEditor = ({ open, onOpenChange, post, onSuccess }: PostEditorProps) =>
               <SelectContent>
                 <SelectItem value="draft">Draft</SelectItem>
                 <SelectItem value="published">Published</SelectItem>
+                <SelectItem value="scheduled">Scheduled</SelectItem>
                 <SelectItem value="archived">Archived</SelectItem>
               </SelectContent>
             </Select>
           </div>
+
+          {status === "scheduled" && (
+            <div>
+              <Label htmlFor="scheduledDate">Scheduled Publish Date</Label>
+              <Input
+                id="scheduledDate"
+                type="datetime-local"
+                value={scheduledDate}
+                onChange={(e) => setScheduledDate(e.target.value)}
+                min={new Date().toISOString().slice(0, 16)}
+                required
+              />
+            </div>
+          )}
 
           <div>
             <Label>Content</Label>

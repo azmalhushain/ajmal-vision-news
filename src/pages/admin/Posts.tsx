@@ -35,6 +35,7 @@ interface Post {
   image_url: string | null;
   views: number | null;
   created_at: string;
+  scheduled_publish_at?: string | null;
 }
 
 const Posts = () => {
@@ -160,17 +161,24 @@ const Posts = () => {
                 <TableRow key={post.id}>
                   <TableCell className="font-medium">{post.title}</TableCell>
                   <TableCell>
-                    <Badge
-                      variant={
-                        post.status === "published"
-                          ? "default"
-                          : post.status === "draft"
-                          ? "secondary"
-                          : "outline"
-                      }
-                    >
-                      {post.status}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        variant={
+                          post.status === "published"
+                            ? "default"
+                            : post.status === "scheduled"
+                            ? "outline"
+                            : "secondary"
+                        }
+                      >
+                        {post.status}
+                      </Badge>
+                      {post.status === "scheduled" && post.scheduled_publish_at && (
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(post.scheduled_publish_at).toLocaleString()}
+                        </span>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
