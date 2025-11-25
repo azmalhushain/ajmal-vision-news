@@ -9,14 +9,38 @@ import { useToast } from "@/hooks/use-toast";
 const AdminLayout = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
+    const checkAdminStatus = async (userId: string) => {
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId)
+        .eq("role", "admin")
+        .single();
+
+      if (error || !data) {
+        setIsAdmin(false);
+        toast({
+          title: "Access Denied",
+          description: "You don't have permission to access this area.",
+          variant: "destructive",
+        });
+        navigate("/");
+        return;
+      }
+      setIsAdmin(true);
+    };
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
       if (!session) {
         navigate("/auth");
+      } else {
+        checkAdminStatus(session.user.id);
       }
       setLoading(false);
     });
@@ -25,12 +49,14 @@ const AdminLayout = () => {
       setUser(session?.user ?? null);
       if (!session) {
         navigate("/auth");
+      } else {
+        checkAdminStatus(session.user.id);
       }
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, toast]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -49,7 +75,7 @@ const AdminLayout = () => {
     );
   }
 
-  if (!user) return null;
+  if (!user || !isAdmin) return null;
 
   return (
     <div className="min-h-screen bg-background">

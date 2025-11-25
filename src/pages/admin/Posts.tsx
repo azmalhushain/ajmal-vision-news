@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Plus, Edit, Trash2, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import PostEditor from "@/components/admin/PostEditor";
 import {
   Table,
   TableBody,
@@ -28,8 +29,11 @@ import { Badge } from "@/components/ui/badge";
 interface Post {
   id: string;
   title: string;
-  status: string;
-  views: number;
+  content: string;
+  excerpt: string | null;
+  status: string | null;
+  image_url: string | null;
+  views: number | null;
   created_at: string;
 }
 
@@ -37,6 +41,8 @@ const Posts = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editingPost, setEditingPost] = useState<Post | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -101,6 +107,16 @@ const Posts = () => {
     setDeleteId(null);
   };
 
+  const handleNewPost = () => {
+    setEditingPost(null);
+    setEditorOpen(true);
+  };
+
+  const handleEditPost = (post: Post) => {
+    setEditingPost(post);
+    setEditorOpen(true);
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -118,7 +134,7 @@ const Posts = () => {
             Manage your blog posts and articles
           </p>
         </div>
-        <Button>
+        <Button onClick={handleNewPost}>
           <Plus className="mr-2 h-4 w-4" />
           New Post
         </Button>
@@ -159,7 +175,7 @@ const Posts = () => {
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Eye className="h-4 w-4 text-muted-foreground" />
-                      {post.views}
+                      {post.views || 0}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -167,7 +183,11 @@ const Posts = () => {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
-                      <Button variant="ghost" size="icon">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEditPost(post)}
+                      >
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button
@@ -200,6 +220,13 @@ const Posts = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <PostEditor
+        open={editorOpen}
+        onOpenChange={setEditorOpen}
+        post={editingPost}
+        onSuccess={fetchPosts}
+      />
     </div>
   );
 };
