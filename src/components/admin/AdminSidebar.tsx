@@ -6,11 +6,17 @@ import {
   Users,
   BarChart3,
   Settings,
+  Home,
+  Eye,
+  Grid3x3,
 } from "lucide-react";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Overview", path: "/admin" },
   { icon: FileText, label: "Posts", path: "/admin/posts" },
+  { icon: Home, label: "Hero Section", path: "/admin/hero" },
+  { icon: Eye, label: "Vision Section", path: "/admin/vision" },
+  { icon: Grid3x3, label: "Development Areas", path: "/admin/development-areas" },
   { icon: Users, label: "Users", path: "/admin/users" },
   { icon: BarChart3, label: "Analytics", path: "/admin/analytics" },
   { icon: Settings, label: "Settings", path: "/admin/settings" },

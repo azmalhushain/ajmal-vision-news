@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const VisionStatement = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const [content, setContent] = useState<any>(null);
 
   useEffect(() => {
+    fetchContent();
+    
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -21,7 +25,21 @@ export const VisionStatement = () => {
     return () => observer.disconnect();
   }, []);
 
-  const stats = [
+  const fetchContent = async () => {
+    const { data } = await supabase
+      .from("vision_content")
+      .select("*")
+      .limit(1)
+      .single();
+    
+    if (data) setContent(data);
+  };
+
+  const stats = content ? [
+    { number: content.stat1_number, label: content.stat1_label },
+    { number: content.stat2_number, label: content.stat2_label },
+    { number: content.stat3_number, label: content.stat3_label },
+  ] : [
     { number: "100%", label: "Ward Coverage" },
     { number: "25+", label: "Infrastructure Projects" },
     { number: "8", label: "Health Posts Upgraded" },
@@ -36,15 +54,13 @@ export const VisionStatement = () => {
           }`}
         >
           <h2 className="text-4xl lg:text-6xl font-black leading-tight">
-            <span className="block text-foreground">I BELIEVE IN</span>
-            <span className="block text-accent">PEOPLE-FIRST</span>
-            <span className="block text-foreground">DEVELOPMENT</span>
+            <span className="block text-foreground">{content?.title_line1 || "I BELIEVE IN"}</span>
+            <span className="block text-accent">{content?.title_line2 || "PEOPLE-FIRST"}</span>
+            <span className="block text-foreground">{content?.title_line3 || "DEVELOPMENT"}</span>
           </h2>
 
           <p className="text-xl lg:text-2xl text-muted-foreground leading-relaxed">
-            "जनताकै साथमा, जनताकै लागि" - With the people, for the people. Every
-            decision, every project, every initiative is driven by the needs and
-            aspirations of our citizens.
+            {content?.description || '"जनताकै साथमा, जनताकै लागि" - With the people, for the people. Every decision, every project, every initiative is driven by the needs and aspirations of our citizens.'}
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-8">

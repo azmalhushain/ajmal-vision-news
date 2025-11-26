@@ -1,10 +1,34 @@
 import { useEffect, useState } from "react";
-import { Building2, Heart, GraduationCap, Users } from "lucide-react";
+import { Building2, Heart, GraduationCap, Users, Lightbulb, Leaf, Globe, Shield, LucideIcon } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+
+const iconMap: Record<string, LucideIcon> = {
+  Building2,
+  Heart,
+  GraduationCap,
+  Users,
+  Lightbulb,
+  Leaf,
+  Globe,
+  Shield,
+};
+
+interface Area {
+  id: string;
+  title: string;
+  description: string;
+  icon_name: string;
+  display_order: number;
+  is_active: boolean;
+}
 
 export const DevelopmentAreas = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const [areas, setAreas] = useState<Area[]>([]);
 
   useEffect(() => {
+    fetchAreas();
+    
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -22,32 +46,15 @@ export const DevelopmentAreas = () => {
     return () => observer.disconnect();
   }, []);
 
-  const areas = [
-    {
-      icon: Building2,
-      title: "Infrastructure",
-      description:
-        "Modern roads, bridges, and public facilities for better connectivity and quality of life.",
-    },
-    {
-      icon: Heart,
-      title: "Healthcare",
-      description:
-        "Accessible healthcare for all with upgraded facilities and trained medical staff.",
-    },
-    {
-      icon: GraduationCap,
-      title: "Education",
-      description:
-        "Quality education opportunities with modern infrastructure and digital learning.",
-    },
-    {
-      icon: Users,
-      title: "Empowerment",
-      description:
-        "Youth and women empowerment through skill development and employment programs.",
-    },
-  ];
+  const fetchAreas = async () => {
+    const { data } = await supabase
+      .from("development_areas")
+      .select("*")
+      .eq("is_active", true)
+      .order("display_order");
+    
+    if (data) setAreas(data);
+  };
 
   return (
     <section id="development-areas" className="py-20 bg-background">
@@ -62,10 +69,10 @@ export const DevelopmentAreas = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {areas.map((area, index) => {
-            const Icon = area.icon;
+            const Icon = iconMap[area.icon_name] || Building2;
             return (
               <div
-                key={area.title}
+                key={area.id}
                 className={`glass-card glass-hover p-8 rounded-2xl text-center group fade-in-up animate-delay-${
                   (index + 1) * 100
                 }`}
