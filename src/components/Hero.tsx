@@ -2,13 +2,26 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowDown, Play } from "lucide-react";
 import mayorImage from "@/assets/news-infrastructure.jpg";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Hero = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const [content, setContent] = useState<any>(null);
 
   useEffect(() => {
     setIsVisible(true);
+    fetchContent();
   }, []);
+
+  const fetchContent = async () => {
+    const { data } = await supabase
+      .from("hero_content")
+      .select("*")
+      .limit(1)
+      .single();
+    
+    if (data) setContent(data);
+  };
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background pt-20">
@@ -22,29 +35,31 @@ export const Hero = () => {
             )}
           >
             <h1 className="text-5xl lg:text-7xl font-black leading-tight">
-              <span className="block text-foreground">TOGETHER FOR</span>
-              <span className="block text-accent animate-pulse">A PROSPEROUS</span>
-              <span className="block text-foreground">BHOKRAHA NARSINGH</span>
+              <span className="block text-foreground">{content?.title_line1 || "TOGETHER FOR"}</span>
+              <span className="block text-accent animate-pulse">{content?.title_line2 || "A PROSPEROUS"}</span>
+              <span className="block text-foreground">{content?.title_line3 || "BHOKRAHA NARSINGH"}</span>
             </h1>
             
             <p className="text-xl text-muted-foreground max-w-lg leading-relaxed">
-              Working hand-in-hand with citizens for development, dignity, and democracy.
+              {content?.description || "Working hand-in-hand with citizens for development, dignity, and democracy."}
             </p>
 
             <div className="flex flex-wrap gap-4">
               <Button
                 size="lg"
                 className="group bg-foreground text-background hover:bg-accent hover:text-accent-foreground transition-all duration-300 transform hover:scale-105"
+                onClick={() => content?.button1_link && window.location.href !== content.button1_link && (window.location.href = content.button1_link)}
               >
-                Learn More
+                {content?.button1_text || "Learn More"}
               </Button>
               <Button
                 size="lg"
                 variant="outline"
                 className="group border-2 hover:bg-accent hover:text-accent-foreground hover:border-accent transition-all duration-300 transform hover:scale-105"
+                onClick={() => content?.button2_link && window.location.href !== content.button2_link && (window.location.href = content.button2_link)}
               >
                 <Play className="mr-2 h-5 w-5 group-hover:animate-pulse" />
-                Watch Video
+                {content?.button2_text || "Watch Video"}
               </Button>
             </div>
           </div>
@@ -59,23 +74,23 @@ export const Hero = () => {
             <div className="relative group">
               <div className="absolute -inset-4 bg-accent/20 rounded-3xl blur-2xl group-hover:bg-accent/30 transition-all duration-500" />
               <img
-                src={mayorImage}
+                src={content?.hero_image_url || mayorImage}
                 alt="Mayor Ajmal Akhtar Azad"
                 className="relative rounded-3xl shadow-2xl transform group-hover:scale-105 transition-transform duration-500"
               />
               
               {/* Floating Stats */}
               <div className="absolute -bottom-6 -right-6 glass-card p-6 rounded-2xl transform hover:scale-110 transition-transform duration-300 animate-delay-500 fade-in-up">
-                <div className="text-4xl font-black text-accent">15+</div>
+                <div className="text-4xl font-black text-accent">{content?.stat1_number || "15+"}</div>
                 <div className="text-sm text-muted-foreground uppercase tracking-wider">
-                  Projects Completed
+                  {content?.stat1_label || "Projects Completed"}
                 </div>
               </div>
               
               <div className="absolute -top-6 -left-6 glass-card p-6 rounded-2xl transform hover:scale-110 transition-transform duration-300 animate-delay-600 fade-in-up">
-                <div className="text-4xl font-black text-accent">500+</div>
+                <div className="text-4xl font-black text-accent">{content?.stat2_number || "500+"}</div>
                 <div className="text-sm text-muted-foreground uppercase tracking-wider">
-                  Families Benefited
+                  {content?.stat2_label || "Families Benefited"}
                 </div>
               </div>
             </div>

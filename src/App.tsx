@@ -18,6 +18,9 @@ import Posts from "./pages/admin/Posts";
 import Users from "./pages/admin/Users";
 import Analytics from "./pages/admin/Analytics";
 import Settings from "./pages/admin/Settings";
+import HeroEditor from "./pages/admin/HeroEditor";
+import VisionEditor from "./pages/admin/VisionEditor";
+import DevelopmentAreasEditor from "./pages/admin/DevelopmentAreasEditor";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +46,9 @@ const App = () => (
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Overview />} />
             <Route path="posts" element={<Posts />} />
+            <Route path="hero" element={<HeroEditor />} />
+            <Route path="vision" element={<VisionEditor />} />
+            <Route path="development-areas" element={<DevelopmentAreasEditor />} />
             <Route path="users" element={<Users />} />
             <Route path="analytics" element={<Analytics />} />
             <Route path="settings" element={<Settings />} />

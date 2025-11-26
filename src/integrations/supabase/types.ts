@@ -14,6 +14,96 @@ export type Database = {
   }
   public: {
     Tables: {
+      development_areas: {
+        Row: {
+          created_at: string | null
+          description: string
+          display_order: number
+          icon_name: string
+          id: string
+          is_active: boolean | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          display_order?: number
+          icon_name: string
+          id?: string
+          is_active?: boolean | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          display_order?: number
+          icon_name?: string
+          id?: string
+          is_active?: boolean | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      hero_content: {
+        Row: {
+          button1_link: string
+          button1_text: string
+          button2_link: string
+          button2_text: string
+          created_at: string | null
+          description: string
+          hero_image_url: string | null
+          id: string
+          stat1_label: string
+          stat1_number: string
+          stat2_label: string
+          stat2_number: string
+          title_line1: string
+          title_line2: string
+          title_line3: string
+          updated_at: string | null
+        }
+        Insert: {
+          button1_link?: string
+          button1_text?: string
+          button2_link?: string
+          button2_text?: string
+          created_at?: string | null
+          description?: string
+          hero_image_url?: string | null
+          id?: string
+          stat1_label?: string
+          stat1_number?: string
+          stat2_label?: string
+          stat2_number?: string
+          title_line1?: string
+          title_line2?: string
+          title_line3?: string
+          updated_at?: string | null
+        }
+        Update: {
+          button1_link?: string
+          button1_text?: string
+          button2_link?: string
+          button2_text?: string
+          created_at?: string | null
+          description?: string
+          hero_image_url?: string | null
+          id?: string
+          stat1_label?: string
+          stat1_number?: string
+          stat2_label?: string
+          stat2_number?: string
+          title_line1?: string
+          title_line2?: string
+          title_line3?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       posts: {
         Row: {
           author_id: string
@@ -98,6 +188,54 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      vision_content: {
+        Row: {
+          created_at: string | null
+          description: string
+          id: string
+          stat1_label: string
+          stat1_number: string
+          stat2_label: string
+          stat2_number: string
+          stat3_label: string
+          stat3_number: string
+          title_line1: string
+          title_line2: string
+          title_line3: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string
+          id?: string
+          stat1_label?: string
+          stat1_number?: string
+          stat2_label?: string
+          stat2_number?: string
+          stat3_label?: string
+          stat3_number?: string
+          title_line1?: string
+          title_line2?: string
+          title_line3?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          id?: string
+          stat1_label?: string
+          stat1_number?: string
+          stat2_label?: string
+          stat2_number?: string
+          stat3_label?: string
+          stat3_number?: string
+          title_line1?: string
+          title_line2?: string
+          title_line3?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
