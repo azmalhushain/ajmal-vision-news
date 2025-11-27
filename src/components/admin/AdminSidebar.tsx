@@ -9,6 +9,10 @@ import {
   Home,
   Eye,
   Grid3x3,
+  Info,
+  Image,
+  Phone,
+  PanelBottom,
 } from "lucide-react";
 
 const menuItems = [
@@ -17,6 +21,10 @@ const menuItems = [
   { icon: Home, label: "Hero Section", path: "/admin/hero" },
   { icon: Eye, label: "Vision Section", path: "/admin/vision" },
   { icon: Grid3x3, label: "Development Areas", path: "/admin/development-areas" },
+  { icon: Info, label: "About Page", path: "/admin/about" },
+  { icon: Image, label: "Gallery", path: "/admin/gallery" },
+  { icon: Phone, label: "Contact Page", path: "/admin/contact" },
+  { icon: PanelBottom, label: "Footer", path: "/admin/footer" },
   { icon: Users, label: "Users", path: "/admin/users" },
   { icon: BarChart3, label: "Analytics", path: "/admin/analytics" },
   { icon: Settings, label: "Settings", path: "/admin/settings" },
@@ -26,7 +34,7 @@ const AdminSidebar = () => {
   const location = useLocation();
 
   return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-border bg-card hidden lg:block">
+    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-border bg-card hidden lg:block overflow-y-auto">
       <div className="flex h-full flex-col">
         <div className="flex h-16 items-center border-b border-border px-6">
           <h2 className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
@@ -42,7 +50,7 @@ const AdminSidebar = () => {
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
+                  transition={{ delay: index * 0.05 }}
                   className={`flex items-center gap-3 rounded-lg px-4 py-3 transition-all ${
                     isActive
                       ? "bg-primary text-primary-foreground"

@@ -21,6 +21,10 @@ import Settings from "./pages/admin/Settings";
 import HeroEditor from "./pages/admin/HeroEditor";
 import VisionEditor from "./pages/admin/VisionEditor";
 import DevelopmentAreasEditor from "./pages/admin/DevelopmentAreasEditor";
+import AboutEditor from "./pages/admin/AboutEditor";
+import GalleryEditor from "./pages/admin/GalleryEditor";
+import ContactEditor from "./pages/admin/ContactEditor";
+import FooterEditor from "./pages/admin/FooterEditor";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +53,10 @@ const App = () => (
             <Route path="hero" element={<HeroEditor />} />
             <Route path="vision" element={<VisionEditor />} />
             <Route path="development-areas" element={<DevelopmentAreasEditor />} />
+            <Route path="about" element={<AboutEditor />} />
+            <Route path="gallery" element={<GalleryEditor />} />
+            <Route path="contact" element={<ContactEditor />} />
+            <Route path="footer" element={<FooterEditor />} />
             <Route path="users" element={<Users />} />
             <Route path="analytics" element={<Analytics />} />
             <Route path="settings" element={<Settings />} />

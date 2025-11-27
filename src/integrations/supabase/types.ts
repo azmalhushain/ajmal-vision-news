@@ -14,6 +14,87 @@ export type Database = {
   }
   public: {
     Tables: {
+      about_content: {
+        Row: {
+          achievements_json: Json
+          bio_content: string
+          bio_image_url: string | null
+          bio_title: string
+          created_at: string | null
+          hero_description: string
+          hero_title_line1: string
+          hero_title_line2: string
+          id: string
+          updated_at: string | null
+          values_json: Json
+        }
+        Insert: {
+          achievements_json?: Json
+          bio_content?: string
+          bio_image_url?: string | null
+          bio_title?: string
+          created_at?: string | null
+          hero_description?: string
+          hero_title_line1?: string
+          hero_title_line2?: string
+          id?: string
+          updated_at?: string | null
+          values_json?: Json
+        }
+        Update: {
+          achievements_json?: Json
+          bio_content?: string
+          bio_image_url?: string | null
+          bio_title?: string
+          created_at?: string | null
+          hero_description?: string
+          hero_title_line1?: string
+          hero_title_line2?: string
+          id?: string
+          updated_at?: string | null
+          values_json?: Json
+        }
+        Relationships: []
+      }
+      contact_content: {
+        Row: {
+          created_at: string | null
+          email_addresses: string
+          hero_description: string
+          hero_title_line1: string
+          hero_title_line2: string
+          id: string
+          office_address: string
+          office_hours: string
+          phone_numbers: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email_addresses?: string
+          hero_description?: string
+          hero_title_line1?: string
+          hero_title_line2?: string
+          id?: string
+          office_address?: string
+          office_hours?: string
+          phone_numbers?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email_addresses?: string
+          hero_description?: string
+          hero_title_line1?: string
+          hero_title_line2?: string
+          id?: string
+          office_address?: string
+          office_hours?: string
+          phone_numbers?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       development_areas: {
         Row: {
           created_at: string | null
@@ -41,6 +122,90 @@ export type Database = {
           display_order?: number
           icon_name?: string
           id?: string
+          is_active?: boolean | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      footer_content: {
+        Row: {
+          address: string
+          copyright_text: string
+          created_at: string | null
+          email: string
+          facebook_url: string | null
+          id: string
+          instagram_url: string | null
+          phone: string
+          site_description: string
+          site_name: string
+          tagline: string
+          twitter_url: string | null
+          updated_at: string | null
+          youtube_url: string | null
+        }
+        Insert: {
+          address?: string
+          copyright_text?: string
+          created_at?: string | null
+          email?: string
+          facebook_url?: string | null
+          id?: string
+          instagram_url?: string | null
+          phone?: string
+          site_description?: string
+          site_name?: string
+          tagline?: string
+          twitter_url?: string | null
+          updated_at?: string | null
+          youtube_url?: string | null
+        }
+        Update: {
+          address?: string
+          copyright_text?: string
+          created_at?: string | null
+          email?: string
+          facebook_url?: string | null
+          id?: string
+          instagram_url?: string | null
+          phone?: string
+          site_description?: string
+          site_name?: string
+          tagline?: string
+          twitter_url?: string | null
+          updated_at?: string | null
+          youtube_url?: string | null
+        }
+        Relationships: []
+      }
+      gallery_images: {
+        Row: {
+          category: string
+          created_at: string | null
+          display_order: number
+          id: string
+          image_url: string
+          is_active: boolean | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string | null
+          display_order?: number
+          id?: string
+          image_url: string
+          is_active?: boolean | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          display_order?: number
+          id?: string
+          image_url?: string
           is_active?: boolean | null
           title?: string
           updated_at?: string | null

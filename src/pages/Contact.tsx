@@ -4,16 +4,50 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { MapPin, Phone, Mail, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { Footer } from "@/components/Footer";
 
 const Contact = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+
+  const [content, setContent] = useState({
+    hero_title_line1: "GET IN",
+    hero_title_line2: "TOUCH",
+    hero_description: "",
+    office_address: "",
+    phone_numbers: "",
+    email_addresses: "",
+    office_hours: "",
+  });
 
   useEffect(() => {
     setIsVisible(true);
     window.scrollTo(0, 0);
+    fetchContent();
   }, []);
+
+  const fetchContent = async () => {
+    const { data } = await supabase
+      .from("contact_content")
+      .select("*")
+      .limit(1)
+      .single();
+
+    if (data) {
+      setContent({
+        hero_title_line1: data.hero_title_line1,
+        hero_title_line2: data.hero_title_line2,
+        hero_description: data.hero_description,
+        office_address: data.office_address,
+        phone_numbers: data.phone_numbers,
+        email_addresses: data.email_addresses,
+        office_hours: data.office_hours,
+      });
+    }
+    setLoading(false);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,24 +61,32 @@ const Contact = () => {
     {
       icon: MapPin,
       title: "Office Address",
-      details: "Bhokraha Narsingh Municipality\nSunsari District, Province No. 1, Nepal",
+      details: content.office_address,
     },
     {
       icon: Phone,
       title: "Phone",
-      details: "+977-XXX-XXXXXX\n+977-XXX-XXXXXX",
+      details: content.phone_numbers,
     },
     {
       icon: Mail,
       title: "Email",
-      details: "info@bhokrahanarsingh.gov.np\nmayor@bhokrahanarsingh.gov.np",
+      details: content.email_addresses,
     },
     {
       icon: Clock,
       title: "Office Hours",
-      details: "Sunday - Friday: 10:00 AM - 5:00 PM\nSaturday: Closed",
+      details: content.office_hours,
     },
   ];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pt-24">
@@ -57,11 +99,11 @@ const Contact = () => {
             }`}
           >
             <h1 className="text-5xl lg:text-7xl font-black mb-6">
-              <span className="block text-foreground">GET IN</span>
-              <span className="block text-accent">TOUCH</span>
+              <span className="block text-foreground">{content.hero_title_line1}</span>
+              <span className="block text-accent">{content.hero_title_line2}</span>
             </h1>
             <p className="text-xl text-muted-foreground leading-relaxed">
-              Have questions or suggestions? We'd love to hear from you.
+              {content.hero_description}
             </p>
           </div>
         </div>
