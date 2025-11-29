@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { NewsSection } from "@/components/NewsSection";
 import { Footer } from "@/components/Footer";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const News = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const { t } = useLanguage();
 
   useEffect(() => {
     setIsVisible(true);
@@ -21,8 +23,8 @@ const News = () => {
             }`}
           >
             <h1 className="text-5xl lg:text-7xl font-black mb-6">
-              <span className="block text-foreground">LATEST</span>
-              <span className="block text-accent">NEWS & UPDATES</span>
+              <span className="block text-foreground">{t("latestNews").split(" ")[0]?.toUpperCase() || "LATEST"}</span>
+              <span className="block text-accent">{t("news").toUpperCase()} & UPDATES</span>
             </h1>
             <p className="text-xl text-muted-foreground leading-relaxed">
               Stay informed about our development initiatives and community programs.

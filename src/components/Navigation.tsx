@@ -1,12 +1,21 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 export const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const { language, setLanguage, t } = useLanguage();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -21,14 +30,14 @@ export const Navigation = () => {
   }, [location]);
 
   const navLinks = [
-    { name: "Home", path: "/" },
-    { name: "About", path: "/about" },
-    { name: "Vision", path: "/vision" },
-    { name: "News", path: "/news" },
-    { name: "Podcasts", path: "/podcasts" },
-    { name: "Gallery", path: "/gallery" },
-    { name: "Contact", path: "/contact" },
-    { name: "Login", path: "/auth" },
+    { name: t("home"), path: "/" },
+    { name: t("about"), path: "/about" },
+    { name: t("vision"), path: "/vision" },
+    { name: t("news"), path: "/news" },
+    { name: t("podcasts"), path: "/podcasts" },
+    { name: t("gallery"), path: "/gallery" },
+    { name: t("contact"), path: "/contact" },
+    { name: t("login"), path: "/auth" },
   ];
 
   return (
@@ -47,37 +56,77 @@ export const Navigation = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <ul className="hidden lg:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <li key={link.path}>
-                <Link
-                  to={link.path}
-                  className={cn(
-                    "relative text-sm font-semibold uppercase tracking-wider transition-colors hover:text-accent",
-                    location.pathname === link.path
-                      ? "text-accent"
-                      : "text-foreground"
-                  )}
-                >
-                  {link.name}
-                  <span
+          <div className="hidden lg:flex items-center gap-6">
+            <ul className="flex items-center gap-8">
+              {navLinks.map((link) => (
+                <li key={link.path}>
+                  <Link
+                    to={link.path}
                     className={cn(
-                      "absolute -bottom-1 left-0 h-0.5 bg-accent transition-all duration-300",
-                      location.pathname === link.path ? "w-full" : "w-0 group-hover:w-full"
+                      "relative text-sm font-semibold uppercase tracking-wider transition-colors hover:text-accent",
+                      location.pathname === link.path
+                        ? "text-accent"
+                        : "text-foreground"
                     )}
-                  />
-                </Link>
-              </li>
-            ))}
-          </ul>
+                  >
+                    {link.name}
+                    <span
+                      className={cn(
+                        "absolute -bottom-1 left-0 h-0.5 bg-accent transition-all duration-300",
+                        location.pathname === link.path ? "w-full" : "w-0 group-hover:w-full"
+                      )}
+                    />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+
+            {/* Language Selector */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <Globe className="h-4 w-4" />
+                  <span className="uppercase text-xs font-semibold">{language}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setLanguage("en")} className={language === "en" ? "bg-accent/10" : ""}>
+                  🇬🇧 English
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLanguage("ne")} className={language === "ne" ? "bg-accent/10" : ""}>
+                  🇳🇵 नेपाली
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
 
           {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="lg:hidden p-2 text-foreground hover:text-accent transition-colors"
-          >
-            {isOpen ? <X size={28} /> : <Menu size={28} />}
-          </button>
+          <div className="lg:hidden flex items-center gap-2">
+            {/* Mobile Language Selector */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="gap-1 px-2">
+                  <Globe className="h-4 w-4" />
+                  <span className="uppercase text-xs">{language}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setLanguage("en")}>
+                  🇬🇧 English
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLanguage("ne")}>
+                  🇳🇵 नेपाली
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="p-2 text-foreground hover:text-accent transition-colors"
+            >
+              {isOpen ? <X size={28} /> : <Menu size={28} />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Navigation */}

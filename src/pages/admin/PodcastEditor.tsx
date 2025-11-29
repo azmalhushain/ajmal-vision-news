@@ -22,13 +22,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, Edit, Trash2, Pin, Loader2, Mic } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Plus, Edit, Trash2, Pin, Loader2, Mic, Video, FileVideo } from "lucide-react";
 
 interface Podcast {
   id: string;
   title: string;
   description: string | null;
   audio_url: string;
+  video_url: string | null;
+  media_type: string;
   cover_image_url: string | null;
   duration: string | null;
   is_pinned: boolean;
@@ -49,6 +58,8 @@ const PodcastEditor = () => {
     title: "",
     description: "",
     audio_url: "",
+    video_url: "",
+    media_type: "audio",
     cover_image_url: "",
     duration: "",
     is_pinned: false,
@@ -69,12 +80,12 @@ const PodcastEditor = () => {
     if (error) {
       toast({ title: "Error fetching podcasts", variant: "destructive" });
     } else {
-      setPodcasts(data || []);
+      setPodcasts((data as Podcast[]) || []);
     }
     setLoading(false);
   };
 
-  const handleFileUpload = async (file: File, type: "audio" | "image") => {
+  const handleFileUpload = async (file: File, type: "audio" | "video" | "image") => {
     setUploading(true);
     try {
       const fileExt = file.name.split(".").pop();
@@ -93,6 +104,8 @@ const PodcastEditor = () => {
 
       if (type === "audio") {
         setFormData({ ...formData, audio_url: publicUrl });
+      } else if (type === "video") {
+        setFormData({ ...formData, video_url: publicUrl });
       } else {
         setFormData({ ...formData, cover_image_url: publicUrl });
       }
@@ -106,23 +119,38 @@ const PodcastEditor = () => {
   };
 
   const handleSubmit = async () => {
-    if (!formData.title || !formData.audio_url) {
+    if (!formData.title) {
       toast({ title: "Please fill required fields", variant: "destructive" });
+      return;
+    }
+
+    if (formData.media_type === "audio" && !formData.audio_url) {
+      toast({ title: "Please upload an audio file", variant: "destructive" });
+      return;
+    }
+
+    if (formData.media_type === "video" && !formData.video_url) {
+      toast({ title: "Please upload a video file or provide video URL", variant: "destructive" });
       return;
     }
 
     setSaving(true);
     try {
+      const dataToSave = {
+        ...formData,
+        audio_url: formData.media_type === "audio" ? formData.audio_url : formData.audio_url || "",
+      };
+
       if (editingPodcast) {
         const { error } = await supabase
           .from("podcasts")
-          .update(formData)
+          .update(dataToSave)
           .eq("id", editingPodcast.id);
 
         if (error) throw error;
         toast({ title: "Podcast updated successfully" });
       } else {
-        const { error } = await supabase.from("podcasts").insert(formData);
+        const { error } = await supabase.from("podcasts").insert(dataToSave);
         if (error) throw error;
         toast({ title: "Podcast created successfully" });
       }
@@ -143,6 +171,8 @@ const PodcastEditor = () => {
       title: podcast.title,
       description: podcast.description || "",
       audio_url: podcast.audio_url,
+      video_url: podcast.video_url || "",
+      media_type: podcast.media_type || "audio",
       cover_image_url: podcast.cover_image_url || "",
       duration: podcast.duration || "",
       is_pinned: podcast.is_pinned,
@@ -182,6 +212,8 @@ const PodcastEditor = () => {
       title: "",
       description: "",
       audio_url: "",
+      video_url: "",
+      media_type: "audio",
       cover_image_url: "",
       duration: "",
       is_pinned: false,
@@ -199,11 +231,11 @@ const PodcastEditor = () => {
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold">Podcast Management</h1>
-            <p className="text-muted-foreground mt-2">Manage your podcast episodes</p>
+            <h1 className="text-3xl font-bold">Podcast & Video Management</h1>
+            <p className="text-muted-foreground mt-2">Manage your podcast episodes and videos</p>
           </div>
           <Button onClick={() => { resetForm(); setIsDialogOpen(true); }}>
-            <Plus className="mr-2 h-4 w-4" /> Add Podcast
+            <Plus className="mr-2 h-4 w-4" /> Add Media
           </Button>
         </div>
       </motion.div>
@@ -211,13 +243,14 @@ const PodcastEditor = () => {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <Card>
           <CardHeader>
-            <CardTitle>All Podcasts ({podcasts.length})</CardTitle>
+            <CardTitle>All Media ({podcasts.length})</CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Title</TableHead>
+                  <TableHead>Type</TableHead>
                   <TableHead>Duration</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Pinned</TableHead>
@@ -230,7 +263,11 @@ const PodcastEditor = () => {
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded bg-primary/10 flex items-center justify-center">
-                          <Mic className="h-5 w-5 text-primary" />
+                          {podcast.media_type === "video" ? (
+                            <Video className="h-5 w-5 text-primary" />
+                          ) : (
+                            <Mic className="h-5 w-5 text-primary" />
+                          )}
                         </div>
                         <div>
                           <div className="font-medium">{podcast.title}</div>
@@ -239,6 +276,11 @@ const PodcastEditor = () => {
                           </div>
                         </div>
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className={`px-2 py-1 rounded text-xs ${podcast.media_type === "video" ? "bg-blue-500/20 text-blue-500" : "bg-purple-500/20 text-purple-500"}`}>
+                        {podcast.media_type === "video" ? "Video" : "Audio"}
+                      </span>
                     </TableCell>
                     <TableCell>{podcast.duration || "N/A"}</TableCell>
                     <TableCell>
@@ -276,15 +318,39 @@ const PodcastEditor = () => {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editingPodcast ? "Edit Podcast" : "Add Podcast"}</DialogTitle>
+            <DialogTitle>{editingPodcast ? "Edit Media" : "Add Media"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 mt-4">
+            <div>
+              <Label>Media Type *</Label>
+              <Select
+                value={formData.media_type}
+                onValueChange={(value) => setFormData({ ...formData, media_type: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="audio">
+                    <div className="flex items-center gap-2">
+                      <Mic className="h-4 w-4" /> Audio Podcast
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="video">
+                    <div className="flex items-center gap-2">
+                      <Video className="h-4 w-4" /> Video
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <div>
               <Label>Title *</Label>
               <Input
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                placeholder="Podcast title"
+                placeholder="Media title"
               />
             </div>
             <div>
@@ -292,24 +358,53 @@ const PodcastEditor = () => {
               <Textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Podcast description"
+                placeholder="Media description"
                 rows={3}
               />
             </div>
-            <div>
-              <Label>Audio File *</Label>
-              <Input
-                type="file"
-                accept="audio/*"
-                onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], "audio")}
-                disabled={uploading}
-              />
-              {formData.audio_url && (
-                <audio controls className="mt-2 w-full">
-                  <source src={formData.audio_url} />
-                </audio>
-              )}
-            </div>
+
+            {formData.media_type === "audio" ? (
+              <div>
+                <Label>Audio File *</Label>
+                <Input
+                  type="file"
+                  accept="audio/*"
+                  onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], "audio")}
+                  disabled={uploading}
+                />
+                {formData.audio_url && (
+                  <audio controls className="mt-2 w-full">
+                    <source src={formData.audio_url} />
+                  </audio>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <Label>Video File</Label>
+                  <Input
+                    type="file"
+                    accept="video/*"
+                    onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], "video")}
+                    disabled={uploading}
+                  />
+                </div>
+                <div>
+                  <Label>Or Video URL (YouTube, etc.)</Label>
+                  <Input
+                    value={formData.video_url}
+                    onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
+                    placeholder="https://youtube.com/watch?v=..."
+                  />
+                </div>
+                {formData.video_url && !formData.video_url.includes("youtube") && (
+                  <video controls className="mt-2 w-full max-h-48 rounded">
+                    <source src={formData.video_url} />
+                  </video>
+                )}
+              </div>
+            )}
+
             <div>
               <Label>Cover Image</Label>
               <Input
@@ -355,7 +450,7 @@ const PodcastEditor = () => {
               </div>
             </div>
             <Button onClick={handleSubmit} disabled={saving || uploading} className="w-full">
-              {saving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</> : "Save Podcast"}
+              {saving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</> : "Save Media"}
             </Button>
           </div>
         </DialogContent>

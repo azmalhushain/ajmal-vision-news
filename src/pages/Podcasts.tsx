@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Footer } from "@/components/Footer";
-import { Play, Pause, Clock, Pin } from "lucide-react";
+import { Play, Pause, Clock, Pin, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Podcast {
   id: string;
   title: string;
   description: string | null;
   audio_url: string;
+  video_url: string | null;
+  media_type: string;
   cover_image_url: string | null;
   duration: string | null;
   is_pinned: boolean;
@@ -20,6 +23,7 @@ const Podcasts = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [audioElements, setAudioElements] = useState<{ [key: string]: HTMLAudioElement }>({});
+  const { t } = useLanguage();
 
   useEffect(() => {
     setIsVisible(true);
@@ -36,19 +40,19 @@ const Podcasts = () => {
       .order("created_at", { ascending: false });
 
     if (data) {
-      setPodcasts(data);
+      setPodcasts(data as Podcast[]);
     }
   };
 
   const togglePlay = (podcast: Podcast) => {
+    if (podcast.media_type === "video") return;
+    
     if (playingId === podcast.id) {
       audioElements[podcast.id]?.pause();
       setPlayingId(null);
     } else {
-      // Pause any currently playing audio
       Object.values(audioElements).forEach((audio) => audio.pause());
 
-      // Create new audio element if doesn't exist
       if (!audioElements[podcast.id]) {
         const audio = new Audio(podcast.audio_url);
         audio.onended = () => setPlayingId(null);
@@ -59,6 +63,14 @@ const Podcasts = () => {
       }
       setPlayingId(podcast.id);
     }
+  };
+
+  const getYouTubeEmbedUrl = (url: string) => {
+    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s]+)/);
+    if (match) {
+      return `https://www.youtube.com/embed/${match[1]}`;
+    }
+    return null;
   };
 
   return (
@@ -72,8 +84,8 @@ const Podcasts = () => {
             }`}
           >
             <h1 className="text-5xl lg:text-7xl font-black mb-6">
-              <span className="block text-foreground">OUR</span>
-              <span className="block text-accent">PODCASTS</span>
+              <span className="block text-foreground">{t("ourPodcasts").split(" ")[0]}</span>
+              <span className="block text-accent">{t("ourPodcasts").split(" ").slice(1).join(" ") || "PODCASTS"}</span>
             </h1>
             <p className="text-xl text-muted-foreground leading-relaxed">
               Listen to our latest episodes and stay connected with community discussions.
@@ -105,56 +117,119 @@ const Podcasts = () => {
                         <Pin className="h-5 w-5 text-accent fill-accent" />
                       </div>
                     )}
-                    <div className="flex gap-6 items-start">
-                      <div className="flex-shrink-0">
-                        {podcast.cover_image_url ? (
-                          <img
-                            src={podcast.cover_image_url}
-                            alt={podcast.title}
-                            className="w-24 h-24 object-cover rounded-lg"
-                          />
-                        ) : (
-                          <div className="w-24 h-24 bg-primary/10 rounded-lg flex items-center justify-center">
-                            <Play className="h-10 w-10 text-primary" />
+                    
+                    {podcast.media_type === "video" ? (
+                      <div className="space-y-4">
+                        <div className="flex gap-4 items-start">
+                          <div className="flex-shrink-0">
+                            {podcast.cover_image_url ? (
+                              <img
+                                src={podcast.cover_image_url}
+                                alt={podcast.title}
+                                className="w-24 h-24 object-cover rounded-lg"
+                              />
+                            ) : (
+                              <div className="w-24 h-24 bg-blue-500/10 rounded-lg flex items-center justify-center">
+                                <Video className="h-10 w-10 text-blue-500" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-xl font-bold text-foreground mb-2">
+                              {podcast.title}
+                            </h3>
+                            <p className="text-muted-foreground line-clamp-2 mb-4">
+                              {podcast.description}
+                            </p>
+                            <div className="flex items-center gap-4">
+                              <span className="px-2 py-1 rounded text-xs bg-blue-500/20 text-blue-500">
+                                Video
+                              </span>
+                              {podcast.duration && (
+                                <span className="text-sm text-muted-foreground flex items-center gap-1">
+                                  <Clock className="h-4 w-4" />
+                                  {podcast.duration}
+                                </span>
+                              )}
+                              <span className="text-sm text-muted-foreground">
+                                {new Date(podcast.created_at).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Video Player */}
+                        {podcast.video_url && (
+                          <div className="mt-4">
+                            {getYouTubeEmbedUrl(podcast.video_url) ? (
+                              <div className="aspect-video rounded-lg overflow-hidden">
+                                <iframe
+                                  src={getYouTubeEmbedUrl(podcast.video_url)!}
+                                  className="w-full h-full"
+                                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                  allowFullScreen
+                                />
+                              </div>
+                            ) : (
+                              <video controls className="w-full rounded-lg">
+                                <source src={podcast.video_url} />
+                              </video>
+                            )}
                           </div>
                         )}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-xl font-bold text-foreground mb-2">
-                          {podcast.title}
-                        </h3>
-                        <p className="text-muted-foreground line-clamp-2 mb-4">
-                          {podcast.description}
-                        </p>
-                        <div className="flex items-center gap-4">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => togglePlay(podcast)}
-                            className="gap-2"
-                          >
-                            {playingId === podcast.id ? (
-                              <>
-                                <Pause className="h-4 w-4" /> Pause
-                              </>
-                            ) : (
-                              <>
-                                <Play className="h-4 w-4" /> Play
-                              </>
-                            )}
-                          </Button>
-                          {podcast.duration && (
-                            <span className="text-sm text-muted-foreground flex items-center gap-1">
-                              <Clock className="h-4 w-4" />
-                              {podcast.duration}
-                            </span>
+                    ) : (
+                      <div className="flex gap-6 items-start">
+                        <div className="flex-shrink-0">
+                          {podcast.cover_image_url ? (
+                            <img
+                              src={podcast.cover_image_url}
+                              alt={podcast.title}
+                              className="w-24 h-24 object-cover rounded-lg"
+                            />
+                          ) : (
+                            <div className="w-24 h-24 bg-primary/10 rounded-lg flex items-center justify-center">
+                              <Play className="h-10 w-10 text-primary" />
+                            </div>
                           )}
-                          <span className="text-sm text-muted-foreground">
-                            {new Date(podcast.created_at).toLocaleDateString()}
-                          </span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-xl font-bold text-foreground mb-2">
+                            {podcast.title}
+                          </h3>
+                          <p className="text-muted-foreground line-clamp-2 mb-4">
+                            {podcast.description}
+                          </p>
+                          <div className="flex items-center gap-4">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => togglePlay(podcast)}
+                              className="gap-2"
+                            >
+                              {playingId === podcast.id ? (
+                                <>
+                                  <Pause className="h-4 w-4" /> {t("pause")}
+                                </>
+                              ) : (
+                                <>
+                                  <Play className="h-4 w-4" /> {t("play")}
+                                </>
+                              )}
+                            </Button>
+                            {podcast.duration && (
+                              <span className="text-sm text-muted-foreground flex items-center gap-1">
+                                <Clock className="h-4 w-4" />
+                                {podcast.duration}
+                              </span>
+                            )}
+                            <span className="text-sm text-muted-foreground">
+                              {new Date(podcast.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               ))
