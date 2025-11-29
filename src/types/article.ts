@@ -6,4 +6,6 @@ export interface Article {
   image: string;
   fullContent: string;
   category: string;
+  videoUrl?: string | null;
+  isPinned?: boolean;
 }

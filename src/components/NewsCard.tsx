@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { Calendar } from "lucide-react";
+import { Calendar, Pin, Video } from "lucide-react";
 import { Article } from "@/types/article";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface NewsCardProps {
   article: Article;
@@ -8,18 +9,36 @@ interface NewsCardProps {
 }
 
 export const NewsCard = ({ article, onClick }: NewsCardProps) => {
+  const { t } = useLanguage();
+
   return (
-    <article className="glass-card glass-hover rounded-2xl overflow-hidden cursor-pointer group h-full flex flex-col">
+    <article className="glass-card glass-hover rounded-2xl overflow-hidden cursor-pointer group h-full flex flex-col relative">
+      {/* Pinned indicator */}
+      {article.isPinned && (
+        <div className="absolute top-4 left-4 z-10">
+          <span className="glass-card px-2 py-1 text-xs font-semibold text-accent rounded-full flex items-center gap-1">
+            <Pin className="w-3 h-3 fill-accent" />
+            {t("pinned")}
+          </span>
+        </div>
+      )}
+
       <div className="relative overflow-hidden h-56">
         <img
-          src={article.image}
+          src={article.image || "/placeholder.svg"}
           alt={article.title}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
-        <div className="absolute top-4 right-4">
+        <div className="absolute top-4 right-4 flex flex-col gap-2">
           <span className="glass-card px-3 py-1 text-xs font-semibold text-foreground rounded-full">
             {article.category}
           </span>
+          {article.videoUrl && (
+            <span className="glass-card px-3 py-1 text-xs font-semibold text-blue-500 rounded-full flex items-center gap-1">
+              <Video className="w-3 h-3" />
+              Video
+            </span>
+          )}
         </div>
       </div>
 
@@ -42,7 +61,7 @@ export const NewsCard = ({ article, onClick }: NewsCardProps) => {
           variant="ghost"
           className="w-full glass-card hover:bg-accent hover:text-accent-foreground font-semibold transition-all"
         >
-          Read More
+          {article.videoUrl ? t("watchVideo") : t("readMore")}
         </Button>
       </div>
     </article>

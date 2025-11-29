@@ -304,8 +304,10 @@ export type Database = {
           id: string
           is_active: boolean | null
           is_pinned: boolean | null
+          media_type: string | null
           title: string
           updated_at: string
+          video_url: string | null
         }
         Insert: {
           audio_url: string
@@ -317,8 +319,10 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_pinned?: boolean | null
+          media_type?: string | null
           title: string
           updated_at?: string
+          video_url?: string | null
         }
         Update: {
           audio_url?: string
@@ -330,8 +334,10 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_pinned?: boolean | null
+          media_type?: string | null
           title?: string
           updated_at?: string
+          video_url?: string | null
         }
         Relationships: []
       }

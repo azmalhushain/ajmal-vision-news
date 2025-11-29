@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Footer } from "@/components/Footer";
+import { Pin } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface GalleryImage {
   id: string;
   image_url: string;
   title: string;
   category: string;
+  is_pinned: boolean;
 }
 
 const Gallery = () => {
@@ -14,6 +17,7 @@ const Gallery = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useLanguage();
 
   useEffect(() => {
     setIsVisible(true);
@@ -26,6 +30,7 @@ const Gallery = () => {
       .from("gallery_images")
       .select("*")
       .eq("is_active", true)
+      .order("is_pinned", { ascending: false })
       .order("display_order");
 
     if (data) setImages(data);
@@ -52,7 +57,7 @@ const Gallery = () => {
           >
             <h1 className="text-5xl lg:text-7xl font-black mb-6">
               <span className="block text-foreground">PROJECT</span>
-              <span className="block text-accent">GALLERY</span>
+              <span className="block text-accent">{t("gallery").toUpperCase()}</span>
             </h1>
             <p className="text-xl text-muted-foreground leading-relaxed">
               A visual journey through our development initiatives and community programs.
@@ -74,6 +79,16 @@ const Gallery = () => {
                   }`}
                   onClick={() => setSelectedImage(image.image_url)}
                 >
+                  {/* Pinned indicator */}
+                  {image.is_pinned && (
+                    <div className="absolute top-4 left-4 z-10">
+                      <span className="glass-card px-2 py-1 text-xs font-semibold text-accent rounded-full flex items-center gap-1">
+                        <Pin className="w-3 h-3 fill-accent" />
+                        {t("pinned")}
+                      </span>
+                    </div>
+                  )}
+                  
                   <div className="aspect-[4/3] relative">
                     <img
                       src={image.image_url}

@@ -4,11 +4,14 @@ import { NewsModal } from "./NewsModal";
 import { Button } from "@/components/ui/button";
 import { Article } from "@/types/article";
 import { supabase } from "@/integrations/supabase/client";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { Link } from "react-router-dom";
 
 export const NewsSection = () => {
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [articles, setArticles] = useState<Article[]>([]);
+  const { t } = useLanguage();
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 100);
@@ -38,7 +41,9 @@ export const NewsSection = () => {
           summary: post.excerpt || "",
           image: post.image_url || "",
           fullContent: post.content,
-          category: "News",
+          category: post.category || "News",
+          videoUrl: post.video_url,
+          isPinned: post.is_pinned || false,
         }))
       );
     }
@@ -49,7 +54,7 @@ export const NewsSection = () => {
       <div className="max-w-7xl mx-auto">
         <div className={`text-center mb-16 ${isVisible ? 'fade-in-up' : 'opacity-0'}`}>
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-foreground mb-4 tracking-tight">
-            Latest News & Updates
+            {t("latestNews")}
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Stay informed about our ongoing projects, initiatives, and community developments
@@ -71,13 +76,15 @@ export const NewsSection = () => {
         </div>
 
         <div className={`text-center ${isVisible ? 'fade-in-up animate-delay-600' : 'opacity-0'}`}>
-          <Button
-            variant="outline"
-            size="lg"
-            className="glass-card glass-hover text-foreground font-semibold px-8 py-6 text-lg border-2"
-          >
-            View All News
-          </Button>
+          <Link to="/news">
+            <Button
+              variant="outline"
+              size="lg"
+              className="glass-card glass-hover text-foreground font-semibold px-8 py-6 text-lg border-2"
+            >
+              View All {t("news")}
+            </Button>
+          </Link>
         </div>
       </div>
 
