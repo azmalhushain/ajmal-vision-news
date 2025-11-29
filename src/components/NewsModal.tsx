@@ -49,11 +49,10 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="mt-6 prose prose-invert prose-lg max-w-none">
-          <p className="text-foreground/90 leading-relaxed whitespace-pre-line">
-            {article.fullContent}
-          </p>
-        </div>
+        <div 
+          className="mt-6 prose prose-lg max-w-none prose-headings:text-foreground prose-p:text-foreground/90 prose-strong:text-foreground prose-li:text-foreground/90"
+          dangerouslySetInnerHTML={{ __html: article.fullContent }}
+        />
       </DialogContent>
     </Dialog>
   );

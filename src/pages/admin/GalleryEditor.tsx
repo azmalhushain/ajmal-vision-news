@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Upload, GripVertical } from "lucide-react";
+import { Plus, Trash2, Upload, GripVertical, Pin } from "lucide-react";
 
 interface GalleryImage {
   id: string;
@@ -14,6 +14,7 @@ interface GalleryImage {
   category: string;
   display_order: number;
   is_active: boolean;
+  is_pinned: boolean;
 }
 
 const GalleryEditor = () => {
@@ -201,14 +202,23 @@ const GalleryEditor = () => {
                   ))}
                 </select>
                 <div className="flex justify-between items-center">
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={image.is_active}
-                      onChange={(e) => updateImage(image.id, "is_active", e.target.checked)}
-                    />
-                    <span className="text-sm">Active</span>
-                  </label>
+                  <div className="flex items-center gap-4">
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={image.is_active}
+                        onChange={(e) => updateImage(image.id, "is_active", e.target.checked)}
+                      />
+                      <span className="text-sm">Active</span>
+                    </label>
+                    <button
+                      onClick={() => updateImage(image.id, "is_pinned", !image.is_pinned)}
+                      className={`p-1 rounded ${image.is_pinned ? "text-primary" : "text-muted-foreground"}`}
+                      title={image.is_pinned ? "Unpin" : "Pin"}
+                    >
+                      <Pin className={`h-4 w-4 ${image.is_pinned ? "fill-primary" : ""}`} />
+                    </button>
+                  </div>
                   <Button variant="ghost" size="icon" onClick={() => deleteImage(image.id)}>
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>

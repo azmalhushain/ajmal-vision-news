@@ -39,6 +39,9 @@ interface Post {
   excerpt: string | null;
   status: string | null;
   image_url: string | null;
+  video_url?: string | null;
+  category?: string | null;
+  is_pinned?: boolean;
   scheduled_publish_at?: string | null;
 }
 
@@ -53,6 +56,9 @@ const PostEditor = ({ open, onOpenChange, post, onSuccess }: PostEditorProps) =>
   const [title, setTitle] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [status, setStatus] = useState("draft");
+  const [category, setCategory] = useState("News");
+  const [videoUrl, setVideoUrl] = useState("");
+  const [isPinned, setIsPinned] = useState(false);
   const [scheduledDate, setScheduledDate] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -86,6 +92,9 @@ const PostEditor = ({ open, onOpenChange, post, onSuccess }: PostEditorProps) =>
       setTitle(post.title);
       setExcerpt(post.excerpt || "");
       setStatus(post.status || "draft");
+      setCategory(post.category || "News");
+      setVideoUrl(post.video_url || "");
+      setIsPinned(post.is_pinned || false);
       setScheduledDate(
         post.scheduled_publish_at
           ? new Date(post.scheduled_publish_at).toISOString().slice(0, 16)
@@ -97,6 +106,9 @@ const PostEditor = ({ open, onOpenChange, post, onSuccess }: PostEditorProps) =>
       setTitle("");
       setExcerpt("");
       setStatus("draft");
+      setCategory("News");
+      setVideoUrl("");
+      setIsPinned(false);
       setScheduledDate("");
       setImageUrl(null);
       editor?.commands.setContent("");
@@ -165,6 +177,9 @@ const PostEditor = ({ open, onOpenChange, post, onSuccess }: PostEditorProps) =>
         content,
         excerpt,
         status,
+        category,
+        video_url: videoUrl || null,
+        is_pinned: isPinned,
         scheduled_publish_at:
           status === "scheduled" && scheduledDate
             ? new Date(scheduledDate).toISOString()
@@ -235,6 +250,46 @@ const PostEditor = ({ open, onOpenChange, post, onSuccess }: PostEditorProps) =>
               onChange={(e) => setExcerpt(e.target.value)}
               placeholder="Brief description of the post"
               rows={2}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="category">Category</Label>
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger id="category">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="News">News</SelectItem>
+                  <SelectItem value="Announcement">Announcement</SelectItem>
+                  <SelectItem value="Event">Event</SelectItem>
+                  <SelectItem value="Development">Development</SelectItem>
+                  <SelectItem value="Community">Community</SelectItem>
+                  <SelectItem value="Video">Video</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-end gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isPinned}
+                  onChange={(e) => setIsPinned(e.target.checked)}
+                  className="w-4 h-4 rounded border-border"
+                />
+                <span className="text-sm font-medium">Pin this post</span>
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="video-url">Video URL (YouTube, Vimeo, etc.)</Label>
+            <Input
+              id="video-url"
+              value={videoUrl}
+              onChange={(e) => setVideoUrl(e.target.value)}
+              placeholder="https://www.youtube.com/watch?v=..."
             />
           </div>
 
