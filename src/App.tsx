@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import About from "./pages/About";
 import Vision from "./pages/Vision";
 import News from "./pages/News";
+import Podcasts from "./pages/Podcasts";
 import Gallery from "./pages/Gallery";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
@@ -25,6 +26,7 @@ import AboutEditor from "./pages/admin/AboutEditor";
 import GalleryEditor from "./pages/admin/GalleryEditor";
 import ContactEditor from "./pages/admin/ContactEditor";
 import FooterEditor from "./pages/admin/FooterEditor";
+import PodcastEditor from "./pages/admin/PodcastEditor";
 
 const queryClient = new QueryClient();
 
@@ -35,11 +37,12 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          {/* Public routes */}
+        {/* Public routes */}
           <Route path="/" element={<><Navigation /><Home /></>} />
           <Route path="/about" element={<><Navigation /><About /></>} />
           <Route path="/vision" element={<><Navigation /><Vision /></>} />
           <Route path="/news" element={<><Navigation /><News /></>} />
+          <Route path="/podcasts" element={<><Navigation /><Podcasts /></>} />
           <Route path="/gallery" element={<><Navigation /><Gallery /></>} />
           <Route path="/contact" element={<><Navigation /><Contact /></>} />
           
@@ -49,7 +52,8 @@ const App = () => (
           {/* Admin routes */}
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Overview />} />
-            <Route path="posts" element={<Posts />} />
+          <Route path="posts" element={<Posts />} />
+            <Route path="podcasts" element={<PodcastEditor />} />
             <Route path="hero" element={<HeroEditor />} />
             <Route path="vision" element={<VisionEditor />} />
             <Route path="development-areas" element={<DevelopmentAreasEditor />} />

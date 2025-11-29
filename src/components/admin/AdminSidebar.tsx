@@ -13,11 +13,13 @@ import {
   Image,
   Phone,
   PanelBottom,
+  Mic,
 } from "lucide-react";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Overview", path: "/admin" },
   { icon: FileText, label: "Posts", path: "/admin/posts" },
+  { icon: Mic, label: "Podcasts", path: "/admin/podcasts" },
   { icon: Home, label: "Hero Section", path: "/admin/hero" },
   { icon: Eye, label: "Vision Section", path: "/admin/vision" },
   { icon: Grid3x3, label: "Development Areas", path: "/admin/development-areas" },

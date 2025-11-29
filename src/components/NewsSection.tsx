@@ -21,6 +21,7 @@ export const NewsSection = () => {
       .from("posts")
       .select("*")
       .eq("status", "published")
+      .order("is_pinned", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(6);
 

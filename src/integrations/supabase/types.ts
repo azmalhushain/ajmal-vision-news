@@ -56,6 +56,27 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_notifications: {
+        Row: {
+          admin_email: string
+          created_at: string
+          id: string
+          notify_on_new_user: boolean | null
+        }
+        Insert: {
+          admin_email: string
+          created_at?: string
+          id?: string
+          notify_on_new_user?: boolean | null
+        }
+        Update: {
+          admin_email?: string
+          created_at?: string
+          id?: string
+          notify_on_new_user?: boolean | null
+        }
+        Relationships: []
+      }
       contact_content: {
         Row: {
           created_at: string | null
@@ -187,6 +208,7 @@ export type Database = {
           id: string
           image_url: string
           is_active: boolean | null
+          is_pinned: boolean | null
           title: string
           updated_at: string | null
         }
@@ -197,6 +219,7 @@ export type Database = {
           id?: string
           image_url: string
           is_active?: boolean | null
+          is_pinned?: boolean | null
           title: string
           updated_at?: string | null
         }
@@ -207,6 +230,7 @@ export type Database = {
           id?: string
           image_url?: string
           is_active?: boolean | null
+          is_pinned?: boolean | null
           title?: string
           updated_at?: string | null
         }
@@ -269,44 +293,95 @@ export type Database = {
         }
         Relationships: []
       }
+      podcasts: {
+        Row: {
+          audio_url: string
+          cover_image_url: string | null
+          created_at: string
+          description: string | null
+          display_order: number | null
+          duration: string | null
+          id: string
+          is_active: boolean | null
+          is_pinned: boolean | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          audio_url: string
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          duration?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_pinned?: boolean | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          audio_url?: string
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          duration?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_pinned?: boolean | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       posts: {
         Row: {
           author_id: string
+          category: string | null
           content: string
           created_at: string
           excerpt: string | null
           id: string
           image_url: string | null
+          is_pinned: boolean | null
           scheduled_publish_at: string | null
           status: string | null
           title: string
           updated_at: string
+          video_url: string | null
           views: number | null
         }
         Insert: {
           author_id: string
+          category?: string | null
           content: string
           created_at?: string
           excerpt?: string | null
           id?: string
           image_url?: string | null
+          is_pinned?: boolean | null
           scheduled_publish_at?: string | null
           status?: string | null
           title: string
           updated_at?: string
+          video_url?: string | null
           views?: number | null
         }
         Update: {
           author_id?: string
+          category?: string | null
           content?: string
           created_at?: string
           excerpt?: string | null
           id?: string
           image_url?: string | null
+          is_pinned?: boolean | null
           scheduled_publish_at?: string | null
           status?: string | null
           title?: string
           updated_at?: string
+          video_url?: string | null
           views?: number | null
         }
         Relationships: []
