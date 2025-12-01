@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Pin, Video } from "lucide-react";
 import { Article } from "@/types/article";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { ShareButtons } from "@/components/ShareButtons";
 
 interface NewsCardProps {
   article: Article;
@@ -12,7 +13,7 @@ export const NewsCard = ({ article, onClick }: NewsCardProps) => {
   const { t } = useLanguage();
 
   return (
-    <article className="glass-card glass-hover rounded-2xl overflow-hidden cursor-pointer group h-full flex flex-col relative">
+    <article className="glass-card glass-hover rounded-2xl overflow-hidden group h-full flex flex-col relative">
       {/* Pinned indicator */}
       {article.isPinned && (
         <div className="absolute top-4 left-4 z-10">
@@ -23,7 +24,7 @@ export const NewsCard = ({ article, onClick }: NewsCardProps) => {
         </div>
       )}
 
-      <div className="relative overflow-hidden h-56">
+      <div className="relative overflow-hidden h-56 cursor-pointer" onClick={onClick}>
         <img
           src={article.image || "/placeholder.svg"}
           alt={article.title}
@@ -43,12 +44,24 @@ export const NewsCard = ({ article, onClick }: NewsCardProps) => {
       </div>
 
       <div className="p-6 flex-1 flex flex-col">
-        <div className="flex items-center gap-2 text-muted-foreground text-sm mb-3">
-          <Calendar className="w-4 h-4" />
-          <time>{article.date}</time>
+        <div className="flex items-center justify-between text-muted-foreground text-sm mb-3">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-4 h-4" />
+            <time>{article.date}</time>
+          </div>
+          <ShareButtons
+            url={`/news/${article.id}`}
+            title={article.title}
+            description={article.summary}
+            variant="dropdown"
+            size="sm"
+          />
         </div>
 
-        <h3 className="text-xl font-bold text-foreground mb-3 line-clamp-2 group-hover:text-accent transition-colors">
+        <h3 
+          className="text-xl font-bold text-foreground mb-3 line-clamp-2 group-hover:text-accent transition-colors cursor-pointer"
+          onClick={onClick}
+        >
           {article.title}
         </h3>
 

@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Building2, Heart, GraduationCap, Users, Sprout, Laptop } from "lucide-react";
 import { Footer } from "@/components/Footer";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Vision = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const { t } = useLanguage();
 
   useEffect(() => {
     setIsVisible(true);
@@ -13,7 +15,7 @@ const Vision = () => {
   const areas = [
     {
       icon: Building2,
-      title: "Infrastructure Development",
+      title: t("infrastructureDevelopment"),
       items: [
         "Road construction and blacktopping",
         "Bridge and culvert construction",
@@ -24,7 +26,7 @@ const Vision = () => {
     },
     {
       icon: Heart,
-      title: "Healthcare Services",
+      title: t("healthcareServices"),
       items: [
         "Health post upgrades and modernization",
         "Medical equipment procurement",
@@ -35,7 +37,7 @@ const Vision = () => {
     },
     {
       icon: GraduationCap,
-      title: "Education Enhancement",
+      title: t("educationEnhancement"),
       items: [
         "School building renovation",
         "Digital learning infrastructure",
@@ -46,7 +48,7 @@ const Vision = () => {
     },
     {
       icon: Users,
-      title: "Youth & Women Empowerment",
+      title: t("youthWomenEmpowerment"),
       items: [
         "Skill development training",
         "Employment generation programs",
@@ -57,7 +59,7 @@ const Vision = () => {
     },
     {
       icon: Sprout,
-      title: "Agriculture Development",
+      title: t("agricultureDevelopment"),
       items: [
         "Modern farming techniques",
         "Irrigation system improvement",
@@ -68,7 +70,7 @@ const Vision = () => {
     },
     {
       icon: Laptop,
-      title: "Digital Transformation",
+      title: t("digitalTransformation"),
       items: [
         "E-governance implementation",
         "Smart water supply systems",
@@ -121,11 +123,11 @@ const Vision = () => {
             }`}
           >
             <h1 className="text-5xl lg:text-7xl font-black mb-6">
-              <span className="block text-foreground">VISION &</span>
-              <span className="block text-accent">DEVELOPMENT</span>
+              <span className="block text-foreground">{t("visionAndDevelopment")}</span>
+              <span className="block text-accent">{t("development")}</span>
             </h1>
             <p className="text-xl text-muted-foreground leading-relaxed">
-              Comprehensive development plans and policies for a prosperous Bhokraha Narsingh.
+              {t("visionDescription")}
             </p>
           </div>
         </div>
@@ -135,7 +137,7 @@ const Vision = () => {
       <section className="py-20 bg-background">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl lg:text-5xl font-black text-center mb-16">
-            Key Development Areas
+            {t("keyDevelopmentAreas")}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {areas.map((area, index) => {
@@ -168,7 +170,7 @@ const Vision = () => {
       <section className="py-20 bg-secondary">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl lg:text-5xl font-black text-center mb-16">
-            Ongoing Projects
+            {t("ongoingProjects")}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {projects.map((project, index) => (

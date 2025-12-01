@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Footer } from "@/components/Footer";
-import { Pin } from "lucide-react";
+import { Pin, X } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { ShareButtons } from "@/components/ShareButtons";
+import { Button } from "@/components/ui/button";
 
 interface GalleryImage {
   id: string;
@@ -14,7 +16,7 @@ interface GalleryImage {
 
 const Gallery = () => {
   const [isVisible, setIsVisible] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [loading, setLoading] = useState(true);
   const { t } = useLanguage();
@@ -56,11 +58,11 @@ const Gallery = () => {
             }`}
           >
             <h1 className="text-5xl lg:text-7xl font-black mb-6">
-              <span className="block text-foreground">PROJECT</span>
+              <span className="block text-foreground">{t("projectGallery")}</span>
               <span className="block text-accent">{t("gallery").toUpperCase()}</span>
             </h1>
             <p className="text-xl text-muted-foreground leading-relaxed">
-              A visual journey through our development initiatives and community programs.
+              {t("galleryDescription")}
             </p>
           </div>
         </div>
@@ -74,10 +76,9 @@ const Gallery = () => {
               {images.map((image, index) => (
                 <div
                   key={image.id}
-                  className={`group relative overflow-hidden rounded-2xl cursor-pointer fade-in-up animate-delay-${
+                  className={`group relative overflow-hidden rounded-2xl fade-in-up animate-delay-${
                     (index + 1) * 100
                   }`}
-                  onClick={() => setSelectedImage(image.image_url)}
                 >
                   {/* Pinned indicator */}
                   {image.is_pinned && (
@@ -88,8 +89,22 @@ const Gallery = () => {
                       </span>
                     </div>
                   )}
+
+                  {/* Share button */}
+                  <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <ShareButtons
+                      url={`/gallery?image=${image.id}`}
+                      title={image.title}
+                      description={`${image.category} - ${image.title}`}
+                      variant="dropdown"
+                      size="sm"
+                    />
+                  </div>
                   
-                  <div className="aspect-[4/3] relative">
+                  <div 
+                    className="aspect-[4/3] relative cursor-pointer"
+                    onClick={() => setSelectedImage(image)}
+                  >
                     <img
                       src={image.image_url}
                       alt={image.title}
@@ -109,7 +124,7 @@ const Gallery = () => {
             </div>
           ) : (
             <p className="text-center text-muted-foreground py-20">
-              No gallery images available yet.
+              {t("noGalleryImages")}
             </p>
           )}
         </div>
@@ -121,12 +136,33 @@ const Gallery = () => {
           className="fixed inset-0 z-50 bg-background/95 backdrop-blur-xl flex items-center justify-center p-4 animate-fade-in"
           onClick={() => setSelectedImage(null)}
         >
-          <div className="max-w-6xl w-full">
+          <div className="max-w-6xl w-full relative">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute -top-12 right-0 text-foreground"
+              onClick={() => setSelectedImage(null)}
+            >
+              <X className="h-6 w-6" />
+            </Button>
             <img
-              src={selectedImage}
-              alt="Gallery"
+              src={selectedImage.image_url}
+              alt={selectedImage.title}
               className="w-full h-auto rounded-2xl shadow-2xl"
             />
+            <div className="mt-4 flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-bold text-foreground">{selectedImage.title}</h3>
+                <p className="text-muted-foreground">{selectedImage.category}</p>
+              </div>
+              <ShareButtons
+                url={`/gallery?image=${selectedImage.id}`}
+                title={selectedImage.title}
+                description={`${selectedImage.category} - ${selectedImage.title}`}
+                variant="inline"
+                size="md"
+              />
+            </div>
           </div>
         </div>
       )}

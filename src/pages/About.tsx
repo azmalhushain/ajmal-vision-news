@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Handshake, Users, Lightbulb, Heart, Leaf, Star, LucideIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Footer } from "@/components/Footer";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const iconMap: Record<string, LucideIcon> = {
   Handshake,
@@ -27,6 +28,7 @@ interface Achievement {
 const About = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { t } = useLanguage();
   const [content, setContent] = useState({
     hero_title_line1: "MEET",
     hero_title_line2: "AJMAL AKHTAR AZAD",
@@ -89,7 +91,7 @@ const About = () => {
               <span className="block text-accent">{content.hero_title_line2}</span>
             </h1>
             <p className="text-xl text-muted-foreground leading-relaxed">
-              {content.hero_description}
+              {content.hero_description || t("aboutDescription")}
             </p>
           </div>
         </div>
@@ -100,7 +102,7 @@ const About = () => {
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6 fade-in-up">
-              <h2 className="text-4xl font-black text-foreground">{content.bio_title}</h2>
+              <h2 className="text-4xl font-black text-foreground">{content.bio_title || t("theJourney")}</h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed">
                 {content.bio_content.split("\n").map((paragraph, index) => (
                   <p key={index}>{paragraph}</p>
@@ -126,7 +128,7 @@ const About = () => {
         <section className="py-20 bg-secondary">
           <div className="container mx-auto px-4">
             <h2 className="text-4xl lg:text-5xl font-black text-center mb-16">
-              Mission & Values
+              {t("missionAndValues")}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {values.map((value, index) => {
@@ -154,7 +156,7 @@ const About = () => {
         <section className="py-20 bg-background">
           <div className="container mx-auto px-4">
             <h2 className="text-4xl lg:text-5xl font-black text-center mb-16">
-              Key Achievements
+              {t("keyAchievements")}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {achievements.map((achievement, index) => (

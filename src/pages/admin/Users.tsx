@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { User, Mail, Plus, Trash2, Bell, Loader2 } from "lucide-react";
+import { User, Mail, Plus, Trash2, Calendar, Clock, Shield, CheckCircle, XCircle, Eye, EyeOff } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,8 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Dialog,
   DialogContent,
@@ -29,8 +28,12 @@ interface UserData {
   id: string;
   email: string;
   full_name: string;
+  avatar_url: string | null;
   created_at: string;
+  last_sign_in_at: string | null;
+  email_confirmed_at: string | null;
   role: string;
+  is_active: boolean;
 }
 
 const Users = () => {
@@ -39,6 +42,8 @@ const Users = () => {
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
 
   const [newUser, setNewUser] = useState({
     email: "",
@@ -52,10 +57,41 @@ const Users = () => {
   }, []);
 
   const fetchUsers = async () => {
-    // First get all profiles
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast({ title: "Please log in", variant: "destructive" });
+        setLoading(false);
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke("get-users", {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) {
+        console.error("Error fetching users:", error);
+        // Fallback to profiles if edge function fails
+        await fetchUsersFromProfiles();
+        return;
+      }
+
+      if (data?.users) {
+        setUsers(data.users);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      await fetchUsersFromProfiles();
+    }
+    setLoading(false);
+  };
+
+  const fetchUsersFromProfiles = async () => {
     const { data: profiles } = await supabase.from("profiles").select("*");
 
-    // Then get roles for each user
     const usersWithRoles = await Promise.all(
       (profiles || []).map(async (profile) => {
         const { data: roles } = await supabase
@@ -68,14 +104,17 @@ const Users = () => {
           id: profile.id,
           email: "",
           full_name: profile.full_name || "No name",
+          avatar_url: profile.avatar_url,
           created_at: profile.created_at,
+          last_sign_in_at: null,
+          email_confirmed_at: null,
           role: roles?.role || "user",
+          is_active: true,
         };
       })
     );
 
     setUsers(usersWithRoles);
-    setLoading(false);
   };
 
   const handleCreateUser = async () => {
@@ -86,7 +125,6 @@ const Users = () => {
 
     setCreating(true);
 
-    // Sign up the user
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: newUser.email,
       password: newUser.password,
@@ -105,7 +143,6 @@ const Users = () => {
     }
 
     if (authData.user) {
-      // Update the role if not default 'user'
       if (newUser.role !== "user") {
         const { error: roleError } = await supabase
           .from("user_roles")
@@ -141,7 +178,6 @@ const Users = () => {
   };
 
   const handleDeleteUser = async (userId: string) => {
-    // Note: This only removes the role, actual user deletion requires admin SDK
     const { error } = await supabase
       .from("user_roles")
       .delete()
@@ -155,8 +191,28 @@ const Users = () => {
     }
   };
 
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "Never";
+    return new Date(dateString).toLocaleString();
+  };
+
+  const getRoleBadgeVariant = (role: string) => {
+    switch (role) {
+      case "admin":
+        return "destructive";
+      case "moderator":
+        return "default";
+      default:
+        return "secondary";
+    }
+  };
+
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
   return (
@@ -169,7 +225,7 @@ const Users = () => {
           <div>
             <h1 className="text-3xl font-bold">Users Management</h1>
             <p className="text-muted-foreground mt-2">
-              Manage users and their roles
+              Manage users, view details, and assign roles
             </p>
           </div>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -206,14 +262,25 @@ const Users = () => {
                 </div>
                 <div>
                   <label className="text-sm font-medium">Password</label>
-                  <Input
-                    type="password"
-                    value={newUser.password}
-                    onChange={(e) =>
-                      setNewUser({ ...newUser, password: e.target.value })
-                    }
-                    placeholder="Enter password (min 6 characters)"
-                  />
+                  <div className="relative">
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      value={newUser.password}
+                      onChange={(e) =>
+                        setNewUser({ ...newUser, password: e.target.value })
+                      }
+                      placeholder="Enter password (min 6 characters)"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                  </div>
                 </div>
                 <div>
                   <label className="text-sm font-medium">Role</label>
@@ -245,6 +312,89 @@ const Users = () => {
         </div>
       </motion.div>
 
+      {/* User Details Dialog */}
+      <Dialog open={!!selectedUser} onOpenChange={() => setSelectedUser(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>User Details</DialogTitle>
+          </DialogHeader>
+          {selectedUser && (
+            <div className="space-y-4 mt-4">
+              <div className="flex items-center gap-4">
+                <Avatar className="h-16 w-16">
+                  <AvatarImage src={selectedUser.avatar_url || undefined} />
+                  <AvatarFallback className="text-lg">
+                    {selectedUser.full_name.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <h3 className="text-lg font-semibold">{selectedUser.full_name}</h3>
+                  <p className="text-sm text-muted-foreground">{selectedUser.email || "Email hidden"}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="glass-card p-4 rounded-lg">
+                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                    <Shield className="h-4 w-4" />
+                    <span className="text-xs">Role</span>
+                  </div>
+                  <Badge variant={getRoleBadgeVariant(selectedUser.role)}>
+                    {selectedUser.role.toUpperCase()}
+                  </Badge>
+                </div>
+
+                <div className="glass-card p-4 rounded-lg">
+                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                    {selectedUser.is_active ? (
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <XCircle className="h-4 w-4 text-red-500" />
+                    )}
+                    <span className="text-xs">Status</span>
+                  </div>
+                  <Badge variant={selectedUser.is_active ? "default" : "destructive"}>
+                    {selectedUser.is_active ? "Active" : "Inactive"}
+                  </Badge>
+                </div>
+
+                <div className="glass-card p-4 rounded-lg">
+                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                    <Calendar className="h-4 w-4" />
+                    <span className="text-xs">Created</span>
+                  </div>
+                  <p className="text-sm font-medium">{formatDate(selectedUser.created_at)}</p>
+                </div>
+
+                <div className="glass-card p-4 rounded-lg">
+                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                    <Clock className="h-4 w-4" />
+                    <span className="text-xs">Last Sign In</span>
+                  </div>
+                  <p className="text-sm font-medium">{formatDate(selectedUser.last_sign_in_at)}</p>
+                </div>
+
+                <div className="glass-card p-4 rounded-lg col-span-2">
+                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                    <Mail className="h-4 w-4" />
+                    <span className="text-xs">Email Verified</span>
+                  </div>
+                  <p className="text-sm font-medium">
+                    {selectedUser.email_confirmed_at ? formatDate(selectedUser.email_confirmed_at) : "Not verified"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t">
+                <p className="text-xs text-muted-foreground mb-2">
+                  Note: Passwords are encrypted and cannot be viewed for security reasons.
+                </p>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -257,8 +407,11 @@ const Users = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
+                  <TableHead>User</TableHead>
+                  <TableHead>Email</TableHead>
                   <TableHead>Role</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Last Sign In</TableHead>
                   <TableHead>Joined</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
@@ -268,16 +421,21 @@ const Users = () => {
                   <TableRow key={user.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                          <User className="h-5 w-5 text-primary" />
-                        </div>
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={user.avatar_url || undefined} />
+                          <AvatarFallback>
+                            {user.full_name.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
                         <div>
                           <div className="font-medium">{user.full_name}</div>
-                          <div className="text-sm text-muted-foreground flex items-center gap-1">
-                            <Mail className="h-3 w-3" />
-                            {user.email || "N/A"}
-                          </div>
                         </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <Mail className="h-3 w-3" />
+                        {user.email || "N/A"}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -292,16 +450,37 @@ const Users = () => {
                       </select>
                     </TableCell>
                     <TableCell>
+                      <Badge variant={user.is_active ? "default" : "destructive"}>
+                        {user.is_active ? "Active" : "Inactive"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {user.last_sign_in_at
+                        ? new Date(user.last_sign_in_at).toLocaleDateString()
+                        : "Never"}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
                       {new Date(user.created_at).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDeleteUser(user.id)}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setSelectedUser(user)}
+                          title="View Details"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDeleteUser(user.id)}
+                          title="Remove User"
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
