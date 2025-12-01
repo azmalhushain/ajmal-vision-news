@@ -28,6 +28,8 @@ import GalleryEditor from "./pages/admin/GalleryEditor";
 import ContactEditor from "./pages/admin/ContactEditor";
 import FooterEditor from "./pages/admin/FooterEditor";
 import PodcastEditor from "./pages/admin/PodcastEditor";
+import CommentsManager from "./pages/admin/CommentsManager";
+import PostStatsEditor from "./pages/admin/PostStatsEditor";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +58,8 @@ const App = () => (
               <Route index element={<Overview />} />
               <Route path="posts" element={<Posts />} />
               <Route path="podcasts" element={<PodcastEditor />} />
+              <Route path="comments" element={<CommentsManager />} />
+              <Route path="post-stats" element={<PostStatsEditor />} />
               <Route path="hero" element={<HeroEditor />} />
               <Route path="vision" element={<VisionEditor />} />
               <Route path="development-areas" element={<DevelopmentAreasEditor />} />

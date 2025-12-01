@@ -44,6 +44,8 @@ export const NewsSection = () => {
           category: post.category || "News",
           videoUrl: post.video_url,
           isPinned: post.is_pinned || false,
+          views: post.views || 0,
+          likesCount: post.likes_count || 0,
         }))
       );
     }

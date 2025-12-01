@@ -143,6 +143,21 @@ const translations: Translations = {
   audio: { en: "Audio", ne: "अडियो" },
   video: { en: "Video", ne: "भिडियो" },
   noPodcasts: { en: "No podcasts available yet.", ne: "पोडकास्टहरू अहिलेसम्म उपलब्ध छैनन्।" },
+  
+  // Engagement
+  likes: { en: "Likes", ne: "मनपर्छ" },
+  comments: { en: "Comments", ne: "टिप्पणीहरू" },
+  views: { en: "Views", ne: "हेराइहरू" },
+  leaveComment: { en: "Leave a Comment", ne: "टिप्पणी छोड्नुहोस्" },
+  yourName: { en: "Your Name", ne: "तपाईंको नाम" },
+  writeComment: { en: "Write your comment...", ne: "आफ्नो टिप्पणी लेख्नुहोस्..." },
+  submitComment: { en: "Submit Comment", ne: "टिप्पणी पेश गर्नुहोस्" },
+  submitting: { en: "Submitting...", ne: "पेश गर्दै..." },
+  cancel: { en: "Cancel", ne: "रद्द गर्नुहोस्" },
+  fillAllFields: { en: "Please fill in all fields", ne: "कृपया सबै फिल्डहरू भर्नुहोस्" },
+  commentSubmitted: { en: "Comment submitted for review", ne: "टिप्पणी समीक्षाको लागि पेश गरियो" },
+  commentError: { en: "Error submitting comment", ne: "टिप्पणी पेश गर्दा त्रुटि" },
+  commentModeration: { en: "Your comment will appear after moderation.", ne: "तपाईंको टिप्पणी मोडरेशन पछि देखिनेछ।" },
 };
 
 interface LanguageContextType {

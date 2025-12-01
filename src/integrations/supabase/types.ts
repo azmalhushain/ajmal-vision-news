@@ -341,6 +341,82 @@ export type Database = {
         }
         Relationships: []
       }
+      post_comments: {
+        Row: {
+          author_name: string
+          content: string
+          created_at: string
+          id: string
+          is_approved: boolean | null
+          is_visible: boolean | null
+          post_id: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          author_name: string
+          content: string
+          created_at?: string
+          id?: string
+          is_approved?: boolean | null
+          is_visible?: boolean | null
+          post_id: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          author_name?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_approved?: boolean | null
+          is_visible?: boolean | null
+          post_id?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_likes: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       posts: {
         Row: {
           author_id: string
@@ -351,6 +427,7 @@ export type Database = {
           id: string
           image_url: string | null
           is_pinned: boolean | null
+          likes_count: number | null
           scheduled_publish_at: string | null
           status: string | null
           title: string
@@ -367,6 +444,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_pinned?: boolean | null
+          likes_count?: number | null
           scheduled_publish_at?: string | null
           status?: string | null
           title: string
@@ -383,6 +461,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_pinned?: boolean | null
+          likes_count?: number | null
           scheduled_publish_at?: string | null
           status?: string | null
           title?: string
