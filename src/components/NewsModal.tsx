@@ -7,6 +7,8 @@ import {
 } from "@/components/ui/dialog";
 import { Calendar, Tag, Pin, Video } from "lucide-react";
 import { Article } from "@/types/article";
+import { ShareButtons } from "@/components/ShareButtons";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface NewsModalProps {
   article: Article | null;
@@ -23,6 +25,8 @@ const getYouTubeEmbedUrl = (url: string) => {
 };
 
 export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
+  const { t } = useLanguage();
+  
   if (!article) return null;
 
   const youtubeUrl = article.videoUrl ? getYouTubeEmbedUrl(article.videoUrl) : null;
@@ -71,13 +75,13 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
             {article.isPinned && (
               <div className="flex items-center gap-2 text-accent">
                 <Pin className="w-4 h-4 fill-accent" />
-                <span className="font-semibold">Pinned</span>
+                <span className="font-semibold">{t("pinned")}</span>
               </div>
             )}
             {article.videoUrl && (
               <div className="flex items-center gap-2 text-blue-500">
                 <Video className="w-4 h-4" />
-                <span className="font-semibold">Video</span>
+                <span className="font-semibold">{t("video")}</span>
               </div>
             )}
           </div>
@@ -95,6 +99,18 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
           className="mt-6 prose prose-lg max-w-none prose-headings:text-foreground prose-p:text-foreground/90 prose-strong:text-foreground prose-li:text-foreground/90"
           dangerouslySetInnerHTML={{ __html: article.fullContent }}
         />
+
+        {/* Share Section */}
+        <div className="mt-8 pt-6 border-t border-border">
+          <ShareButtons
+            url={`/news/${article.id}`}
+            title={article.title}
+            description={article.summary}
+            image={article.image}
+            variant="inline"
+            size="md"
+          />
+        </div>
       </DialogContent>
     </Dialog>
   );

@@ -6,11 +6,13 @@ import { MapPin, Phone, Mail, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Footer } from "@/components/Footer";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Contact = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const [content, setContent] = useState({
     hero_title_line1: "GET IN",
@@ -52,30 +54,30 @@ const Contact = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     toast({
-      title: "Message Sent!",
-      description: "Thank you for contacting us. We'll get back to you soon.",
+      title: t("messageSent"),
+      description: t("messageSentDesc"),
     });
   };
 
   const contactInfo = [
     {
       icon: MapPin,
-      title: "Office Address",
+      title: t("officeAddress"),
       details: content.office_address,
     },
     {
       icon: Phone,
-      title: "Phone",
+      title: t("phone"),
       details: content.phone_numbers,
     },
     {
       icon: Mail,
-      title: "Email",
+      title: t("email"),
       details: content.email_addresses,
     },
     {
       icon: Clock,
-      title: "Office Hours",
+      title: t("officeHours"),
       details: content.office_hours,
     },
   ];
@@ -99,11 +101,11 @@ const Contact = () => {
             }`}
           >
             <h1 className="text-5xl lg:text-7xl font-black mb-6">
-              <span className="block text-foreground">{content.hero_title_line1}</span>
-              <span className="block text-accent">{content.hero_title_line2}</span>
+              <span className="block text-foreground">{t("getIn")}</span>
+              <span className="block text-accent">{t("touch")}</span>
             </h1>
             <p className="text-xl text-muted-foreground leading-relaxed">
-              {content.hero_description}
+              {content.hero_description || t("contactDescription")}
             </p>
           </div>
         </div>
@@ -137,65 +139,65 @@ const Contact = () => {
           {/* Contact Form */}
           <div className="max-w-2xl mx-auto">
             <div className="glass-card p-8 lg:p-12 rounded-2xl fade-in-up animate-delay-500">
-              <h2 className="text-3xl font-black mb-8 text-center">Send Us a Message</h2>
+              <h2 className="text-3xl font-black mb-8 text-center">{t("sendUsMessage")}</h2>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-semibold mb-2 text-foreground">
-                      First Name
+                      {t("firstName")}
                     </label>
                     <Input
                       type="text"
                       required
                       className="glass-card border-border focus:border-accent"
-                      placeholder="Enter your first name"
+                      placeholder={t("enterFirstName")}
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold mb-2 text-foreground">
-                      Last Name
+                      {t("lastName")}
                     </label>
                     <Input
                       type="text"
                       required
                       className="glass-card border-border focus:border-accent"
-                      placeholder="Enter your last name"
+                      placeholder={t("enterLastName")}
                     />
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-semibold mb-2 text-foreground">
-                    Email
+                    {t("email")}
                   </label>
                   <Input
                     type="email"
                     required
                     className="glass-card border-border focus:border-accent"
-                    placeholder="your.email@example.com"
+                    placeholder={t("enterEmail")}
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-semibold mb-2 text-foreground">
-                    Phone
+                    {t("phone")}
                   </label>
                   <Input
                     type="tel"
                     className="glass-card border-border focus:border-accent"
-                    placeholder="+977-XXX-XXXXXX"
+                    placeholder={t("enterPhone")}
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-semibold mb-2 text-foreground">
-                    Message
+                    {t("message")}
                   </label>
                   <Textarea
                     required
                     rows={6}
                     className="glass-card border-border focus:border-accent resize-none"
-                    placeholder="Write your message here..."
+                    placeholder={t("writeMessage")}
                   />
                 </div>
 
@@ -204,7 +206,7 @@ const Contact = () => {
                   size="lg"
                   className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-bold transition-all duration-300 transform hover:scale-105"
                 >
-                  Send Message
+                  {t("sendMessage")}
                 </Button>
               </form>
             </div>

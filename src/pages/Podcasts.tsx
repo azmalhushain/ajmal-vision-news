@@ -4,6 +4,7 @@ import { Footer } from "@/components/Footer";
 import { Play, Pause, Clock, Pin, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { ShareButtons } from "@/components/ShareButtons";
 
 interface Podcast {
   id: string;
@@ -88,7 +89,7 @@ const Podcasts = () => {
               <span className="block text-accent">{t("ourPodcasts").split(" ").slice(1).join(" ") || "PODCASTS"}</span>
             </h1>
             <p className="text-xl text-muted-foreground leading-relaxed">
-              Listen to our latest episodes and stay connected with community discussions.
+              {t("podcastDescription")}
             </p>
           </div>
         </div>
@@ -100,7 +101,7 @@ const Podcasts = () => {
           <div className="max-w-4xl mx-auto space-y-6">
             {podcasts.length === 0 ? (
               <div className="text-center text-muted-foreground py-20">
-                No podcasts available yet.
+                {t("noPodcasts")}
               </div>
             ) : (
               podcasts.map((podcast, index) => (
@@ -112,11 +113,19 @@ const Podcasts = () => {
                   style={{ transitionDelay: `${index * 100}ms` }}
                 >
                   <div className="glass-card glass-hover p-6 rounded-xl border border-border relative">
-                    {podcast.is_pinned && (
-                      <div className="absolute top-4 right-4">
+                    {/* Pin & Share buttons */}
+                    <div className="absolute top-4 right-4 flex items-center gap-2">
+                      {podcast.is_pinned && (
                         <Pin className="h-5 w-5 text-accent fill-accent" />
-                      </div>
-                    )}
+                      )}
+                      <ShareButtons
+                        url={`/podcasts?id=${podcast.id}`}
+                        title={podcast.title}
+                        description={podcast.description || ""}
+                        variant="dropdown"
+                        size="sm"
+                      />
+                    </div>
                     
                     {podcast.media_type === "video" ? (
                       <div className="space-y-4">
@@ -135,7 +144,7 @@ const Podcasts = () => {
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-xl font-bold text-foreground mb-2">
+                            <h3 className="text-xl font-bold text-foreground mb-2 pr-16">
                               {podcast.title}
                             </h3>
                             <p className="text-muted-foreground line-clamp-2 mb-4">
@@ -143,7 +152,7 @@ const Podcasts = () => {
                             </p>
                             <div className="flex items-center gap-4">
                               <span className="px-2 py-1 rounded text-xs bg-blue-500/20 text-blue-500">
-                                Video
+                                {t("video")}
                               </span>
                               {podcast.duration && (
                                 <span className="text-sm text-muted-foreground flex items-center gap-1">
@@ -194,13 +203,13 @@ const Podcasts = () => {
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-xl font-bold text-foreground mb-2">
+                          <h3 className="text-xl font-bold text-foreground mb-2 pr-16">
                             {podcast.title}
                           </h3>
                           <p className="text-muted-foreground line-clamp-2 mb-4">
                             {podcast.description}
                           </p>
-                          <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-4 flex-wrap">
                             <Button
                               variant="outline"
                               size="sm"
@@ -217,6 +226,9 @@ const Podcasts = () => {
                                 </>
                               )}
                             </Button>
+                            <span className="px-2 py-1 rounded text-xs bg-accent/20 text-accent">
+                              {t("audio")}
+                            </span>
                             {podcast.duration && (
                               <span className="text-sm text-muted-foreground flex items-center gap-1">
                                 <Clock className="h-4 w-4" />
