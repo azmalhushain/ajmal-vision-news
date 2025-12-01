@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Calendar, Pin, Video } from "lucide-react";
+import { Calendar, Pin, Video, Heart, MessageCircle, Eye } from "lucide-react";
 import { Article } from "@/types/article";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ShareButtons } from "@/components/ShareButtons";
@@ -68,6 +68,18 @@ export const NewsCard = ({ article, onClick }: NewsCardProps) => {
         <p className="text-muted-foreground mb-4 line-clamp-3 flex-1">
           {article.summary}
         </p>
+
+        {/* Engagement Stats */}
+        <div className="flex items-center gap-4 text-muted-foreground text-sm mb-4 border-t border-border pt-4">
+          <div className="flex items-center gap-1.5">
+            <Heart className="w-4 h-4" />
+            <span>{article.likesCount || 0}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Eye className="w-4 h-4" />
+            <span>{article.views || 0}</span>
+          </div>
+        </div>
 
         <Button
           onClick={onClick}

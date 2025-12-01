@@ -8,4 +8,6 @@ export interface Article {
   category: string;
   videoUrl?: string | null;
   isPinned?: boolean;
+  views?: number;
+  likesCount?: number;
 }

@@ -7,8 +7,8 @@ import {
 } from "@/components/ui/dialog";
 import { Calendar, Tag, Pin, Video } from "lucide-react";
 import { Article } from "@/types/article";
-import { ShareButtons } from "@/components/ShareButtons";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { PostEngagement } from "@/components/PostEngagement";
 
 interface NewsModalProps {
   article: Article | null;
@@ -100,15 +100,17 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
           dangerouslySetInnerHTML={{ __html: article.fullContent }}
         />
 
-        {/* Share Section */}
-        <div className="mt-8 pt-6 border-t border-border">
-          <ShareButtons
-            url={`/news/${article.id}`}
+        {/* Engagement Section */}
+        <div className="mt-8">
+          <PostEngagement
+            postId={String(article.id)}
+            initialViews={article.views || 0}
+            initialLikes={article.likesCount || 0}
             title={article.title}
-            description={article.summary}
+            summary={article.summary}
             image={article.image}
-            variant="inline"
-            size="md"
+            variant="full"
+            showComments={true}
           />
         </div>
       </DialogContent>
