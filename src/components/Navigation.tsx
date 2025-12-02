@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Globe } from "lucide-react";
+import { Menu, X, Globe, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
@@ -10,10 +10,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { GlobalSearch } from "@/components/GlobalSearch";
 
 export const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const location = useLocation();
   const { language, setLanguage, t } = useLanguage();
 
@@ -56,8 +58,8 @@ export const Navigation = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-6">
-            <ul className="flex items-center gap-8">
+          <div className="hidden lg:flex items-center gap-4">
+            <ul className="flex items-center gap-6">
               {navLinks.map((link) => (
                 <li key={link.path}>
                   <Link
@@ -81,6 +83,16 @@ export const Navigation = () => {
               ))}
             </ul>
 
+            {/* Search Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setSearchOpen(true)}
+              className="hover:bg-accent/10"
+            >
+              <Search className="h-5 w-5" />
+            </Button>
+
             {/* Language Selector */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -101,7 +113,17 @@ export const Navigation = () => {
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="lg:hidden flex items-center gap-2">
+          <div className="lg:hidden flex items-center gap-1">
+            {/* Mobile Search */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setSearchOpen(true)}
+              className="h-9 w-9"
+            >
+              <Search className="h-5 w-5" />
+            </Button>
+
             {/* Mobile Language Selector */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -155,6 +177,9 @@ export const Navigation = () => {
           </ul>
         </div>
       </div>
+
+      {/* Global Search Modal */}
+      <GlobalSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </nav>
   );
 };
