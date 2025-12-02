@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { NewsSection } from "@/components/NewsSection";
 import { Footer } from "@/components/Footer";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { SEOHead } from "@/components/SEOHead";
 
 const News = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -14,6 +15,12 @@ const News = () => {
 
   return (
     <div className="min-h-screen pt-24">
+      <SEOHead 
+        title="News & Updates - Ajmal Akhtar Azad"
+        description="Stay informed about our development initiatives and community programs."
+        url="/news"
+      />
+      
       {/* Hero Section */}
       <section className="py-20 bg-gradient-to-b from-background to-secondary">
         <div className="container mx-auto px-4">
