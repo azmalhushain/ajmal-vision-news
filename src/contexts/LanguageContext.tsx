@@ -158,6 +158,14 @@ const translations: Translations = {
   commentSubmitted: { en: "Comment submitted for review", ne: "टिप्पणी समीक्षाको लागि पेश गरियो" },
   commentError: { en: "Error submitting comment", ne: "टिप्पणी पेश गर्दा त्रुटि" },
   commentModeration: { en: "Your comment will appear after moderation.", ne: "तपाईंको टिप्पणी मोडरेशन पछि देखिनेछ।" },
+  
+  // Search
+  searchPlaceholder: { en: "Search posts, podcasts, gallery...", ne: "पोस्ट, पोडकास्ट, ग्यालरी खोज्नुहोस्..." },
+  noResults: { en: "No results found", ne: "कुनै नतिजा फेला परेन" },
+  searchHint: { en: "Type to search...", ne: "खोज्न टाइप गर्नुहोस्..." },
+  
+  // Read More
+  showLess: { en: "Show Less", ne: "कम देखाउनुहोस्" },
 };
 
 interface LanguageContextType {

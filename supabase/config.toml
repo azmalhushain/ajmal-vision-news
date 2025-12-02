@@ -1,1 +1,10 @@
 project_id = "kpswxkuzfnafsqeqaunt"
+
+[functions.get-users]
+verify_jwt = true
+
+[functions.notify-new-user]
+verify_jwt = false
+
+[functions.notify-comment]
+verify_jwt = false

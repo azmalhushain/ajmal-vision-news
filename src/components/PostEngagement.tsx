@@ -175,6 +175,20 @@ export const PostEngagement = ({
       toast({ title: t("commentSubmitted") });
       setNewComment("");
       setShowCommentForm(false);
+      
+      // Send email notification to admin
+      try {
+        await supabase.functions.invoke("notify-comment", {
+          body: {
+            post_id: postId,
+            post_title: title,
+            author_name: authorName.trim(),
+            content: newComment.trim(),
+          },
+        });
+      } catch (notifyError) {
+        console.error("Failed to send notification:", notifyError);
+      }
     }
     setIsSubmitting(false);
   };
