@@ -7,9 +7,11 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Footer } from "@/components/Footer";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { PageTransition } from "@/components/PageTransition";
+import { PageLoadingSkeleton } from "@/components/LoadingSkeleton";
+import { motion } from "framer-motion";
 
 const Contact = () => {
-  const [isVisible, setIsVisible] = useState(false);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const { t } = useLanguage();
@@ -25,7 +27,6 @@ const Contact = () => {
   });
 
   useEffect(() => {
-    setIsVisible(true);
     window.scrollTo(0, 0);
     fetchContent();
   }, []);
@@ -83,33 +84,31 @@ const Contact = () => {
   ];
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <PageLoadingSkeleton />;
   }
 
   return (
-    <div className="min-h-screen pt-24">
-      {/* Hero Section */}
-      <section className="py-20 bg-gradient-to-b from-background to-secondary">
-        <div className="container mx-auto px-4">
-          <div
-            className={`text-center max-w-3xl mx-auto transition-all duration-1000 ${
-              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-            }`}
-          >
-            <h1 className="text-5xl lg:text-7xl font-black mb-6">
-              <span className="block text-foreground">{t("getIn")}</span>
-              <span className="block text-accent">{t("touch")}</span>
-            </h1>
-            <p className="text-xl text-muted-foreground leading-relaxed">
-              {content.hero_description || t("contactDescription")}
-            </p>
+    <PageTransition>
+      <div className="min-h-screen pt-24">
+        {/* Hero Section */}
+        <section className="py-20 bg-gradient-to-b from-background to-secondary">
+          <div className="container mx-auto px-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-center max-w-3xl mx-auto"
+            >
+              <h1 className="text-5xl lg:text-7xl font-black mb-6">
+                <span className="block text-foreground">{t("getIn")}</span>
+                <span className="block text-accent">{t("touch")}</span>
+              </h1>
+              <p className="text-xl text-muted-foreground leading-relaxed">
+                {content.hero_description || t("contactDescription")}
+              </p>
+            </motion.div>
           </div>
-        </div>
-      </section>
+        </section>
 
       {/* Contact Info Cards */}
       <section className="py-20 bg-background">
@@ -212,9 +211,10 @@ const Contact = () => {
             </div>
           </div>
         </div>
-      </section>
-      <Footer />
-    </div>
+        </section>
+        <Footer />
+      </div>
+    </PageTransition>
   );
 };
 
