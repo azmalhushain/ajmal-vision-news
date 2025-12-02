@@ -4,12 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import AdminSidebar from "./AdminSidebar";
 import AdminNavbar from "./AdminNavbar";
+import MobileSidebar from "./MobileSidebar";
 import { useToast } from "@/hooks/use-toast";
 
 const AdminLayout = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -80,9 +82,17 @@ const AdminLayout = () => {
   return (
     <div className="min-h-screen bg-background">
       <AdminSidebar />
+      <MobileSidebar 
+        isOpen={isMobileSidebarOpen} 
+        onClose={() => setIsMobileSidebarOpen(false)} 
+      />
       <div className="lg:pl-64">
-        <AdminNavbar user={user} onLogout={handleLogout} />
-        <main className="p-6">
+        <AdminNavbar 
+          user={user} 
+          onLogout={handleLogout} 
+          onMenuClick={() => setIsMobileSidebarOpen(true)}
+        />
+        <main className="p-3 sm:p-4 md:p-6">
           <Outlet />
         </main>
       </div>

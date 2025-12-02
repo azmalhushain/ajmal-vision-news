@@ -5,6 +5,7 @@ import { Play, Pause, Clock, Pin, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ShareButtons } from "@/components/ShareButtons";
+import { SEOHead } from "@/components/SEOHead";
 
 interface Podcast {
   id: string;
@@ -24,6 +25,7 @@ const Podcasts = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [audioElements, setAudioElements] = useState<{ [key: string]: HTMLAudioElement }>({});
+  const [expandedVideo, setExpandedVideo] = useState<string | null>(null);
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -74,179 +76,174 @@ const Podcasts = () => {
     return null;
   };
 
+  const getYouTubeThumbnail = (url: string) => {
+    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s]+)/);
+    if (match) {
+      return `https://img.youtube.com/vi/${match[1]}/hqdefault.jpg`;
+    }
+    return null;
+  };
+
   return (
-    <div className="min-h-screen pt-24">
+    <div className="min-h-screen pt-20 sm:pt-24">
+      <SEOHead 
+        title="Podcasts - Ajmal Akhtar Azad"
+        description="Listen to podcasts and watch videos from Mayor Ajmal Akhtar Azad"
+        url="/podcasts"
+      />
+      
       {/* Hero Section */}
-      <section className="py-20 bg-gradient-to-b from-background to-secondary">
+      <section className="py-12 sm:py-16 md:py-20 bg-gradient-to-b from-background to-secondary">
         <div className="container mx-auto px-4">
           <div
             className={`text-center max-w-3xl mx-auto transition-all duration-1000 ${
               isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
             }`}
           >
-            <h1 className="text-5xl lg:text-7xl font-black mb-6">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-4 sm:mb-6">
               <span className="block text-foreground">{t("ourPodcasts").split(" ")[0]}</span>
               <span className="block text-accent">{t("ourPodcasts").split(" ").slice(1).join(" ") || "PODCASTS"}</span>
             </h1>
-            <p className="text-xl text-muted-foreground leading-relaxed">
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed px-4">
               {t("podcastDescription")}
             </p>
           </div>
         </div>
       </section>
 
-      {/* Podcasts List */}
-      <section className="py-20 bg-background">
+      {/* Podcasts Grid */}
+      <section className="py-12 sm:py-16 md:py-20 bg-background">
         <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto space-y-4 sm:space-y-6">
-            {podcasts.length === 0 ? (
-              <div className="text-center text-muted-foreground py-20">
-                {t("noPodcasts")}
-              </div>
-            ) : (
-              podcasts.map((podcast, index) => (
+          {podcasts.length === 0 ? (
+            <div className="text-center text-muted-foreground py-20">
+              {t("noPodcasts")}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {podcasts.map((podcast, index) => (
                 <div
                   key={podcast.id}
                   className={`transition-all duration-700 ${
                     isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
                   }`}
-                  style={{ transitionDelay: `${index * 100}ms` }}
+                  style={{ transitionDelay: `${index * 50}ms` }}
                 >
-                  <div className="glass-card glass-hover p-4 sm:p-6 rounded-xl border border-border relative group">
-                    {/* Pin & Share buttons */}
-                    <div className="absolute top-3 right-3 sm:top-4 sm:right-4 flex items-center gap-2 z-10">
-                      {podcast.is_pinned && (
-                        <Pin className="h-4 w-4 sm:h-5 sm:w-5 text-accent fill-accent" />
-                      )}
-                      <ShareButtons
-                        url={`/podcasts?id=${podcast.id}`}
-                        title={podcast.title}
-                        description={podcast.description || ""}
-                        variant="dropdown"
-                        size="sm"
-                      />
-                    </div>
-                    
-                    {podcast.media_type === "video" ? (
-                      <div className="space-y-4">
-                        <div className="flex flex-col sm:flex-row gap-4 items-start">
-                          <div className="flex-shrink-0 w-full sm:w-auto">
-                            {podcast.cover_image_url ? (
-                              <img
-                                src={podcast.cover_image_url}
-                                alt={podcast.title}
-                                className="w-full sm:w-20 md:w-24 h-32 sm:h-20 md:h-24 object-cover rounded-lg"
+                  <div className="glass-card glass-hover rounded-xl border border-border overflow-hidden h-full flex flex-col">
+                    {/* Thumbnail */}
+                    <div className="relative aspect-video bg-muted">
+                      {podcast.media_type === "video" && podcast.video_url ? (
+                        expandedVideo === podcast.id ? (
+                          <div className="w-full h-full">
+                            {getYouTubeEmbedUrl(podcast.video_url) ? (
+                              <iframe
+                                src={getYouTubeEmbedUrl(podcast.video_url)!}
+                                className="w-full h-full"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
                               />
                             ) : (
-                              <div className="w-full sm:w-20 md:w-24 h-32 sm:h-20 md:h-24 bg-blue-500/10 rounded-lg flex items-center justify-center">
-                                <Video className="h-8 w-8 sm:h-10 sm:w-10 text-blue-500" />
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-lg sm:text-xl font-bold text-foreground mb-2 pr-12 sm:pr-16 line-clamp-2">
-                              {podcast.title}
-                            </h3>
-                            <p className="text-sm sm:text-base text-muted-foreground line-clamp-2 mb-3">
-                              {podcast.description}
-                            </p>
-                            <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
-                              <span className="px-2 py-1 rounded text-xs bg-blue-500/20 text-blue-500">
-                                {t("video")}
-                              </span>
-                              {podcast.duration && (
-                                <span className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1">
-                                  <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
-                                  {podcast.duration}
-                                </span>
-                              )}
-                              <span className="text-xs sm:text-sm text-muted-foreground">
-                                {new Date(podcast.created_at).toLocaleDateString()}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* Video Player */}
-                        {podcast.video_url && (
-                          <div className="mt-4">
-                            {getYouTubeEmbedUrl(podcast.video_url) ? (
-                              <div className="aspect-video rounded-lg overflow-hidden shadow-lg">
-                                <iframe
-                                  src={getYouTubeEmbedUrl(podcast.video_url)!}
-                                  className="w-full h-full"
-                                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                  allowFullScreen
-                                />
-                              </div>
-                            ) : (
-                              <video controls className="w-full rounded-lg shadow-lg">
+                              <video controls className="w-full h-full object-cover">
                                 <source src={podcast.video_url} />
                               </video>
                             )}
                           </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start">
-                        <div className="flex-shrink-0 w-full sm:w-auto">
+                        ) : (
+                          <button
+                            onClick={() => setExpandedVideo(podcast.id)}
+                            className="w-full h-full relative group/thumb"
+                          >
+                            <img
+                              src={podcast.cover_image_url || getYouTubeThumbnail(podcast.video_url) || "/placeholder.svg"}
+                              alt={podcast.title}
+                              className="w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover/thumb:bg-black/50 transition-colors">
+                              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-primary/90 flex items-center justify-center group-hover/thumb:scale-110 transition-transform">
+                                <Play className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground ml-1" />
+                              </div>
+                            </div>
+                          </button>
+                        )
+                      ) : (
+                        <div className="w-full h-full relative">
                           {podcast.cover_image_url ? (
                             <img
                               src={podcast.cover_image_url}
                               alt={podcast.title}
-                              className="w-full sm:w-20 md:w-24 h-32 sm:h-20 md:h-24 object-cover rounded-lg"
+                              className="w-full h-full object-cover"
                             />
                           ) : (
-                            <div className="w-full sm:w-20 md:w-24 h-32 sm:h-20 md:h-24 bg-primary/10 rounded-lg flex items-center justify-center">
-                              <Play className="h-8 w-8 sm:h-10 sm:w-10 text-primary" />
+                            <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                              <Play className="h-10 w-10 text-primary" />
                             </div>
                           )}
-                        </div>
-                        <div className="flex-1 min-w-0 w-full">
-                          <h3 className="text-lg sm:text-xl font-bold text-foreground mb-2 pr-12 sm:pr-16 line-clamp-2">
-                            {podcast.title}
-                          </h3>
-                          <p className="text-sm sm:text-base text-muted-foreground line-clamp-2 mb-3">
-                            {podcast.description}
-                          </p>
-                          <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => togglePlay(podcast)}
-                              className="gap-2 text-xs sm:text-sm"
-                            >
+                          <button
+                            onClick={() => togglePlay(podcast)}
+                            className="absolute inset-0 bg-black/30 flex items-center justify-center hover:bg-black/40 transition-colors"
+                          >
+                            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-primary/90 flex items-center justify-center hover:scale-110 transition-transform">
                               {playingId === podcast.id ? (
-                                <>
-                                  <Pause className="h-3 w-3 sm:h-4 sm:w-4" /> {t("pause")}
-                                </>
+                                <Pause className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground" />
                               ) : (
-                                <>
-                                  <Play className="h-3 w-3 sm:h-4 sm:w-4" /> {t("play")}
-                                </>
+                                <Play className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground ml-1" />
                               )}
-                            </Button>
-                            <span className="px-2 py-1 rounded text-xs bg-accent/20 text-accent">
-                              {t("audio")}
-                            </span>
-                            {podcast.duration && (
-                              <span className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1">
-                                <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
-                                {podcast.duration}
-                              </span>
-                            )}
-                            <span className="text-xs sm:text-sm text-muted-foreground">
-                              {new Date(podcast.created_at).toLocaleDateString()}
-                            </span>
-                          </div>
+                            </div>
+                          </button>
                         </div>
+                      )}
+                      
+                      {/* Badges */}
+                      <div className="absolute top-2 left-2 flex gap-1.5">
+                        {podcast.is_pinned && (
+                          <span className="px-2 py-0.5 rounded-full text-xs bg-accent/90 text-accent-foreground flex items-center gap-1">
+                            <Pin className="h-3 w-3 fill-current" />
+                          </span>
+                        )}
+                        <span className={`px-2 py-0.5 rounded-full text-xs ${
+                          podcast.media_type === "video" 
+                            ? "bg-blue-500/90 text-white" 
+                            : "bg-primary/90 text-primary-foreground"
+                        }`}>
+                          {podcast.media_type === "video" ? t("video") : t("audio")}
+                        </span>
                       </div>
-                    )}
+                      
+                      {/* Duration */}
+                      {podcast.duration && (
+                        <div className="absolute bottom-2 right-2 px-2 py-0.5 rounded text-xs bg-black/70 text-white flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {podcast.duration}
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Content */}
+                    <div className="p-3 sm:p-4 flex-1 flex flex-col">
+                      <h3 className="text-sm sm:text-base font-semibold text-foreground mb-1.5 line-clamp-2">
+                        {podcast.title}
+                      </h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 mb-3 flex-1">
+                        {podcast.description}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(podcast.created_at).toLocaleDateString()}
+                        </span>
+                        <ShareButtons
+                          url={`/podcasts?id=${podcast.id}`}
+                          title={podcast.title}
+                          description={podcast.description || ""}
+                          image={podcast.cover_image_url || undefined}
+                          variant="dropdown"
+                          size="sm"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
-              ))
-            )}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

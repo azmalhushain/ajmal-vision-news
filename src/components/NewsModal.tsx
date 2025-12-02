@@ -9,6 +9,7 @@ import { Calendar, Tag, Pin, Video } from "lucide-react";
 import { Article } from "@/types/article";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { PostEngagement } from "@/components/PostEngagement";
+import { SEOHead } from "@/components/SEOHead";
 
 interface NewsModalProps {
   article: Article | null;
@@ -33,6 +34,15 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
+      {isOpen && (
+        <SEOHead 
+          title={`${article.title} - Ajmal Akhtar Azad`}
+          description={article.summary}
+          image={article.image || undefined}
+          url={`/news/${article.id}`}
+          type="article"
+        />
+      )}
       <DialogContent className="glass-card max-w-4xl max-h-[90vh] overflow-y-auto border-2 border-border">
         <DialogHeader className="space-y-4">
           {/* Video or Image */}
