@@ -3,6 +3,8 @@ import { Handshake, Users, Lightbulb, Heart, Leaf, Star, LucideIcon } from "luci
 import { supabase } from "@/integrations/supabase/client";
 import { Footer } from "@/components/Footer";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { PageTransition } from "@/components/PageTransition";
+import { PageLoadingSkeleton } from "@/components/LoadingSkeleton";
 
 const iconMap: Record<string, LucideIcon> = {
   Handshake,
@@ -69,15 +71,12 @@ const About = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <PageLoadingSkeleton />;
   }
 
   return (
-    <div className="min-h-screen pt-24">
+    <PageTransition>
+      <div className="min-h-screen pt-24">
       {/* Hero Section */}
       <section className="py-20 bg-gradient-to-b from-background to-secondary">
         <div className="container mx-auto px-4">
@@ -174,8 +173,9 @@ const About = () => {
         </section>
       )}
 
-      <Footer />
-    </div>
+        <Footer />
+      </div>
+    </PageTransition>
   );
 };
 

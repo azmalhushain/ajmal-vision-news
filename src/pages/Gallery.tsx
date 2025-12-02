@@ -5,6 +5,9 @@ import { Pin, X } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ShareButtons } from "@/components/ShareButtons";
 import { Button } from "@/components/ui/button";
+import { PageTransition } from "@/components/PageTransition";
+import { GallerySkeleton } from "@/components/LoadingSkeleton";
+import { motion } from "framer-motion";
 
 interface GalleryImage {
   id: string;
@@ -15,14 +18,12 @@ interface GalleryImage {
 }
 
 const Gallery = () => {
-  const [isVisible, setIsVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [loading, setLoading] = useState(true);
   const { t } = useLanguage();
 
   useEffect(() => {
-    setIsVisible(true);
     window.scrollTo(0, 0);
     fetchImages();
   }, []);
@@ -41,32 +42,40 @@ const Gallery = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="min-h-screen pt-24 bg-background">
+        <div className="container mx-auto px-4 py-20">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[...Array(6)].map((_, i) => (
+              <GallerySkeleton key={i} />
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen pt-24">
-      {/* Hero Section */}
-      <section className="py-20 bg-gradient-to-b from-background to-secondary">
-        <div className="container mx-auto px-4">
-          <div
-            className={`text-center max-w-3xl mx-auto transition-all duration-1000 ${
-              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-            }`}
-          >
-            <h1 className="text-5xl lg:text-7xl font-black mb-6">
-              <span className="block text-foreground">{t("projectGallery")}</span>
-              <span className="block text-accent">{t("gallery").toUpperCase()}</span>
-            </h1>
-            <p className="text-xl text-muted-foreground leading-relaxed">
-              {t("galleryDescription")}
-            </p>
+    <PageTransition>
+      <div className="min-h-screen pt-24">
+        {/* Hero Section */}
+        <section className="py-20 bg-gradient-to-b from-background to-secondary">
+          <div className="container mx-auto px-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-center max-w-3xl mx-auto"
+            >
+              <h1 className="text-5xl lg:text-7xl font-black mb-6">
+                <span className="block text-foreground">{t("projectGallery")}</span>
+                <span className="block text-accent">{t("gallery").toUpperCase()}</span>
+              </h1>
+              <p className="text-xl text-muted-foreground leading-relaxed">
+                {t("galleryDescription")}
+              </p>
+            </motion.div>
           </div>
-        </div>
-      </section>
+        </section>
 
       {/* Gallery Grid */}
       <section className="py-20 bg-background">
@@ -163,11 +172,12 @@ const Gallery = () => {
                 size="md"
               />
             </div>
+            </div>
           </div>
-        </div>
-      )}
-      <Footer />
-    </div>
+        )}
+        <Footer />
+      </div>
+    </PageTransition>
   );
 };
 

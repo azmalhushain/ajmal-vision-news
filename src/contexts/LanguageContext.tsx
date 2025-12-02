@@ -166,6 +166,12 @@ const translations: Translations = {
   
   // Read More
   showLess: { en: "Show Less", ne: "कम देखाउनुहोस्" },
+  
+  // Newsletter
+  subscribeNewsletter: { en: "Subscribe to Our Newsletter", ne: "हाम्रो न्यूजलेटरमा सदस्यता लिनुहोस्" },
+  newsletterDescription: { en: "Get the latest updates, news, and announcements delivered to your inbox.", ne: "नवीनतम अपडेटहरू, समाचार र घोषणाहरू तपाईंको इनबक्समा प्राप्त गर्नुहोस्।" },
+  subscribe: { en: "Subscribe", ne: "सदस्यता लिनुहोस्" },
+  noSpam: { en: "We respect your privacy. No spam, unsubscribe anytime.", ne: "हामी तपाईंको गोपनीयताको सम्मान गर्छौं। स्प्याम छैन, कुनै पनि समय अनसब्सक्राइब गर्नुहोस्।" },
 };
 
 interface LanguageContextType {
