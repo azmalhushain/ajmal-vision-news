@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { GlobalSearch } from "@/components/GlobalSearch";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -93,6 +94,9 @@ export const Navigation = () => {
               <Search className="h-5 w-5" />
             </Button>
 
+            {/* Theme Toggle */}
+            <ThemeToggle />
+
             {/* Language Selector */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -123,6 +127,9 @@ export const Navigation = () => {
             >
               <Search className="h-5 w-5" />
             </Button>
+
+            {/* Mobile Theme Toggle */}
+            <ThemeToggle />
 
             {/* Mobile Language Selector */}
             <DropdownMenu>
