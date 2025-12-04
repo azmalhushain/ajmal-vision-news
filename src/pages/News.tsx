@@ -42,7 +42,7 @@ const News = () => {
           </div>
         </section>
 
-        <NewsSection />
+        <NewsSection showAll />
         <Footer />
       </div>
     </PageTransition>

@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,6 +8,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { AnimatePresence } from "framer-motion";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { Navigation } from "@/components/Navigation";
+import { PageLoader } from "@/components/PageLoader";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Vision from "./pages/Vision";
@@ -32,6 +34,7 @@ import FooterEditor from "./pages/admin/FooterEditor";
 import PodcastEditor from "./pages/admin/PodcastEditor";
 import CommentsManager from "./pages/admin/CommentsManager";
 import PostStatsEditor from "./pages/admin/PostStatsEditor";
+import NewsletterSubscribers from "./pages/admin/NewsletterSubscribers";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +63,7 @@ const AnimatedRoutes = () => {
           <Route path="podcasts" element={<PodcastEditor />} />
           <Route path="comments" element={<CommentsManager />} />
           <Route path="post-stats" element={<PostStatsEditor />} />
+          <Route path="newsletter" element={<NewsletterSubscribers />} />
           <Route path="hero" element={<HeroEditor />} />
           <Route path="vision" element={<VisionEditor />} />
           <Route path="development-areas" element={<DevelopmentAreasEditor />} />
@@ -78,6 +82,24 @@ const AnimatedRoutes = () => {
   );
 };
 
+const AppContent = () => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <>
+      <AnimatePresence mode="wait">
+        {isLoading && <PageLoader key="loader" />}
+      </AnimatePresence>
+      <AnimatedRoutes />
+    </>
+  );
+};
+
 const App = () => (
   <HelmetProvider>
     <QueryClientProvider client={queryClient}>
@@ -86,7 +108,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <AnimatedRoutes />
+            <AppContent />
           </BrowserRouter>
         </LanguageProvider>
       </TooltipProvider>
