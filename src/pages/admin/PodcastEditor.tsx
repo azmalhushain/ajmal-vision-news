@@ -406,15 +406,22 @@ const PodcastEditor = () => {
             )}
 
             <div>
-              <Label>Cover Image</Label>
+              <Label>Cover Image (Portrait or Landscape)</Label>
               <Input
                 type="file"
                 accept="image/*"
                 onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], "image")}
                 disabled={uploading}
               />
+              <p className="text-xs text-muted-foreground mt-1">
+                Supports portrait (9:16) and landscape (16:9) images
+              </p>
               {formData.cover_image_url && (
-                <img src={formData.cover_image_url} alt="Cover" className="mt-2 w-32 h-32 object-cover rounded" />
+                <img 
+                  src={formData.cover_image_url} 
+                  alt="Cover" 
+                  className="mt-2 max-w-xs max-h-48 object-contain rounded border"
+                />
               )}
             </div>
             <div>

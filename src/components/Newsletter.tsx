@@ -13,6 +13,19 @@ export const Newsletter = () => {
   const { toast } = useToast();
   const { t } = useLanguage();
 
+  const sendEmailNotification = async (subscriberEmail: string) => {
+    try {
+      await supabase.functions.invoke("notify-events", {
+        body: {
+          event_type: "newsletter",
+          data: { email: subscriberEmail },
+        },
+      });
+    } catch (error) {
+      console.error("Failed to send notification:", error);
+    }
+  };
+
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -26,10 +39,11 @@ export const Newsletter = () => {
     }
 
     setIsLoading(true);
+    const trimmedEmail = email.trim().toLowerCase();
     
     const { error } = await supabase
       .from("newsletter_subscribers")
-      .insert({ email: email.trim().toLowerCase() });
+      .insert({ email: trimmedEmail });
 
     setIsLoading(false);
 
@@ -48,6 +62,9 @@ export const Newsletter = () => {
       }
       return;
     }
+
+    // Send email notification to admin
+    sendEmailNotification(trimmedEmail);
 
     setIsSubscribed(true);
     setEmail("");

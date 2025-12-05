@@ -1,5 +1,8 @@
 project_id = "kpswxkuzfnafsqeqaunt"
 
+[functions.notify-events]
+verify_jwt = false
+
 [functions.get-users]
 verify_jwt = true
 

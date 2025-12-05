@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { User } from "@supabase/supabase-js";
-import { Bell, Search, Moon, Sun, LogOut, User as UserIcon, Menu } from "lucide-react";
+import { Search, Moon, Sun, LogOut, User as UserIcon, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { AdminNotifications } from "./AdminNotifications";
 
 interface AdminNavbarProps {
   user: User;
@@ -19,11 +20,26 @@ interface AdminNavbarProps {
 }
 
 const AdminNavbar = ({ user, onLogout, onMenuClick }: AdminNavbarProps) => {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("theme") === "dark";
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (isDarkMode) {
+      root.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      root.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  }, [isDarkMode]);
 
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle("dark");
   };
 
   return (
@@ -55,10 +71,7 @@ const AdminNavbar = ({ user, onLogout, onMenuClick }: AdminNavbarProps) => {
             {isDarkMode ? <Sun className="h-4 w-4 sm:h-5 sm:w-5" /> : <Moon className="h-4 w-4 sm:h-5 sm:w-5" />}
           </Button>
 
-          <Button variant="ghost" size="icon" className="relative h-8 w-8 sm:h-10 sm:w-10">
-            <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span className="absolute right-1.5 top-1.5 sm:right-2 sm:top-2 h-2 w-2 rounded-full bg-destructive"></span>
-          </Button>
+          <AdminNotifications />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
