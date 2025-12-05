@@ -178,12 +178,15 @@ export const PostEngagement = ({
       
       // Send email notification to admin
       try {
-        await supabase.functions.invoke("notify-comment", {
+        await supabase.functions.invoke("notify-events", {
           body: {
-            post_id: postId,
-            post_title: title,
-            author_name: authorName.trim(),
-            content: newComment.trim(),
+            event_type: "comment",
+            data: {
+              post_id: postId,
+              post_title: title,
+              author_name: authorName.trim(),
+              content: newComment.trim(),
+            },
           },
         });
       } catch (notifyError) {

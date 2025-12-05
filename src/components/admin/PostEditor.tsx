@@ -30,6 +30,8 @@ import {
   ListOrdered,
   ImageIcon,
   Loader2,
+  Video,
+  ImagePlus,
 } from "lucide-react";
 
 interface Post {
@@ -283,18 +285,45 @@ const PostEditor = ({ open, onOpenChange, post, onSuccess }: PostEditorProps) =>
             </div>
           </div>
 
-          <div>
-            <Label htmlFor="video-url">Video URL (YouTube, Vimeo, etc.)</Label>
-            <Input
-              id="video-url"
-              value={videoUrl}
-              onChange={(e) => setVideoUrl(e.target.value)}
-              placeholder="https://www.youtube.com/watch?v=..."
-            />
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="video-url" className="flex items-center gap-2">
+                <Video className="h-4 w-4" />
+                Video URL (YouTube, Vimeo, etc.)
+              </Label>
+              <Input
+                id="video-url"
+                value={videoUrl}
+                onChange={(e) => setVideoUrl(e.target.value)}
+                placeholder="https://www.youtube.com/watch?v=..."
+              />
+            </div>
+
+            <div>
+              <Label className="flex items-center gap-2">
+                <ImagePlus className="h-4 w-4" />
+                Or Upload Video File
+              </Label>
+              <Input
+                type="file"
+                accept="video/*"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const url = await handleImageUpload(file);
+                    if (url) setVideoUrl(url);
+                  }
+                }}
+                disabled={uploading}
+              />
+            </div>
           </div>
 
-          <div>
-            <Label htmlFor="featured-image">Featured Image</Label>
+          <div className="space-y-4">
+            <Label className="flex items-center gap-2">
+              <ImageIcon className="h-4 w-4" />
+              Featured Image (Landscape or Portrait)
+            </Label>
             <Input
               id="featured-image"
               type="file"
@@ -303,11 +332,16 @@ const PostEditor = ({ open, onOpenChange, post, onSuccess }: PostEditorProps) =>
               disabled={uploading}
             />
             {imageUrl && (
-              <img
-                src={imageUrl}
-                alt="Featured"
-                className="mt-2 w-full max-w-xs rounded-lg"
-              />
+              <div className="mt-2">
+                <img
+                  src={imageUrl}
+                  alt="Featured"
+                  className="max-w-xs max-h-64 object-contain rounded-lg border"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Supports landscape (16:9) and portrait (9:16) images
+                </p>
+              </div>
             )}
           </div>
 

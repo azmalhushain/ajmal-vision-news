@@ -6,7 +6,11 @@ import { motion, AnimatePresence } from "framer-motion";
 export const ThemeToggle = () => {
   const [isDark, setIsDark] = useState(() => {
     if (typeof window !== "undefined") {
-      return document.documentElement.classList.contains("dark");
+      const savedTheme = localStorage.getItem("theme");
+      if (savedTheme) {
+        return savedTheme === "dark";
+      }
+      return window.matchMedia("(prefers-color-scheme: dark)").matches;
     }
     return false;
   });
@@ -22,14 +26,40 @@ export const ThemeToggle = () => {
     }
   }, [isDark]);
 
+  // Listen for system preference changes
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = (e: MediaQueryListEvent) => {
+      const savedTheme = localStorage.getItem("theme");
+      if (!savedTheme) {
+        setIsDark(e.matches);
+      }
+    };
+
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
+  // Apply theme on initial load
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
+    const root = document.documentElement;
+    
     if (savedTheme === "dark") {
+      root.classList.add("dark");
       setIsDark(true);
     } else if (savedTheme === "light") {
+      root.classList.remove("dark");
       setIsDark(false);
-    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      setIsDark(true);
+    } else {
+      // No saved preference, use system preference
+      if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        root.classList.add("dark");
+        setIsDark(true);
+      } else {
+        root.classList.remove("dark");
+        setIsDark(false);
+      }
     }
   }, []);
 
