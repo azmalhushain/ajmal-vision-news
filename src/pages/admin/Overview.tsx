@@ -19,7 +19,8 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { format, subDays, startOfDay } from "date-fns";
+import { format, subDays } from "date-fns";
+import { ActivityFeed } from "@/components/admin/ActivityFeed";
 
 const Overview = () => {
   const [stats, setStats] = useState({
@@ -291,11 +292,12 @@ const Overview = () => {
         </motion.div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-3">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
+          className="lg:col-span-2"
         >
           <Card>
             <CardHeader>
@@ -317,8 +319,8 @@ const Overview = () => {
                   <Area
                     type="monotone"
                     dataKey="views"
-                    stroke="hsl(var(--primary))"
-                    fill="hsl(var(--primary))"
+                    stroke="hsl(var(--chart-1))"
+                    fill="hsl(var(--chart-1))"
                     fillOpacity={0.2}
                   />
                 </AreaChart>
@@ -332,33 +334,7 @@ const Overview = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
         >
-          <Card>
-            <CardHeader>
-              <CardTitle>Growth Chart</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--background))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px"
-                    }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="views"
-                    stroke="hsl(var(--primary))"
-                    strokeWidth={2}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          <ActivityFeed />
         </motion.div>
       </div>
     </div>

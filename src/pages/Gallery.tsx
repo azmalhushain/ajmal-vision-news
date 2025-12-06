@@ -111,14 +111,15 @@ const Gallery = () => {
                   </div>
                   
                   <div 
-                    className="aspect-[4/3] relative cursor-pointer"
+                    className="relative cursor-pointer"
                     onClick={() => setSelectedImage(image)}
                   >
-                    <img
-                      src={image.image_url}
-                      alt={image.title}
-                      className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
-                    />
+                    <div className="aspect-[4/3] sm:aspect-[3/2] w-full overflow-hidden">
+                      <img
+                        src={image.image_url}
+                        alt={image.title}
+                        className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                      />
                     <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                       <div className="absolute bottom-0 left-0 right-0 p-6">
                         <span className="inline-block glass-card px-3 py-1 text-xs font-bold text-accent rounded-full mb-3">
@@ -126,6 +127,7 @@ const Gallery = () => {
                         </span>
                         <h3 className="text-xl font-bold text-foreground">{image.title}</h3>
                       </div>
+                    </div>
                     </div>
                   </div>
                 </div>

@@ -24,12 +24,14 @@ export const NewsCard = ({ article, onClick }: NewsCardProps) => {
         </div>
       )}
 
-      <div className="relative overflow-hidden h-56 cursor-pointer" onClick={onClick}>
-        <img
-          src={article.image || "/placeholder.svg"}
-          alt={article.title}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-        />
+      <div className="relative overflow-hidden cursor-pointer" onClick={onClick}>
+        <div className="aspect-[4/3] sm:aspect-[16/10] w-full">
+          <img
+            src={article.image || "/placeholder.svg"}
+            alt={article.title}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          />
+        </div>
         <div className="absolute top-4 right-4 flex flex-col gap-2">
           <span className="glass-card px-3 py-1 text-xs font-semibold text-foreground rounded-full">
             {article.category}

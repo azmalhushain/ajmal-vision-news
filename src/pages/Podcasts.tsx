@@ -210,7 +210,7 @@ const Podcasts = () => {
                   >
                     <div className="glass-card glass-hover rounded-xl border border-border overflow-hidden h-full flex flex-col group">
                       {/* Thumbnail */}
-                      <div className="relative aspect-video bg-gradient-to-br from-primary/5 to-accent/5">
+                      <div className="relative aspect-[4/3] sm:aspect-video bg-gradient-to-br from-primary/5 to-accent/5">
                         {podcast.media_type === "video" && podcast.video_url ? (
                           expandedVideo === podcast.id ? (
                             <div className="w-full h-full bg-black">

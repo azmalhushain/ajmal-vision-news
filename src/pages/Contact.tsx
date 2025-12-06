@@ -52,12 +52,56 @@ const Contact = () => {
     setLoading(false);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    message: "",
+  });
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: t("messageSent"),
-      description: t("messageSentDesc"),
-    });
+    setSubmitting(true);
+
+    try {
+      // Send email notification
+      await supabase.functions.invoke("notify-events", {
+        body: {
+          event_type: "contact",
+          data: {
+            name: `${formData.firstName} ${formData.lastName}`,
+            email: formData.email,
+            phone: formData.phone,
+            message: formData.message,
+          },
+        },
+      });
+
+      toast({
+        title: t("messageSent"),
+        description: t("messageSentDesc"),
+      });
+
+      // Reset form
+      setFormData({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        message: "",
+      });
+    } catch (error) {
+      console.error("Error sending message:", error);
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const contactInfo = [
@@ -148,6 +192,8 @@ const Contact = () => {
                     <Input
                       type="text"
                       required
+                      value={formData.firstName}
+                      onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                       className="glass-card border-border focus:border-accent"
                       placeholder={t("enterFirstName")}
                     />
@@ -159,6 +205,8 @@ const Contact = () => {
                     <Input
                       type="text"
                       required
+                      value={formData.lastName}
+                      onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                       className="glass-card border-border focus:border-accent"
                       placeholder={t("enterLastName")}
                     />
@@ -172,6 +220,8 @@ const Contact = () => {
                   <Input
                     type="email"
                     required
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     className="glass-card border-border focus:border-accent"
                     placeholder={t("enterEmail")}
                   />
@@ -183,6 +233,8 @@ const Contact = () => {
                   </label>
                   <Input
                     type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     className="glass-card border-border focus:border-accent"
                     placeholder={t("enterPhone")}
                   />
@@ -195,6 +247,8 @@ const Contact = () => {
                   <Textarea
                     required
                     rows={6}
+                    value={formData.message}
+                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                     className="glass-card border-border focus:border-accent resize-none"
                     placeholder={t("writeMessage")}
                   />
@@ -203,9 +257,10 @@ const Contact = () => {
                 <Button
                   type="submit"
                   size="lg"
+                  disabled={submitting}
                   className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-bold transition-all duration-300 transform hover:scale-105"
                 >
-                  {t("sendMessage")}
+                  {submitting ? "Sending..." : t("sendMessage")}
                 </Button>
               </form>
             </div>
