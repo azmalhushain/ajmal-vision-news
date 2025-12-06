@@ -7,50 +7,58 @@ All colors MUST be HSL.
 */
 
 @layer base {
+  /* Light mode (default) */
   :root {
-    --background: 0 0% 5%;
-    --foreground: 0 0% 98%;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 5%;
 
-    --card: 0 0% 10%;
-    --card-foreground: 0 0% 98%;
+    --card: 0 0% 98%;
+    --card-foreground: 0 0% 5%;
 
-    --popover: 0 0% 8%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 5%;
 
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 5%;
+    --primary: 210 100% 50%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 15%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 10%;
 
-    --muted: 0 0% 20%;
-    --muted-foreground: 0 0% 60%;
+    --muted: 0 0% 92%;
+    --muted-foreground: 0 0% 45%;
 
     --accent: 210 100% 50%;
-    --accent-foreground: 0 0% 98%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
-    --ring: 0 0% 40%;
+    --border: 0 0% 88%;
+    --input: 0 0% 88%;
+    --ring: 210 100% 50%;
 
     --radius: 1rem;
 
-    --glass-bg: 0 0% 100% / 0.05;
-    --glass-border: 0 0% 100% / 0.1;
-    --glass-shadow: 0 0% 0% / 0.5;
+    --glass-bg: 0 0% 0% / 0.03;
+    --glass-border: 0 0% 0% / 0.08;
+    --glass-shadow: 0 0% 0% / 0.1;
     
-    --gradient-primary: linear-gradient(135deg, hsl(0 0% 10%), hsl(0 0% 5%));
-    --gradient-accent: linear-gradient(135deg, hsl(210 100% 50% / 0.2), hsl(240 100% 60% / 0.2));
+    --gradient-primary: linear-gradient(135deg, hsl(0 0% 98%), hsl(0 0% 94%));
+    --gradient-accent: linear-gradient(135deg, hsl(210 100% 50% / 0.1), hsl(240 100% 60% / 0.1));
     
-    --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-    --shadow-glow: 0 0 40px hsl(210 100% 50% / 0.3);
+    --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.08);
+    --shadow-glow: 0 0 40px hsl(210 100% 50% / 0.15);
     
     --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --chart-1: 210 100% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 95% 55%;
+    --chart-4: 280 65% 55%;
+    --chart-5: 340 75% 55%;
   }
 
+  /* Dark mode */
   .dark {
     --background: 0 0% 5%;
     --foreground: 0 0% 98%;
@@ -79,6 +87,22 @@ All colors MUST be HSL.
     --border: 0 0% 20%;
     --input: 0 0% 20%;
     --ring: 0 0% 40%;
+
+    --glass-bg: 0 0% 100% / 0.05;
+    --glass-border: 0 0% 100% / 0.1;
+    --glass-shadow: 0 0% 0% / 0.5;
+    
+    --gradient-primary: linear-gradient(135deg, hsl(0 0% 10%), hsl(0 0% 5%));
+    --gradient-accent: linear-gradient(135deg, hsl(210 100% 50% / 0.2), hsl(240 100% 60% / 0.2));
+    
+    --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    --shadow-glow: 0 0 40px hsl(210 100% 50% / 0.3);
+
+    --chart-1: 210 100% 60%;
+    --chart-2: 160 65% 50%;
+    --chart-3: 30 100% 60%;
+    --chart-4: 280 70% 60%;
+    --chart-5: 340 80% 60%;
   }
 }
 
@@ -98,11 +122,23 @@ All colors MUST be HSL.
 
 @layer utilities {
   .glass-card {
-    background: rgba(255, 255, 255, 0.05);
+    background: hsl(var(--glass-bg));
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
+    border: 1px solid hsl(var(--glass-border));
+    box-shadow: var(--shadow-glass);
+  }
+
+  .dark .glass-card {
+    background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  }
+
+  :root:not(.dark) .glass-card {
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.08);
   }
 
   .glass-hover {
@@ -110,9 +146,17 @@ All colors MUST be HSL.
   }
 
   .glass-hover:hover {
-    background: rgba(255, 255, 255, 0.08);
     transform: translateY(-4px);
+  }
+
+  .dark .glass-hover:hover {
+    background: rgba(255, 255, 255, 0.08);
     box-shadow: 0 12px 48px 0 rgba(0, 0, 0, 0.5), 0 0 40px hsl(210 100% 50% / 0.3);
+  }
+
+  :root:not(.dark) .glass-hover:hover {
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 12px 48px 0 rgba(0, 0, 0, 0.15), 0 0 40px hsl(210 100% 50% / 0.15);
   }
 
   .fade-in-up {
