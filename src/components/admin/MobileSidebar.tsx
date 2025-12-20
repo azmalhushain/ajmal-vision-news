@@ -53,6 +53,7 @@ const menuSections: MenuSection[] = [
       { icon: MessageCircle, label: "Comments", path: "/admin/comments" },
       { icon: Heart, label: "Post Stats", path: "/admin/post-stats" },
       { icon: Mail, label: "Newsletter", path: "/admin/newsletter" },
+      { icon: Phone, label: "Messages", path: "/admin/contact-messages" },
     ],
   },
   {
@@ -70,6 +71,7 @@ const menuSections: MenuSection[] = [
     title: "Administration",
     items: [
       { icon: Users, label: "Users", path: "/admin/users" },
+      { icon: Mail, label: "Email Templates", path: "/admin/email-templates" },
       { icon: Settings, label: "Settings", path: "/admin/settings" },
     ],
   },

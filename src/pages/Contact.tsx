@@ -66,6 +66,16 @@ const Contact = () => {
     setSubmitting(true);
 
     try {
+      // Save message to database
+      const { error: dbError } = await supabase.from("contact_messages").insert({
+        name: `${formData.firstName} ${formData.lastName}`,
+        email: formData.email,
+        phone: formData.phone || null,
+        message: formData.message,
+      });
+
+      if (dbError) throw dbError;
+
       // Send email notification
       await supabase.functions.invoke("notify-events", {
         body: {

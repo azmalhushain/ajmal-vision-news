@@ -35,6 +35,9 @@ import PodcastEditor from "./pages/admin/PodcastEditor";
 import CommentsManager from "./pages/admin/CommentsManager";
 import PostStatsEditor from "./pages/admin/PostStatsEditor";
 import NewsletterSubscribers from "./pages/admin/NewsletterSubscribers";
+import ContactMessages from "./pages/admin/ContactMessages";
+import EmailTemplates from "./pages/admin/EmailTemplates";
+import UserProfile from "./pages/UserProfile";
 
 const queryClient = new QueryClient();
 
@@ -55,6 +58,7 @@ const AnimatedRoutes = () => {
         
         {/* Auth route */}
         <Route path="/auth" element={<Auth />} />
+        <Route path="/profile" element={<><Navigation /><UserProfile /></>} />
         
         {/* Admin routes */}
         <Route path="/admin" element={<AdminLayout />}>
@@ -71,6 +75,8 @@ const AnimatedRoutes = () => {
           <Route path="gallery" element={<GalleryEditor />} />
           <Route path="contact" element={<ContactEditor />} />
           <Route path="footer" element={<FooterEditor />} />
+          <Route path="contact-messages" element={<ContactMessages />} />
+          <Route path="email-templates" element={<EmailTemplates />} />
           <Route path="users" element={<Users />} />
           <Route path="analytics" element={<Analytics />} />
           <Route path="settings" element={<Settings />} />
