@@ -116,6 +116,42 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_messages: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          is_read: boolean | null
+          message: string
+          name: string
+          phone: string | null
+          subject: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          is_read?: boolean | null
+          message: string
+          name: string
+          phone?: string | null
+          subject?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          name?: string
+          phone?: string | null
+          subject?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       development_areas: {
         Row: {
           created_at: string | null
@@ -149,11 +185,43 @@ export type Database = {
         }
         Relationships: []
       }
+      email_templates: {
+        Row: {
+          body_html: string
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          subject: string
+          template_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          body_html: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          subject: string
+          template_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          body_html?: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          subject?: string
+          template_type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       footer_content: {
         Row: {
           address: string
           copyright_text: string
           created_at: string | null
+          developer_name: string | null
+          developer_url: string | null
           email: string
           facebook_url: string | null
           id: string
@@ -170,6 +238,8 @@ export type Database = {
           address?: string
           copyright_text?: string
           created_at?: string | null
+          developer_name?: string | null
+          developer_url?: string | null
           email?: string
           facebook_url?: string | null
           id?: string
@@ -186,6 +256,8 @@ export type Database = {
           address?: string
           copyright_text?: string
           created_at?: string | null
+          developer_name?: string | null
+          developer_url?: string | null
           email?: string
           facebook_url?: string | null
           id?: string
@@ -498,23 +570,32 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          bio: string | null
           created_at: string
           full_name: string | null
           id: string
+          location: string | null
+          phone: string | null
           updated_at: string
         }
         Insert: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           full_name?: string | null
           id: string
+          location?: string | null
+          phone?: string | null
           updated_at?: string
         }
         Update: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           full_name?: string | null
           id?: string
+          location?: string | null
+          phone?: string | null
           updated_at?: string
         }
         Relationships: []

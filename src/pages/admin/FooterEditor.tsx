@@ -26,6 +26,8 @@ const FooterEditor = () => {
     email: "",
     copyright_text: "",
     tagline: "",
+    developer_name: "",
+    developer_url: "",
   });
 
   useEffect(() => {
@@ -53,6 +55,8 @@ const FooterEditor = () => {
         email: data.email,
         copyright_text: data.copyright_text,
         tagline: data.tagline,
+        developer_name: (data as any).developer_name || "",
+        developer_url: (data as any).developer_url || "",
       });
     }
     setLoading(false);
@@ -129,6 +133,24 @@ const FooterEditor = () => {
                 <Input
                   value={formData.tagline}
                   onChange={(e) => setFormData({ ...formData, tagline: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium">Developer Name</label>
+                <Input
+                  value={formData.developer_name}
+                  onChange={(e) => setFormData({ ...formData, developer_name: e.target.value })}
+                  placeholder="Developer/Company Name"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Developer Website URL</label>
+                <Input
+                  value={formData.developer_url}
+                  onChange={(e) => setFormData({ ...formData, developer_url: e.target.value })}
+                  placeholder="https://example.com"
                 />
               </div>
             </div>

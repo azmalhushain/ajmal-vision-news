@@ -15,6 +15,8 @@ interface FooterContent {
   email: string;
   copyright_text: string;
   tagline: string;
+  developer_name: string;
+  developer_url: string;
 }
 
 export const Footer = () => {
@@ -31,6 +33,8 @@ export const Footer = () => {
     email: "info@bhokrahanarsingh.gov.np",
     copyright_text: "Ajmal Akhtar Azad. All rights reserved.",
     tagline: "Developed with ❤️ for Bhokraha Narsingh",
+    developer_name: "Bhokraha Narsingh Team",
+    developer_url: "#",
   });
 
   useEffect(() => {
@@ -57,6 +61,8 @@ export const Footer = () => {
         email: data.email,
         copyright_text: data.copyright_text,
         tagline: data.tagline,
+        developer_name: (data as any).developer_name || "Bhokraha Narsingh Team",
+        developer_url: (data as any).developer_url || "#",
       });
     }
   };
@@ -212,7 +218,15 @@ export const Footer = () => {
               © {currentYear} {content.copyright_text}
             </p>
             <p className="text-muted-foreground text-sm text-center md:text-right">
-              {content.tagline}
+              {content.tagline} | Developed by{" "}
+              <a
+                href={content.developer_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-accent hover:underline font-medium"
+              >
+                {content.developer_name}
+              </a>
             </p>
           </div>
         </div>
