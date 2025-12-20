@@ -1,23 +1,29 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Globe, Search } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Menu, X, Globe, Search, User, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { supabase } from "@/integrations/supabase/client";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { GlobalSearch } from "@/components/GlobalSearch";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
   const location = useLocation();
+  const navigate = useNavigate();
   const { language, setLanguage, t } = useLanguage();
 
   useEffect(() => {
@@ -32,6 +38,31 @@ export const Navigation = () => {
     setIsOpen(false);
   }, [location]);
 
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user || null);
+      if (session?.user) fetchProfile(session.user.id);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setUser(session?.user || null);
+      if (session?.user) fetchProfile(session.user.id);
+      else setProfile(null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const fetchProfile = async (userId: string) => {
+    const { data } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
+    if (data) setProfile(data);
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
+  };
+
   const navLinks = [
     { name: t("home"), path: "/" },
     { name: t("about"), path: "/about" },
@@ -40,7 +71,6 @@ export const Navigation = () => {
     { name: t("podcasts"), path: "/podcasts" },
     { name: t("gallery"), path: "/gallery" },
     { name: t("contact"), path: "/contact" },
-    { name: t("login"), path: "/auth" },
   ];
 
   return (
@@ -114,11 +144,41 @@ export const Navigation = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+
+            {/* User Menu or Login */}
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={profile?.avatar_url} />
+                      <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                        {profile?.full_name?.charAt(0) || user.email?.charAt(0)?.toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile" className="flex items-center gap-2">
+                      <User className="h-4 w-4" /> My Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="text-destructive">
+                    <LogOut className="h-4 w-4 mr-2" /> Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button asChild variant="default" size="sm">
+                <Link to="/auth">{t("login")}</Link>
+              </Button>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
           <div className="lg:hidden flex items-center gap-1">
-            {/* Mobile Search */}
             <Button
               variant="ghost"
               size="icon"
@@ -128,10 +188,8 @@ export const Navigation = () => {
               <Search className="h-5 w-5" />
             </Button>
 
-            {/* Mobile Theme Toggle */}
             <ThemeToggle />
 
-            {/* Mobile Language Selector */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="gap-1 px-2">
@@ -162,7 +220,7 @@ export const Navigation = () => {
         <div
           className={cn(
             "lg:hidden overflow-hidden transition-all duration-300",
-            isOpen ? "max-h-96 opacity-100 mt-4" : "max-h-0 opacity-0"
+            isOpen ? "max-h-[500px] opacity-100 mt-4" : "max-h-0 opacity-0"
           )}
         >
           <ul className="flex flex-col gap-4 glass-card p-6 rounded-2xl">
@@ -181,11 +239,39 @@ export const Navigation = () => {
                 </Link>
               </li>
             ))}
+            {user ? (
+              <>
+                <li>
+                  <Link
+                    to="/profile"
+                    className="block text-base font-semibold uppercase tracking-wider transition-colors hover:text-accent text-foreground"
+                  >
+                    My Profile
+                  </Link>
+                </li>
+                <li>
+                  <button
+                    onClick={handleLogout}
+                    className="block text-base font-semibold uppercase tracking-wider transition-colors text-destructive hover:text-destructive/80"
+                  >
+                    Logout
+                  </button>
+                </li>
+              </>
+            ) : (
+              <li>
+                <Link
+                  to="/auth"
+                  className="block text-base font-semibold uppercase tracking-wider transition-colors hover:text-accent text-accent"
+                >
+                  {t("login")}
+                </Link>
+              </li>
+            )}
           </ul>
         </div>
       </div>
 
-      {/* Global Search Modal */}
       <GlobalSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </nav>
   );

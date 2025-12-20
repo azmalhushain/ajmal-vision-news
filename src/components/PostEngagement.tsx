@@ -112,40 +112,36 @@ export const PostEngagement = ({
   };
 
   const handleLike = async () => {
-    const sessionId = getSessionId();
     const { data: session } = await supabase.auth.getSession();
+    
+    // Require login for likes
+    if (!session?.session?.user) {
+      toast({ 
+        title: t("loginRequired"), 
+        description: "Please login to like posts",
+        variant: "destructive" 
+      });
+      return;
+    }
     
     if (isLiked) {
       // Unlike
-      let query = supabase
+      const { error } = await supabase
         .from("post_likes")
         .delete()
-        .eq("post_id", postId);
+        .eq("post_id", postId)
+        .eq("user_id", session.session.user.id);
       
-      if (session?.session?.user) {
-        query = query.eq("user_id", session.session.user.id);
-      } else {
-        query = query.eq("session_id", sessionId);
-      }
-      
-      const { error } = await query;
       if (!error) {
         setLikes((prev) => Math.max(0, prev - 1));
         setIsLiked(false);
       }
     } else {
       // Like
-      const likeData: { post_id: string; user_id?: string; session_id?: string } = {
+      const { error } = await supabase.from("post_likes").insert({
         post_id: postId,
-      };
-      
-      if (session?.session?.user) {
-        likeData.user_id = session.session.user.id;
-      } else {
-        likeData.session_id = sessionId;
-      }
-      
-      const { error } = await supabase.from("post_likes").insert(likeData);
+        user_id: session.session.user.id,
+      });
       if (!error) {
         setLikes((prev) => prev + 1);
         setIsLiked(true);
@@ -154,19 +150,39 @@ export const PostEngagement = ({
   };
 
   const handleSubmitComment = async () => {
-    if (!newComment.trim() || !authorName.trim()) {
+    const { data: session } = await supabase.auth.getSession();
+    
+    // Require login for comments
+    if (!session?.session?.user) {
+      toast({ 
+        title: t("loginRequired"), 
+        description: "Please login to comment on posts",
+        variant: "destructive" 
+      });
+      return;
+    }
+    
+    if (!newComment.trim()) {
       toast({ title: t("fillAllFields"), variant: "destructive" });
       return;
     }
     
     setIsSubmitting(true);
-    const { data: session } = await supabase.auth.getSession();
+    
+    // Get user profile for author name
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", session.session.user.id)
+      .maybeSingle();
+    
+    const authorName = profile?.full_name || session.session.user.email?.split("@")[0] || "Anonymous";
     
     const { error } = await supabase.from("post_comments").insert({
       post_id: postId,
-      author_name: authorName.trim(),
+      author_name: authorName,
       content: newComment.trim(),
-      user_id: session?.session?.user?.id || null,
+      user_id: session.session.user.id,
     });
     
     if (error) {
@@ -175,6 +191,8 @@ export const PostEngagement = ({
       toast({ title: t("commentSubmitted") });
       setNewComment("");
       setShowCommentForm(false);
+      fetchCommentsCount();
+      if (showComments) fetchComments();
       
       // Send email notification to admin
       try {
@@ -184,7 +202,7 @@ export const PostEngagement = ({
             data: {
               post_id: postId,
               post_title: title,
-              author_name: authorName.trim(),
+              author_name: authorName,
               content: newComment.trim(),
             },
           },
