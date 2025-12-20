@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Footer } from "@/components/Footer";
-import { Pin, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ShareButtons } from "@/components/ShareButtons";
 import { Button } from "@/components/ui/button";
 import { PageTransition } from "@/components/PageTransition";
 import { GallerySkeleton } from "@/components/LoadingSkeleton";
 import { motion } from "framer-motion";
+import { GalleryBentoGrid } from "@/components/GalleryBentoGrid";
+import { SEOHead } from "@/components/SEOHead";
 
 interface GalleryImage {
   id: string;
@@ -56,6 +58,11 @@ const Gallery = () => {
 
   return (
     <PageTransition>
+      <SEOHead
+        title="Photo Gallery - Ajmal Akhtar Azad | Bhokraha Narsingh"
+        description="View photos of Mayor Ajmal Akhtar Azad's development projects, community events, and initiatives in Bhokraha Narsingh Municipality."
+        url="/gallery"
+      />
       <div className="min-h-screen pt-24">
         {/* Hero Section */}
         <section className="py-20 bg-gradient-to-b from-background to-secondary">
@@ -77,103 +84,46 @@ const Gallery = () => {
           </div>
         </section>
 
-      {/* Gallery Grid */}
-      <section className="py-20 bg-background">
-        <div className="container mx-auto px-4">
-          {images.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {images.map((image, index) => (
-                <div
-                  key={image.id}
-                  className={`group relative overflow-hidden rounded-2xl fade-in-up animate-delay-${
-                    (index + 1) * 100
-                  }`}
-                >
-                  {/* Pinned indicator */}
-                  {image.is_pinned && (
-                    <div className="absolute top-4 left-4 z-10">
-                      <span className="glass-card px-2 py-1 text-xs font-semibold text-accent rounded-full flex items-center gap-1">
-                        <Pin className="w-3 h-3 fill-accent" />
-                        {t("pinned")}
-                      </span>
-                    </div>
-                  )}
+        {/* Bento Grid Gallery */}
+        <section className="py-20 bg-background">
+          <div className="container mx-auto px-4">
+            <GalleryBentoGrid images={images} onImageClick={setSelectedImage} />
+          </div>
+        </section>
 
-                  {/* Share button */}
-                  <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <ShareButtons
-                      url={`/gallery?image=${image.id}`}
-                      title={image.title}
-                      description={`${image.category} - ${image.title}`}
-                      variant="dropdown"
-                      size="sm"
-                    />
-                  </div>
-                  
-                  <div 
-                    className="relative cursor-pointer"
-                    onClick={() => setSelectedImage(image)}
-                  >
-                    <div className="aspect-[4/3] sm:aspect-[3/2] w-full overflow-hidden">
-                      <img
-                        src={image.image_url}
-                        alt={image.title}
-                        className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
-                      />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <div className="absolute bottom-0 left-0 right-0 p-6">
-                        <span className="inline-block glass-card px-3 py-1 text-xs font-bold text-accent rounded-full mb-3">
-                          {image.category}
-                        </span>
-                        <h3 className="text-xl font-bold text-foreground">{image.title}</h3>
-                      </div>
-                    </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-center text-muted-foreground py-20">
-              {t("noGalleryImages")}
-            </p>
-          )}
-        </div>
-      </section>
-
-      {/* Image Modal */}
-      {selectedImage && (
-        <div
-          className="fixed inset-0 z-50 bg-background/95 backdrop-blur-xl flex items-center justify-center p-4 animate-fade-in"
-          onClick={() => setSelectedImage(null)}
-        >
-          <div className="max-w-6xl w-full relative">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute -top-12 right-0 text-foreground"
-              onClick={() => setSelectedImage(null)}
-            >
-              <X className="h-6 w-6" />
-            </Button>
-            <img
-              src={selectedImage.image_url}
-              alt={selectedImage.title}
-              className="w-full h-auto rounded-2xl shadow-2xl"
-            />
-            <div className="mt-4 flex items-center justify-between">
-              <div>
-                <h3 className="text-xl font-bold text-foreground">{selectedImage.title}</h3>
-                <p className="text-muted-foreground">{selectedImage.category}</p>
-              </div>
-              <ShareButtons
-                url={`/gallery?image=${selectedImage.id}`}
-                title={selectedImage.title}
-                description={`${selectedImage.category} - ${selectedImage.title}`}
-                variant="inline"
-                size="md"
+        {/* Image Modal */}
+        {selectedImage && (
+          <div
+            className="fixed inset-0 z-50 bg-background/95 backdrop-blur-xl flex items-center justify-center p-4 animate-fade-in"
+            onClick={() => setSelectedImage(null)}
+          >
+            <div className="max-w-6xl w-full relative">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute -top-12 right-0 text-foreground"
+                onClick={() => setSelectedImage(null)}
+              >
+                <X className="h-6 w-6" />
+              </Button>
+              <img
+                src={selectedImage.image_url}
+                alt={selectedImage.title}
+                className="w-full h-auto max-h-[80vh] object-contain rounded-2xl shadow-2xl"
               />
-            </div>
+              <div className="mt-4 flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl font-bold text-foreground">{selectedImage.title}</h3>
+                  <p className="text-muted-foreground">{selectedImage.category}</p>
+                </div>
+                <ShareButtons
+                  url={`/gallery?image=${selectedImage.id}`}
+                  title={selectedImage.title}
+                  description={`${selectedImage.category} - ${selectedImage.title}`}
+                  variant="inline"
+                  size="md"
+                />
+              </div>
             </div>
           </div>
         )}
