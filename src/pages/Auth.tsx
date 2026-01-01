@@ -107,23 +107,70 @@ const Auth = () => {
     }
   };
 
+  const formatPhoneNumber = (phoneNumber: string): string => {
+    // Remove all non-digit characters except +
+    let cleaned = phoneNumber.replace(/[^\d+]/g, "");
+    
+    // Ensure it starts with +
+    if (!cleaned.startsWith("+")) {
+      // If it starts with country code digits, add +
+      if (cleaned.length >= 10) {
+        cleaned = "+" + cleaned;
+      }
+    }
+    
+    return cleaned;
+  };
+
+  const validatePhoneNumber = (phoneNumber: string): boolean => {
+    const formatted = formatPhoneNumber(phoneNumber);
+    // Must start with + and have at least 10 digits total
+    return /^\+[1-9]\d{9,14}$/.test(formatted);
+  };
+
   const handlePhoneLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const formattedPhone = formatPhoneNumber(phone);
+    
+    if (!validatePhoneNumber(phone)) {
+      toast({
+        title: "Invalid phone number",
+        description: "Please enter a valid phone number with country code (e.g., +977 9XXXXXXXXX)",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setLoading(true);
 
     try {
-      const formattedPhone = phone.startsWith("+") ? phone : `+${phone}`;
-      const { error } = await supabase.auth.signInWithOtp({ phone: formattedPhone });
+      const { error } = await supabase.auth.signInWithOtp({ 
+        phone: formattedPhone,
+        options: {
+          channel: "sms",
+        }
+      });
 
-      if (error) throw error;
+      if (error) {
+        // Handle specific error cases
+        if (error.message.includes("Phone auth is disabled") || error.message.includes("provider is not enabled")) {
+          throw new Error("Phone authentication is not enabled. Please contact the administrator to enable phone auth in the backend settings.");
+        }
+        throw error;
+      }
 
       toast({
-        title: "OTP sent!",
-        description: "Check your phone for the verification code.",
+        title: "OTP sent successfully!",
+        description: `A 6-digit verification code has been sent to ${formattedPhone}`,
       });
       setStep("phone-verify");
     } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ 
+        title: "Failed to send OTP", 
+        description: error.message || "An error occurred while sending OTP", 
+        variant: "destructive" 
+      });
     } finally {
       setLoading(false);
     }
@@ -164,17 +211,27 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      const formattedPhone = phone.startsWith("+") ? phone : `+${phone}`;
-      const { error } = await supabase.auth.verifyOtp({
+      const formattedPhone = formatPhoneNumber(phone);
+      const { data, error } = await supabase.auth.verifyOtp({
         phone: formattedPhone,
         token: otpCode,
         type: "sms",
       });
 
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes("Token has expired") || error.message.includes("expired")) {
+          throw new Error("OTP has expired. Please request a new code.");
+        }
+        if (error.message.includes("Invalid") || error.message.includes("invalid")) {
+          throw new Error("Invalid OTP code. Please check and try again.");
+        }
+        throw error;
+      }
 
-      toast({ title: "Welcome!", description: "You've successfully logged in." });
-      navigate("/");
+      if (data.session) {
+        toast({ title: "Welcome!", description: "You've successfully logged in via phone." });
+        navigate("/");
+      }
     } catch (error: any) {
       toast({ title: "Verification failed", description: error.message, variant: "destructive" });
     } finally {

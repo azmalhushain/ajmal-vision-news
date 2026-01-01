@@ -17,6 +17,7 @@ import {
   MessageCircle,
   Heart,
   Mail,
+  Send,
   Newspaper,
 } from "lucide-react";
 
@@ -53,6 +54,7 @@ const menuSections: MenuSection[] = [
       { icon: MessageCircle, label: "Comments", path: "/admin/comments" },
       { icon: Heart, label: "Post Stats", path: "/admin/post-stats" },
       { icon: Mail, label: "Newsletter", path: "/admin/newsletter" },
+      { icon: Send, label: "Email Marketing", path: "/admin/email-marketing" },
       { icon: Phone, label: "Contact Messages", path: "/admin/contact-messages" },
     ],
   },

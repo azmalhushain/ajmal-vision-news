@@ -37,6 +37,7 @@ import PostStatsEditor from "./pages/admin/PostStatsEditor";
 import NewsletterSubscribers from "./pages/admin/NewsletterSubscribers";
 import ContactMessages from "./pages/admin/ContactMessages";
 import EmailTemplates from "./pages/admin/EmailTemplates";
+import EmailMarketing from "./pages/admin/EmailMarketing";
 import UserProfile from "./pages/UserProfile";
 
 const queryClient = new QueryClient();
@@ -77,6 +78,7 @@ const AnimatedRoutes = () => {
           <Route path="footer" element={<FooterEditor />} />
           <Route path="contact-messages" element={<ContactMessages />} />
           <Route path="email-templates" element={<EmailTemplates />} />
+          <Route path="email-marketing" element={<EmailMarketing />} />
           <Route path="users" element={<Users />} />
           <Route path="analytics" element={<Analytics />} />
           <Route path="settings" element={<Settings />} />
