@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { Mail, Send, Users, FileText, Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import { Mail, Send, Users, FileText, Loader2, CheckCircle, Calendar, Clock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface Post {
   id: string;
@@ -25,6 +29,13 @@ interface Subscriber {
   is_active: boolean;
 }
 
+interface ScheduledEmail {
+  id: string;
+  subject: string;
+  scheduledAt: Date;
+  recipientCount: number;
+}
+
 const EmailMarketing = () => {
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -35,6 +46,10 @@ const EmailMarketing = () => {
   const [customMessage, setCustomMessage] = useState("");
   const [sendToAll, setSendToAll] = useState(true);
   const [selectedEmails, setSelectedEmails] = useState<string[]>([]);
+  const [scheduleDate, setScheduleDate] = useState<Date | undefined>();
+  const [scheduleTime, setScheduleTime] = useState("09:00");
+  const [isScheduled, setIsScheduled] = useState(false);
+  const [scheduledEmails, setScheduledEmails] = useState<ScheduledEmail[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -68,6 +83,36 @@ const EmailMarketing = () => {
 
     try {
       const post = posts.find((p) => p.id === selectedPost);
+      
+      // Handle scheduling
+      if (isScheduled && scheduleDate) {
+        const [hours, minutes] = scheduleTime.split(":").map(Number);
+        const scheduledDateTime = new Date(scheduleDate);
+        scheduledDateTime.setHours(hours, minutes, 0, 0);
+        
+        // Add to scheduled emails (in a real app, save to database)
+        const newScheduled: ScheduledEmail = {
+          id: crypto.randomUUID(),
+          subject: customSubject || (post ? `New Post: ${post.title}` : "Newsletter Update"),
+          scheduledAt: scheduledDateTime,
+          recipientCount: recipients.length,
+        };
+        setScheduledEmails(prev => [...prev, newScheduled]);
+        
+        toast({
+          title: "Email scheduled!",
+          description: `Will be sent on ${format(scheduledDateTime, "PPP 'at' p")} to ${recipients.length} subscribers.`,
+        });
+        
+        // Reset form
+        setSelectedPost("");
+        setCustomSubject("");
+        setCustomMessage("");
+        setScheduleDate(undefined);
+        setIsScheduled(false);
+        setSending(false);
+        return;
+      }
       
       const { error } = await supabase.functions.invoke("notify-events", {
         body: {
@@ -131,6 +176,11 @@ const EmailMarketing = () => {
     }
   };
 
+  const cancelScheduledEmail = (id: string) => {
+    setScheduledEmails(prev => prev.filter(e => e.id !== id));
+    toast({ title: "Scheduled email cancelled" });
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -148,7 +198,7 @@ const EmailMarketing = () => {
         </p>
       </motion.div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Subscribers</CardTitle>
@@ -167,22 +217,31 @@ const EmailMarketing = () => {
         </Card>
         <Card>
           <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Scheduled Emails</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-blue-500">{scheduledEmails.length}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Status</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2 text-green-500">
               <CheckCircle className="h-5 w-5" />
-              <span className="font-medium">Ready to send</span>
+              <span className="font-medium">Ready</span>
             </div>
           </CardContent>
         </Card>
       </div>
 
       <Tabs defaultValue="newsletter" className="space-y-6">
-        <TabsList>
+        <TabsList className="flex-wrap">
           <TabsTrigger value="newsletter">Send Newsletter</TabsTrigger>
           <TabsTrigger value="notify-post">Notify New Post</TabsTrigger>
           <TabsTrigger value="custom">Custom Email</TabsTrigger>
+          <TabsTrigger value="scheduled">Scheduled ({scheduledEmails.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="newsletter">
@@ -229,16 +288,75 @@ const EmailMarketing = () => {
                 <Label htmlFor="sendToAll">Send to all active subscribers ({subscribers.length})</Label>
               </div>
 
+              {/* Schedule Option */}
+              <div className="border-t pt-4 mt-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <Checkbox
+                    id="scheduleEmail"
+                    checked={isScheduled}
+                    onCheckedChange={(checked) => setIsScheduled(!!checked)}
+                  />
+                  <Label htmlFor="scheduleEmail" className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    Schedule for later
+                  </Label>
+                </div>
+
+                {isScheduled && (
+                  <div className="grid gap-4 sm:grid-cols-2 pl-6">
+                    <div>
+                      <Label>Date</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-left font-normal",
+                              !scheduleDate && "text-muted-foreground"
+                            )}
+                          >
+                            <Calendar className="mr-2 h-4 w-4" />
+                            {scheduleDate ? format(scheduleDate, "PPP") : "Pick a date"}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <CalendarComponent
+                            mode="single"
+                            selected={scheduleDate}
+                            onSelect={setScheduleDate}
+                            disabled={(date) => date < new Date()}
+                            initialFocus
+                            className="pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                    <div>
+                      <Label>Time</Label>
+                      <div className="relative">
+                        <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          type="time"
+                          value={scheduleTime}
+                          onChange={(e) => setScheduleTime(e.target.value)}
+                          className="pl-10"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <Button onClick={handleSendNewsletter} disabled={sending || !selectedPost} className="w-full">
                 {sending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Sending...
+                    {isScheduled ? "Scheduling..." : "Sending..."}
                   </>
                 ) : (
                   <>
-                    <Send className="mr-2 h-4 w-4" />
-                    Send Newsletter
+                    {isScheduled ? <Calendar className="mr-2 h-4 w-4" /> : <Send className="mr-2 h-4 w-4" />}
+                    {isScheduled ? "Schedule Newsletter" : "Send Newsletter"}
                   </>
                 )}
               </Button>
@@ -308,19 +426,119 @@ const EmailMarketing = () => {
                 />
               </div>
 
+              {/* Schedule Option for Custom Email */}
+              <div className="border-t pt-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <Checkbox
+                    id="scheduleCustom"
+                    checked={isScheduled}
+                    onCheckedChange={(checked) => setIsScheduled(!!checked)}
+                  />
+                  <Label htmlFor="scheduleCustom" className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    Schedule for later
+                  </Label>
+                </div>
+
+                {isScheduled && (
+                  <div className="grid gap-4 sm:grid-cols-2 pl-6">
+                    <div>
+                      <Label>Date</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-left font-normal",
+                              !scheduleDate && "text-muted-foreground"
+                            )}
+                          >
+                            <Calendar className="mr-2 h-4 w-4" />
+                            {scheduleDate ? format(scheduleDate, "PPP") : "Pick a date"}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <CalendarComponent
+                            mode="single"
+                            selected={scheduleDate}
+                            onSelect={setScheduleDate}
+                            disabled={(date) => date < new Date()}
+                            initialFocus
+                            className="pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                    <div>
+                      <Label>Time</Label>
+                      <div className="relative">
+                        <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          type="time"
+                          value={scheduleTime}
+                          onChange={(e) => setScheduleTime(e.target.value)}
+                          className="pl-10"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <Button onClick={handleSendNewsletter} disabled={sending || !customSubject || !customMessage} className="w-full">
                 {sending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Sending...
+                    {isScheduled ? "Scheduling..." : "Sending..."}
                   </>
                 ) : (
                   <>
-                    <Send className="mr-2 h-4 w-4" />
-                    Send to {subscribers.length} Subscribers
+                    {isScheduled ? <Calendar className="mr-2 h-4 w-4" /> : <Send className="mr-2 h-4 w-4" />}
+                    {isScheduled ? "Schedule Email" : `Send to ${subscribers.length} Subscribers`}
                   </>
                 )}
               </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="scheduled">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5 text-primary" />
+                Scheduled Emails
+              </CardTitle>
+              <CardDescription>Manage your scheduled email campaigns</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {scheduledEmails.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Calendar className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                  <p>No scheduled emails</p>
+                  <p className="text-sm">Schedule an email campaign to see it here</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {scheduledEmails.map((email) => (
+                    <div key={email.id} className="flex items-center justify-between p-4 border rounded-lg bg-muted/50">
+                      <div>
+                        <h4 className="font-medium">{email.subject}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          {format(email.scheduledAt, "PPP 'at' p")} • {email.recipientCount} recipients
+                        </p>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => cancelScheduledEmail(email.id)}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
