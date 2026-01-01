@@ -79,11 +79,15 @@ Deno.serve(async (req) => {
       return {
         id: authUser.id,
         email: authUser.email || "",
+        phone: authUser.phone || profile?.phone || "",
         full_name: profile?.full_name || authUser.user_metadata?.full_name || "No name",
         avatar_url: profile?.avatar_url || null,
+        bio: profile?.bio || "",
+        location: profile?.location || "",
         created_at: authUser.created_at,
         last_sign_in_at: authUser.last_sign_in_at,
         email_confirmed_at: authUser.email_confirmed_at,
+        phone_confirmed_at: authUser.phone_confirmed_at || null,
         role: userRole?.role || "user",
         is_active: true,
       };

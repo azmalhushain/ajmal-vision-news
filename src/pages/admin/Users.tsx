@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { User, Mail, Plus, Trash2, Calendar, Clock, Shield, CheckCircle, XCircle, Eye, EyeOff } from "lucide-react";
+import { User, Mail, Plus, Trash2, Calendar, Clock, Shield, CheckCircle, XCircle, Eye, EyeOff, Phone, MapPin, FileText } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,11 +27,15 @@ import { useToast } from "@/hooks/use-toast";
 interface UserData {
   id: string;
   email: string;
+  phone: string;
   full_name: string;
   avatar_url: string | null;
+  bio: string;
+  location: string;
   created_at: string;
   last_sign_in_at: string | null;
   email_confirmed_at: string | null;
+  phone_confirmed_at: string | null;
   role: string;
   is_active: boolean;
 }
@@ -103,11 +107,15 @@ const Users = () => {
         return {
           id: profile.id,
           email: "",
+          phone: profile.phone || "",
           full_name: profile.full_name || "No name",
           avatar_url: profile.avatar_url,
+          bio: profile.bio || "",
+          location: profile.location || "",
           created_at: profile.created_at,
           last_sign_in_at: null,
           email_confirmed_at: null,
+          phone_confirmed_at: null,
           role: roles?.role || "user",
           is_active: true,
         };
@@ -314,80 +322,132 @@ const Users = () => {
 
       {/* User Details Dialog */}
       <Dialog open={!!selectedUser} onOpenChange={() => setSelectedUser(null)}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>User Details</DialogTitle>
           </DialogHeader>
           {selectedUser && (
-            <div className="space-y-4 mt-4">
+            <div className="space-y-6 mt-4">
+              {/* User Header */}
               <div className="flex items-center gap-4">
-                <Avatar className="h-16 w-16">
+                <Avatar className="h-20 w-20">
                   <AvatarImage src={selectedUser.avatar_url || undefined} />
-                  <AvatarFallback className="text-lg">
+                  <AvatarFallback className="text-2xl">
                     {selectedUser.full_name.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="text-lg font-semibold">{selectedUser.full_name}</h3>
+                  <h3 className="text-xl font-semibold">{selectedUser.full_name}</h3>
                   <p className="text-sm text-muted-foreground">{selectedUser.email || "Email hidden"}</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="glass-card p-4 rounded-lg">
-                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                    <Shield className="h-4 w-4" />
-                    <span className="text-xs">Role</span>
-                  </div>
-                  <Badge variant={getRoleBadgeVariant(selectedUser.role)}>
+                  <Badge variant={getRoleBadgeVariant(selectedUser.role)} className="mt-2">
                     {selectedUser.role.toUpperCase()}
                   </Badge>
                 </div>
+              </div>
 
-                <div className="glass-card p-4 rounded-lg">
-                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                    {selectedUser.is_active ? (
-                      <CheckCircle className="h-4 w-4 text-green-500" />
-                    ) : (
-                      <XCircle className="h-4 w-4 text-red-500" />
-                    )}
-                    <span className="text-xs">Status</span>
+              {/* Contact Information */}
+              <div className="space-y-3">
+                <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Contact Information</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="glass-card p-4 rounded-lg">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                      <Mail className="h-4 w-4" />
+                      <span className="text-xs">Email Address</span>
+                    </div>
+                    <p className="text-sm font-medium">{selectedUser.email || "Not provided"}</p>
                   </div>
-                  <Badge variant={selectedUser.is_active ? "default" : "destructive"}>
-                    {selectedUser.is_active ? "Active" : "Inactive"}
-                  </Badge>
-                </div>
 
-                <div className="glass-card p-4 rounded-lg">
-                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                    <Calendar className="h-4 w-4" />
-                    <span className="text-xs">Created</span>
+                  <div className="glass-card p-4 rounded-lg">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                      <Phone className="h-4 w-4" />
+                      <span className="text-xs">Phone Number</span>
+                    </div>
+                    <p className="text-sm font-medium">{selectedUser.phone || "Not provided"}</p>
                   </div>
-                  <p className="text-sm font-medium">{formatDate(selectedUser.created_at)}</p>
-                </div>
 
-                <div className="glass-card p-4 rounded-lg">
-                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                    <Clock className="h-4 w-4" />
-                    <span className="text-xs">Last Sign In</span>
+                  <div className="glass-card p-4 rounded-lg">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                      <MapPin className="h-4 w-4" />
+                      <span className="text-xs">Location</span>
+                    </div>
+                    <p className="text-sm font-medium">{selectedUser.location || "Not provided"}</p>
                   </div>
-                  <p className="text-sm font-medium">{formatDate(selectedUser.last_sign_in_at)}</p>
-                </div>
 
-                <div className="glass-card p-4 rounded-lg col-span-2">
-                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                    <Mail className="h-4 w-4" />
-                    <span className="text-xs">Email Verified</span>
+                  <div className="glass-card p-4 rounded-lg">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                      {selectedUser.is_active ? (
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <XCircle className="h-4 w-4 text-red-500" />
+                      )}
+                      <span className="text-xs">Account Status</span>
+                    </div>
+                    <Badge variant={selectedUser.is_active ? "default" : "destructive"}>
+                      {selectedUser.is_active ? "Active" : "Inactive"}
+                    </Badge>
                   </div>
-                  <p className="text-sm font-medium">
-                    {selectedUser.email_confirmed_at ? formatDate(selectedUser.email_confirmed_at) : "Not verified"}
-                  </p>
                 </div>
               </div>
 
+              {/* Bio Section */}
+              {selectedUser.bio && (
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Bio</h4>
+                  <div className="glass-card p-4 rounded-lg">
+                    <div className="flex items-start gap-2">
+                      <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
+                      <p className="text-sm">{selectedUser.bio}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Account Activity */}
+              <div className="space-y-3">
+                <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Account Activity</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="glass-card p-4 rounded-lg">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                      <Calendar className="h-4 w-4" />
+                      <span className="text-xs">Account Created</span>
+                    </div>
+                    <p className="text-sm font-medium">{formatDate(selectedUser.created_at)}</p>
+                  </div>
+
+                  <div className="glass-card p-4 rounded-lg">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                      <Clock className="h-4 w-4" />
+                      <span className="text-xs">Last Sign In</span>
+                    </div>
+                    <p className="text-sm font-medium">{formatDate(selectedUser.last_sign_in_at)}</p>
+                  </div>
+
+                  <div className="glass-card p-4 rounded-lg">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                      <Mail className="h-4 w-4" />
+                      <span className="text-xs">Email Verified</span>
+                    </div>
+                    <p className="text-sm font-medium">
+                      {selectedUser.email_confirmed_at ? formatDate(selectedUser.email_confirmed_at) : "Not verified"}
+                    </p>
+                  </div>
+
+                  <div className="glass-card p-4 rounded-lg">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                      <Phone className="h-4 w-4" />
+                      <span className="text-xs">Phone Verified</span>
+                    </div>
+                    <p className="text-sm font-medium">
+                      {selectedUser.phone_confirmed_at ? formatDate(selectedUser.phone_confirmed_at) : "Not verified"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Marketing Notice */}
               <div className="pt-4 border-t">
-                <p className="text-xs text-muted-foreground mb-2">
-                  Note: Passwords are encrypted and cannot be viewed for security reasons.
+                <p className="text-xs text-muted-foreground">
+                  This information can be used for marketing purposes. Use the Email Marketing section to send targeted campaigns.
                 </p>
               </div>
             </div>
