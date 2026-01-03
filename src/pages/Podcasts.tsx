@@ -8,6 +8,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { PodcastCardSkeleton } from "@/components/LoadingSkeleton";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
+import { VideoPlayerModal } from "@/components/VideoPlayerModal";
 
 interface Podcast {
   id: string;
@@ -35,6 +36,7 @@ const Podcasts = () => {
   const [hoveredVideo, setHoveredVideo] = useState<string | null>(null);
   const [expandedDesc, setExpandedDesc] = useState<string | null>(null);
   const [likedPodcasts, setLikedPodcasts] = useState<Set<string>>(new Set());
+  const [selectedVideo, setSelectedVideo] = useState<Podcast | null>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const videoRefs = useRef<{ [key: string]: HTMLVideoElement | null }>({});
   const { t } = useLanguage();
@@ -235,21 +237,20 @@ const Podcasts = () => {
                       >
                         <div className="glass-card rounded-2xl border border-border overflow-hidden h-full">
                           <div 
-                            className="relative aspect-video bg-muted"
+                            className="relative aspect-video bg-muted cursor-pointer"
                             onMouseEnter={() => handleVideoHover(podcast.id, true)}
                             onMouseLeave={() => handleVideoHover(podcast.id, false)}
+                            onClick={() => podcast.media_type === "video" && podcast.video_url ? setSelectedVideo(podcast) : togglePlay(podcast)}
                           >
                             {podcast.media_type === "video" && podcast.video_url ? (
                               <>
                                 {getYouTubeId(podcast.video_url) ? (
-                                  // YouTube video - show thumbnail, click to play
                                   <img
                                     src={podcast.cover_image_url || getYouTubeThumbnail(podcast.video_url) || "/placeholder.svg"}
                                     alt={podcast.title}
                                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                   />
                                 ) : (
-                                  // Direct video - show preview on hover
                                   <video
                                     ref={(el) => { videoRefs.current[podcast.id] = el; }}
                                     src={podcast.video_url}
@@ -259,8 +260,6 @@ const Podcasts = () => {
                                     playsInline
                                     preload="metadata"
                                     poster={podcast.cover_image_url || undefined}
-                                    onMouseEnter={(e) => e.currentTarget.play().catch(() => {})}
-                                    onMouseLeave={(e) => { e.currentTarget.pause(); e.currentTarget.currentTime = 0; }}
                                   />
                                 )}
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex items-center justify-center pointer-events-none">
@@ -277,16 +276,13 @@ const Podcasts = () => {
                                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-center justify-center">
-                                  <button
-                                    onClick={() => togglePlay(podcast)}
-                                    className="w-16 h-16 rounded-full bg-primary/90 flex items-center justify-center hover:scale-110 transition-transform shadow-2xl"
-                                  >
+                                  <div className="w-16 h-16 rounded-full bg-primary/90 flex items-center justify-center group-hover:scale-110 transition-transform shadow-2xl">
                                     {playingId === podcast.id ? (
                                       <Pause className="h-7 w-7 text-primary-foreground" fill="currentColor" />
                                     ) : (
                                       <Play className="h-7 w-7 text-primary-foreground ml-1" fill="currentColor" />
                                     )}
-                                  </button>
+                                  </div>
                                 </div>
                               </div>
                             )}
@@ -365,11 +361,13 @@ const Podcasts = () => {
                   >
                     <div className="glass-card rounded-xl border border-border overflow-hidden h-full flex flex-col">
                       {/* Thumbnail with hover preview */}
-                      <div className="relative aspect-video bg-muted">
+                      <div 
+                        className="relative aspect-video bg-muted cursor-pointer"
+                        onClick={() => podcast.media_type === "video" && podcast.video_url ? setSelectedVideo(podcast) : togglePlay(podcast)}
+                      >
                         {podcast.media_type === "video" && podcast.video_url ? (
                           <>
                             {getYouTubeId(podcast.video_url) ? (
-                              // YouTube video - show thumbnail
                               <img
                                 src={podcast.cover_image_url || getYouTubeThumbnail(podcast.video_url) || "/placeholder.svg"}
                                 alt={podcast.title}
@@ -380,7 +378,6 @@ const Podcasts = () => {
                                 }}
                               />
                             ) : (
-                              // Direct video - play on hover
                               <video
                                 ref={(el) => { videoRefs.current[podcast.id] = el; }}
                                 src={podcast.video_url}
@@ -413,18 +410,15 @@ const Podcasts = () => {
                                 <Headphones className="h-12 w-12 text-primary/50" />
                               </div>
                             )}
-                            <button
-                              onClick={() => togglePlay(podcast)}
-                              className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/30"
-                            >
-                              <div className="w-12 h-12 rounded-full bg-primary shadow-lg flex items-center justify-center hover:scale-110 transition-transform">
+                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/30">
+                              <div className="w-12 h-12 rounded-full bg-primary shadow-lg flex items-center justify-center">
                                 {playingId === podcast.id ? (
                                   <Pause className="h-5 w-5 text-primary-foreground" fill="currentColor" />
                                 ) : (
                                   <Play className="h-5 w-5 text-primary-foreground ml-0.5" fill="currentColor" />
                                 )}
                               </div>
-                            </button>
+                            </div>
                           </div>
                         )}
                         
@@ -537,6 +531,17 @@ const Podcasts = () => {
       </section>
 
       <Footer />
+
+      {/* Video Player Modal */}
+      {selectedVideo && selectedVideo.video_url && (
+        <VideoPlayerModal
+          isOpen={!!selectedVideo}
+          onClose={() => setSelectedVideo(null)}
+          videoUrl={selectedVideo.video_url}
+          title={selectedVideo.title}
+          poster={selectedVideo.cover_image_url || undefined}
+        />
+      )}
     </div>
   );
 };
