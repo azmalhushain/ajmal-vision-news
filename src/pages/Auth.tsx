@@ -46,7 +46,8 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signUp({
+      // First create the account
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -57,9 +58,14 @@ const Auth = () => {
 
       if (error) throw error;
 
+      // If user already exists and is confirmed, show error
+      if (data.user?.identities?.length === 0) {
+        throw new Error("An account with this email already exists. Please login instead.");
+      }
+
       toast({
-        title: "Verification email sent!",
-        description: "Please check your email for the OTP code.",
+        title: "Verification code sent!",
+        description: "Please check your email for the 6-digit OTP code.",
       });
       setStep("verify-otp");
     } catch (error: any) {
@@ -185,16 +191,31 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.verifyOtp({
+      const { data, error } = await supabase.auth.verifyOtp({
         email,
         token: otpCode,
-        type: "signup",
+        type: "email",
       });
 
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes("Token has expired") || error.message.includes("expired")) {
+          throw new Error("OTP has expired. Please request a new code.");
+        }
+        if (error.message.includes("Invalid") || error.message.includes("invalid")) {
+          throw new Error("Invalid OTP code. Please check and try again.");
+        }
+        throw error;
+      }
 
-      toast({ title: "Account verified!", description: "Your account has been verified successfully." });
-      navigate("/");
+      if (data.session) {
+        toast({ title: "Account verified!", description: "Your account has been verified successfully." });
+        navigate("/");
+      } else {
+        // For signup verification, we might need to sign them in
+        toast({ title: "Account verified!", description: "Please login with your credentials." });
+        setStep("login");
+        setOtpCode("");
+      }
     } catch (error: any) {
       toast({ title: "Verification failed", description: error.message, variant: "destructive" });
     } finally {

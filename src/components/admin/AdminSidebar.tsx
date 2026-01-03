@@ -55,6 +55,7 @@ const menuSections: MenuSection[] = [
       { icon: Heart, label: "Post Stats", path: "/admin/post-stats" },
       { icon: Mail, label: "Newsletter", path: "/admin/newsletter" },
       { icon: Send, label: "Email Marketing", path: "/admin/email-marketing" },
+      { icon: Newspaper, label: "Email Builder", path: "/admin/email-builder" },
       { icon: Phone, label: "Contact Messages", path: "/admin/contact-messages" },
     ],
   },
