@@ -99,28 +99,28 @@ export const NewsSection = ({ showAll = false }: { showAll?: boolean }) => {
   }, [showAll, hasMore, isLoading, isLoadingMore, page]);
 
   return (
-    <section className="min-h-screen bg-gradient-to-b from-background via-background to-secondary py-20 px-4 sm:px-6 lg:px-8">
+    <section className="min-h-screen bg-gradient-to-b from-background via-background to-secondary py-12 sm:py-16 md:py-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {!showAll && (
-          <div className={`text-center mb-16 ${isVisible ? 'fade-in-up' : 'opacity-0'}`}>
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-foreground mb-4 tracking-tight">
+          <div className={`text-center mb-8 sm:mb-12 md:mb-16 ${isVisible ? 'fade-in-up' : 'opacity-0'}`}>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-foreground mb-3 sm:mb-4 tracking-tight">
               {t("latestNews")}
             </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto px-2">
               Stay informed about our ongoing projects, initiatives, and community developments
             </p>
           </div>
         )}
 
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             {[...Array(6)].map((_, i) => (
               <CardSkeleton key={i} />
             ))}
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12">
               {articles.map((article, index) => (
                 <div
                   key={article.id}

@@ -19,6 +19,7 @@ import {
   Mail,
   Send,
   Newspaper,
+  TrendingUp,
 } from "lucide-react";
 
 interface MenuItem {
@@ -38,6 +39,7 @@ const menuSections: MenuSection[] = [
     items: [
       { icon: LayoutDashboard, label: "Overview", path: "/admin" },
       { icon: BarChart3, label: "Analytics", path: "/admin/analytics" },
+      { icon: TrendingUp, label: "Engagement", path: "/admin/engagement" },
     ],
   },
   {

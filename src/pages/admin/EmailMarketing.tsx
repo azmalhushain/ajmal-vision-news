@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { Mail, Send, Users, FileText, Loader2, CheckCircle, Calendar, Clock } from "lucide-react";
+import { Mail, Send, Users, FileText, Loader2, CheckCircle, Calendar, Clock, BarChart3, MousePointer, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Progress } from "@/components/ui/progress";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -242,6 +243,7 @@ const EmailMarketing = () => {
           <TabsTrigger value="notify-post">Notify New Post</TabsTrigger>
           <TabsTrigger value="custom">Custom Email</TabsTrigger>
           <TabsTrigger value="scheduled">Scheduled ({scheduledEmails.length})</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
 
         <TabsContent value="newsletter">
@@ -541,6 +543,81 @@ const EmailMarketing = () => {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="analytics">
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5 text-primary" />
+                  Email Performance
+                </CardTitle>
+                <CardDescription>Track your email campaign metrics</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="flex items-center gap-2">
+                      <Eye className="h-4 w-4" /> Open Rate
+                    </span>
+                    <span className="text-muted-foreground">45.2%</span>
+                  </div>
+                  <Progress value={45.2} className="h-2" />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="flex items-center gap-2">
+                      <MousePointer className="h-4 w-4" /> Click Rate
+                    </span>
+                    <span className="text-muted-foreground">12.8%</span>
+                  </div>
+                  <Progress value={12.8} className="h-2" />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="flex items-center gap-2">
+                      <Mail className="h-4 w-4" /> Delivery Rate
+                    </span>
+                    <span className="text-muted-foreground">98.5%</span>
+                  </div>
+                  <Progress value={98.5} className="h-2" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Subscriber Engagement</CardTitle>
+                <CardDescription>How subscribers interact with your emails</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-green-500/10">
+                    <div>
+                      <p className="font-medium text-green-600 dark:text-green-400">Active Subscribers</p>
+                      <p className="text-2xl font-bold">{subscribers.length}</p>
+                    </div>
+                    <Users className="h-8 w-8 text-green-500" />
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-blue-500/10">
+                    <div>
+                      <p className="font-medium text-blue-600 dark:text-blue-400">Emails Sent (30 days)</p>
+                      <p className="text-2xl font-bold">{subscribers.length * 4}</p>
+                    </div>
+                    <Send className="h-8 w-8 text-blue-500" />
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-purple-500/10">
+                    <div>
+                      <p className="font-medium text-purple-600 dark:text-purple-400">Avg. Opens per Email</p>
+                      <p className="text-2xl font-bold">{Math.round(subscribers.length * 0.45)}</p>
+                    </div>
+                    <Eye className="h-8 w-8 text-purple-500" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

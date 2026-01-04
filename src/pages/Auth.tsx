@@ -46,13 +46,12 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      // First create the account
+      // Create the account with auto-confirm enabled
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: { full_name: fullName },
-          emailRedirectTo: `${window.location.origin}/`,
         },
       });
 
@@ -63,11 +62,21 @@ const Auth = () => {
         throw new Error("An account with this email already exists. Please login instead.");
       }
 
-      toast({
-        title: "Verification code sent!",
-        description: "Please check your email for the 6-digit OTP code.",
-      });
-      setStep("verify-otp");
+      // With auto-confirm enabled, user should be logged in automatically
+      if (data.session) {
+        toast({
+          title: "Account created!",
+          description: "Welcome! Your account has been created successfully.",
+        });
+        navigate("/");
+      } else {
+        // Fallback - try to sign in directly
+        toast({
+          title: "Account created!",
+          description: "Please sign in with your credentials.",
+        });
+        setStep("login");
+      }
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {

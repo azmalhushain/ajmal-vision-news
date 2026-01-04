@@ -69,58 +69,58 @@ export const Footer = () => {
 
   return (
     <footer className="bg-secondary border-t border-border">
-      <div className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+      <div className="container mx-auto px-4 py-8 sm:py-12 md:py-16">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 md:gap-12">
           {/* About */}
-          <div className="space-y-4">
-            <h3 className="text-xl font-black text-foreground">{content.site_name}</h3>
-            <p className="text-muted-foreground leading-relaxed text-sm">
+          <div className="space-y-3 sm:space-y-4 col-span-2 md:col-span-1">
+            <h3 className="text-lg sm:text-xl font-black text-foreground">{content.site_name}</h3>
+            <p className="text-muted-foreground leading-relaxed text-xs sm:text-sm">
               {content.site_description}
             </p>
-            <div className="flex gap-4">
+            <div className="flex gap-2 sm:gap-4">
               <a
                 href={content.facebook_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center hover:bg-accent hover:text-accent-foreground transition-all"
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-accent/10 flex items-center justify-center hover:bg-accent hover:text-accent-foreground transition-all"
               >
-                <Facebook className="w-5 h-5" />
+                <Facebook className="w-4 h-4 sm:w-5 sm:h-5" />
               </a>
               <a
                 href={content.twitter_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center hover:bg-accent hover:text-accent-foreground transition-all"
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-accent/10 flex items-center justify-center hover:bg-accent hover:text-accent-foreground transition-all"
               >
-                <Twitter className="w-5 h-5" />
+                <Twitter className="w-4 h-4 sm:w-5 sm:h-5" />
               </a>
               <a
                 href={content.instagram_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center hover:bg-accent hover:text-accent-foreground transition-all"
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-accent/10 flex items-center justify-center hover:bg-accent hover:text-accent-foreground transition-all"
               >
-                <Instagram className="w-5 h-5" />
+                <Instagram className="w-4 h-4 sm:w-5 sm:h-5" />
               </a>
               <a
                 href={content.youtube_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center hover:bg-accent hover:text-accent-foreground transition-all"
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-accent/10 flex items-center justify-center hover:bg-accent hover:text-accent-foreground transition-all"
               >
-                <Youtube className="w-5 h-5" />
+                <Youtube className="w-4 h-4 sm:w-5 sm:h-5" />
               </a>
             </div>
           </div>
 
           {/* Quick Links */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-bold text-foreground">Quick Links</h3>
-            <ul className="space-y-3">
+          <div className="space-y-3 sm:space-y-4">
+            <h3 className="text-base sm:text-lg font-bold text-foreground">Quick Links</h3>
+            <ul className="space-y-2 sm:space-y-3">
               <li>
                 <Link
                   to="/"
-                  className="text-muted-foreground hover:text-accent transition-colors text-sm"
+                  className="text-muted-foreground hover:text-accent transition-colors text-xs sm:text-sm"
                 >
                   Home
                 </Link>
@@ -128,7 +128,7 @@ export const Footer = () => {
               <li>
                 <Link
                   to="/about"
-                  className="text-muted-foreground hover:text-accent transition-colors text-sm"
+                  className="text-muted-foreground hover:text-accent transition-colors text-xs sm:text-sm"
                 >
                   About
                 </Link>
@@ -136,7 +136,7 @@ export const Footer = () => {
               <li>
                 <Link
                   to="/vision"
-                  className="text-muted-foreground hover:text-accent transition-colors text-sm"
+                  className="text-muted-foreground hover:text-accent transition-colors text-xs sm:text-sm"
                 >
                   Vision & Work
                 </Link>
@@ -144,7 +144,7 @@ export const Footer = () => {
               <li>
                 <Link
                   to="/news"
-                  className="text-muted-foreground hover:text-accent transition-colors text-sm"
+                  className="text-muted-foreground hover:text-accent transition-colors text-xs sm:text-sm"
                 >
                   News
                 </Link>
@@ -153,13 +153,13 @@ export const Footer = () => {
           </div>
 
           {/* More Links */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-bold text-foreground">More</h3>
-            <ul className="space-y-3">
+          <div className="space-y-3 sm:space-y-4">
+            <h3 className="text-base sm:text-lg font-bold text-foreground">More</h3>
+            <ul className="space-y-2 sm:space-y-3">
               <li>
                 <Link
                   to="/gallery"
-                  className="text-muted-foreground hover:text-accent transition-colors text-sm"
+                  className="text-muted-foreground hover:text-accent transition-colors text-xs sm:text-sm"
                 >
                   Gallery
                 </Link>
@@ -167,7 +167,7 @@ export const Footer = () => {
               <li>
                 <Link
                   to="/contact"
-                  className="text-muted-foreground hover:text-accent transition-colors text-sm"
+                  className="text-muted-foreground hover:text-accent transition-colors text-xs sm:text-sm"
                 >
                   Contact
                 </Link>
@@ -175,7 +175,7 @@ export const Footer = () => {
               <li>
                 <a
                   href="#"
-                  className="text-muted-foreground hover:text-accent transition-colors text-sm"
+                  className="text-muted-foreground hover:text-accent transition-colors text-xs sm:text-sm"
                 >
                   Privacy Policy
                 </a>
@@ -183,7 +183,7 @@ export const Footer = () => {
               <li>
                 <a
                   href="#"
-                  className="text-muted-foreground hover:text-accent transition-colors text-sm"
+                  className="text-muted-foreground hover:text-accent transition-colors text-xs sm:text-sm"
                 >
                   Terms & Conditions
                 </a>
@@ -192,32 +192,32 @@ export const Footer = () => {
           </div>
 
           {/* Contact Info */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-bold text-foreground">Contact Info</h3>
-            <ul className="space-y-3">
-              <li className="flex items-start gap-3 text-muted-foreground text-sm">
-                <MapPin className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+          <div className="space-y-3 sm:space-y-4 col-span-2 md:col-span-1">
+            <h3 className="text-base sm:text-lg font-bold text-foreground">Contact Info</h3>
+            <ul className="space-y-2 sm:space-y-3">
+              <li className="flex items-start gap-2 sm:gap-3 text-muted-foreground text-xs sm:text-sm">
+                <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-accent shrink-0 mt-0.5" />
                 <span className="whitespace-pre-line">{content.address}</span>
               </li>
-              <li className="flex items-center gap-3 text-muted-foreground text-sm">
-                <Phone className="w-5 h-5 text-accent shrink-0" />
+              <li className="flex items-center gap-2 sm:gap-3 text-muted-foreground text-xs sm:text-sm">
+                <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-accent shrink-0" />
                 <span>{content.phone}</span>
               </li>
-              <li className="flex items-center gap-3 text-muted-foreground text-sm">
-                <Mail className="w-5 h-5 text-accent shrink-0" />
-                <span>{content.email}</span>
+              <li className="flex items-center gap-2 sm:gap-3 text-muted-foreground text-xs sm:text-sm">
+                <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-accent shrink-0" />
+                <span className="break-all">{content.email}</span>
               </li>
             </ul>
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-12 pt-8 border-t border-border">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-muted-foreground text-sm text-center md:text-left">
+        <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-border">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-3 sm:gap-4">
+            <p className="text-muted-foreground text-xs sm:text-sm text-center md:text-left">
               © {currentYear} {content.copyright_text}
             </p>
-            <p className="text-muted-foreground text-sm text-center md:text-right">
+            <p className="text-muted-foreground text-xs sm:text-sm text-center md:text-right">
               {content.tagline} | Developed by{" "}
               <a
                 href={content.developer_url}
