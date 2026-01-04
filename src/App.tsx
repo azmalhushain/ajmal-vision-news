@@ -39,6 +39,7 @@ import ContactMessages from "./pages/admin/ContactMessages";
 import EmailTemplates from "./pages/admin/EmailTemplates";
 import EmailMarketing from "./pages/admin/EmailMarketing";
 import EmailTemplateBuilder from "./pages/admin/EmailTemplateBuilderPage";
+import EngagementDashboard from "./pages/admin/EngagementDashboard";
 import UserProfile from "./pages/UserProfile";
 
 const queryClient = new QueryClient();
@@ -83,6 +84,7 @@ const AnimatedRoutes = () => {
           <Route path="email-builder" element={<EmailTemplateBuilder />} />
           <Route path="users" element={<Users />} />
           <Route path="analytics" element={<Analytics />} />
+          <Route path="engagement" element={<EngagementDashboard />} />
           <Route path="settings" element={<Settings />} />
         </Route>
         

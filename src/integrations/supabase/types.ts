@@ -185,6 +185,39 @@ export type Database = {
         }
         Relationships: []
       }
+      email_analytics: {
+        Row: {
+          clicked_at: string | null
+          clicked_links: Json | null
+          created_at: string
+          email_id: string
+          id: string
+          opened_at: string | null
+          recipient_email: string
+          sent_at: string
+        }
+        Insert: {
+          clicked_at?: string | null
+          clicked_links?: Json | null
+          created_at?: string
+          email_id: string
+          id?: string
+          opened_at?: string | null
+          recipient_email: string
+          sent_at?: string
+        }
+        Update: {
+          clicked_at?: string | null
+          clicked_links?: Json | null
+          created_at?: string
+          email_id?: string
+          id?: string
+          opened_at?: string | null
+          recipient_email?: string
+          sent_at?: string
+        }
+        Relationships: []
+      }
       email_templates: {
         Row: {
           body_html: string
@@ -599,6 +632,56 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      scheduled_emails: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string | null
+          id: string
+          post_id: string | null
+          recipients: Json
+          scheduled_at: string
+          sent_at: string | null
+          status: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          post_id?: string | null
+          recipients?: Json
+          scheduled_at: string
+          sent_at?: string | null
+          status?: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          post_id?: string | null
+          recipients?: Json
+          scheduled_at?: string
+          sent_at?: string | null
+          status?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_emails_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
