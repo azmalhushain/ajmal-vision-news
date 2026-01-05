@@ -401,22 +401,40 @@ export type Database = {
       newsletter_subscribers: {
         Row: {
           email: string
+          engagement_score: number | null
           id: string
+          interests: string[] | null
           is_active: boolean | null
+          last_engagement_at: string | null
+          name: string | null
+          preferred_language: string | null
+          segment: string | null
           subscribed_at: string
           unsubscribed_at: string | null
         }
         Insert: {
           email: string
+          engagement_score?: number | null
           id?: string
+          interests?: string[] | null
           is_active?: boolean | null
+          last_engagement_at?: string | null
+          name?: string | null
+          preferred_language?: string | null
+          segment?: string | null
           subscribed_at?: string
           unsubscribed_at?: string | null
         }
         Update: {
           email?: string
+          engagement_score?: number | null
           id?: string
+          interests?: string[] | null
           is_active?: boolean | null
+          last_engagement_at?: string | null
+          name?: string | null
+          preferred_language?: string | null
+          segment?: string | null
           subscribed_at?: string
           unsubscribed_at?: string | null
         }
@@ -539,6 +557,47 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "post_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_translations: {
+        Row: {
+          created_at: string
+          id: string
+          language: string
+          post_id: string
+          translated_content: string
+          translated_excerpt: string | null
+          translated_title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          language: string
+          post_id: string
+          translated_content: string
+          translated_excerpt?: string | null
+          translated_title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          language?: string
+          post_id?: string
+          translated_content?: string
+          translated_excerpt?: string | null
+          translated_title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_translations_post_id_fkey"
             columns: ["post_id"]
             isOneToOne: false
             referencedRelation: "posts"
@@ -682,6 +741,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      subscriber_segments: {
+        Row: {
+          created_at: string
+          criteria: Json | null
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          criteria?: Json | null
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          criteria?: Json | null
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
