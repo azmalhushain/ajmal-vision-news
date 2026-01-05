@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { Mail, Send, Users, FileText, Loader2, CheckCircle, Calendar, Clock, BarChart3, MousePointer, Eye } from "lucide-react";
+import { Mail, Send, Users, FileText, Loader2, CheckCircle, Calendar, Clock, BarChart3, MousePointer, Eye, Tag, Target, Plus, X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { Slider } from "@/components/ui/slider";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -28,6 +30,10 @@ interface Subscriber {
   id: string;
   email: string;
   is_active: boolean;
+  segment?: string;
+  interests?: string[];
+  engagement_score?: number;
+  name?: string;
 }
 
 interface ScheduledEmail {
@@ -36,6 +42,26 @@ interface ScheduledEmail {
   scheduledAt: Date;
   recipientCount: number;
 }
+
+const AVAILABLE_INTERESTS = [
+  "Infrastructure",
+  "Healthcare",
+  "Education",
+  "Youth & Women",
+  "Environment",
+  "Digital",
+  "Agriculture",
+  "News",
+  "Events",
+];
+
+const SEGMENTS = [
+  { value: "all", label: "All Subscribers" },
+  { value: "general", label: "General" },
+  { value: "highly_engaged", label: "Highly Engaged" },
+  { value: "new_subscribers", label: "New Subscribers" },
+  { value: "inactive", label: "Inactive" },
+];
 
 const EmailMarketing = () => {
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
@@ -51,6 +77,13 @@ const EmailMarketing = () => {
   const [scheduleTime, setScheduleTime] = useState("09:00");
   const [isScheduled, setIsScheduled] = useState(false);
   const [scheduledEmails, setScheduledEmails] = useState<ScheduledEmail[]>([]);
+  
+  // Segmentation state
+  const [selectedSegment, setSelectedSegment] = useState("all");
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [minEngagementScore, setMinEngagementScore] = useState(0);
+  const [segmentedCount, setSegmentedCount] = useState(0);
+  
   const { toast } = useToast();
 
   useEffect(() => {
@@ -65,7 +98,61 @@ const EmailMarketing = () => {
 
     setSubscribers(subs || []);
     setPosts(postsData || []);
+    setSegmentedCount(subs?.length || 0);
     setLoading(false);
+  };
+
+  // Update segmented count when filters change
+  useEffect(() => {
+    let filtered = subscribers;
+    
+    if (selectedSegment !== "all") {
+      filtered = filtered.filter(s => s.segment === selectedSegment);
+    }
+    
+    if (selectedInterests.length > 0) {
+      filtered = filtered.filter(s => 
+        s.interests?.some(i => selectedInterests.includes(i))
+      );
+    }
+    
+    if (minEngagementScore > 0) {
+      filtered = filtered.filter(s => 
+        (s.engagement_score || 0) >= minEngagementScore
+      );
+    }
+    
+    setSegmentedCount(filtered.length);
+  }, [selectedSegment, selectedInterests, minEngagementScore, subscribers]);
+
+  const toggleInterest = (interest: string) => {
+    setSelectedInterests(prev => 
+      prev.includes(interest) 
+        ? prev.filter(i => i !== interest)
+        : [...prev, interest]
+    );
+  };
+
+  const getFilteredRecipients = (): string[] => {
+    let filtered = subscribers;
+    
+    if (selectedSegment !== "all") {
+      filtered = filtered.filter(s => s.segment === selectedSegment);
+    }
+    
+    if (selectedInterests.length > 0) {
+      filtered = filtered.filter(s => 
+        s.interests?.some(i => selectedInterests.includes(i))
+      );
+    }
+    
+    if (minEngagementScore > 0) {
+      filtered = filtered.filter(s => 
+        (s.engagement_score || 0) >= minEngagementScore
+      );
+    }
+    
+    return filtered.map(s => s.email);
   };
 
   const handleSendNewsletter = async () => {
@@ -240,6 +327,7 @@ const EmailMarketing = () => {
       <Tabs defaultValue="newsletter" className="space-y-6">
         <TabsList className="flex-wrap">
           <TabsTrigger value="newsletter">Send Newsletter</TabsTrigger>
+          <TabsTrigger value="segmented">Segmented Email</TabsTrigger>
           <TabsTrigger value="notify-post">Notify New Post</TabsTrigger>
           <TabsTrigger value="custom">Custom Email</TabsTrigger>
           <TabsTrigger value="scheduled">Scheduled ({scheduledEmails.length})</TabsTrigger>
@@ -359,6 +447,167 @@ const EmailMarketing = () => {
                   <>
                     {isScheduled ? <Calendar className="mr-2 h-4 w-4" /> : <Send className="mr-2 h-4 w-4" />}
                     {isScheduled ? "Schedule Newsletter" : "Send Newsletter"}
+                  </>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="segmented">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Target className="h-5 w-5 text-primary" />
+                Segmented Email Campaign
+              </CardTitle>
+              <CardDescription>Send targeted emails based on subscriber interests and engagement</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Segment Selection */}
+              <div>
+                <Label>Target Segment</Label>
+                <Select value={selectedSegment} onValueChange={setSelectedSegment}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a segment..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SEGMENTS.map((segment) => (
+                      <SelectItem key={segment.value} value={segment.value}>
+                        {segment.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Interest Tags */}
+              <div>
+                <Label className="flex items-center gap-2 mb-3">
+                  <Tag className="h-4 w-4" />
+                  Filter by Interests
+                </Label>
+                <div className="flex flex-wrap gap-2">
+                  {AVAILABLE_INTERESTS.map((interest) => (
+                    <Badge
+                      key={interest}
+                      variant={selectedInterests.includes(interest) ? "default" : "outline"}
+                      className="cursor-pointer hover:bg-primary/80 transition-colors"
+                      onClick={() => toggleInterest(interest)}
+                    >
+                      {interest}
+                      {selectedInterests.includes(interest) && (
+                        <X className="ml-1 h-3 w-3" />
+                      )}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              {/* Engagement Score */}
+              <div>
+                <Label className="flex items-center justify-between mb-3">
+                  <span>Minimum Engagement Score</span>
+                  <span className="text-muted-foreground">{minEngagementScore}+</span>
+                </Label>
+                <Slider
+                  value={[minEngagementScore]}
+                  onValueChange={([value]) => setMinEngagementScore(value)}
+                  max={100}
+                  step={5}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                  <span>All subscribers</span>
+                  <span>Highly engaged only</span>
+                </div>
+              </div>
+
+              {/* Matching Subscribers Preview */}
+              <div className="bg-muted/50 rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Matching Subscribers</span>
+                  <Badge variant="secondary" className="text-lg px-3">
+                    {segmentedCount}
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {segmentedCount === subscribers.length 
+                    ? "All active subscribers match your criteria"
+                    : `${((segmentedCount / subscribers.length) * 100).toFixed(1)}% of your subscribers`}
+                </p>
+              </div>
+
+              {/* Email Content */}
+              <div className="border-t pt-4">
+                <h4 className="font-medium mb-4">Email Content</h4>
+                <div className="space-y-4">
+                  <div>
+                    <Label>Subject</Label>
+                    <Input
+                      value={customSubject}
+                      onChange={(e) => setCustomSubject(e.target.value)}
+                      placeholder="Enter email subject..."
+                    />
+                  </div>
+                  <div>
+                    <Label>Message</Label>
+                    <Textarea
+                      value={customMessage}
+                      onChange={(e) => setCustomMessage(e.target.value)}
+                      placeholder="Write your targeted message..."
+                      rows={6}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <Button 
+                onClick={async () => {
+                  if (!customSubject || !customMessage) {
+                    toast({ title: "Please fill in subject and message", variant: "destructive" });
+                    return;
+                  }
+                  
+                  setSending(true);
+                  try {
+                    const { data, error } = await supabase.functions.invoke("send-segmented-email", {
+                      body: {
+                        segment: selectedSegment,
+                        interests: selectedInterests,
+                        minEngagementScore,
+                        subject: customSubject,
+                        content: customMessage,
+                      },
+                    });
+
+                    if (error) throw error;
+
+                    toast({
+                      title: "Segmented email sent!",
+                      description: data?.message || `Successfully sent to ${segmentedCount} subscribers.`,
+                    });
+
+                    setCustomSubject("");
+                    setCustomMessage("");
+                  } catch (error: any) {
+                    toast({ title: "Failed to send", description: error.message, variant: "destructive" });
+                  } finally {
+                    setSending(false);
+                  }
+                }} 
+                disabled={sending || segmentedCount === 0 || !customSubject || !customMessage} 
+                className="w-full"
+              >
+                {sending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Send className="mr-2 h-4 w-4" />
+                    Send to {segmentedCount} Subscribers
                   </>
                 )}
               </Button>

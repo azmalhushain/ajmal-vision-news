@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-type AuthStep = "login" | "signup" | "verify-otp" | "forgot-password" | "reset-sent" | "phone-login" | "phone-verify";
+type AuthStep = "login" | "signup" | "verify-email-otp" | "forgot-password" | "reset-sent" | "phone-login" | "phone-verify";
 
 const Auth = () => {
   const [step, setStep] = useState<AuthStep>("login");
@@ -21,7 +21,7 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [otpCode, setOtpCode] = useState("");
-  const [authMethod, setAuthMethod] = useState<"email" | "phone">("email");
+  const [pendingSignupData, setPendingSignupData] = useState<{email: string; password: string; fullName: string} | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -41,44 +41,96 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  const sendEmailOtp = async (emailAddress: string) => {
+    const { error } = await supabase.functions.invoke("send-otp", {
+      body: { action: "send", email: emailAddress, type: "email" },
+    });
+    
+    if (error) throw error;
+  };
+
+  const verifyEmailOtp = async (emailAddress: string, otp: string) => {
+    const { data, error } = await supabase.functions.invoke("send-otp", {
+      body: { action: "verify", email: emailAddress, otp, type: "email" },
+    });
+    
+    if (error) throw error;
+    return data;
+  };
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // Create the account with auto-confirm enabled
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { full_name: fullName },
-        },
+      // First send OTP for email verification
+      await sendEmailOtp(email);
+      
+      // Store signup data for after verification
+      setPendingSignupData({ email, password, fullName });
+      
+      toast({
+        title: "Verification code sent!",
+        description: "Please check your email for the 6-digit verification code.",
       });
-
-      if (error) throw error;
-
-      // If user already exists and is confirmed, show error
-      if (data.user?.identities?.length === 0) {
-        throw new Error("An account with this email already exists. Please login instead.");
-      }
-
-      // With auto-confirm enabled, user should be logged in automatically
-      if (data.session) {
-        toast({
-          title: "Account created!",
-          description: "Welcome! Your account has been created successfully.",
-        });
-        navigate("/");
-      } else {
-        // Fallback - try to sign in directly
-        toast({
-          title: "Account created!",
-          description: "Please sign in with your credentials.",
-        });
-        setStep("login");
-      }
+      
+      setStep("verify-email-otp");
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyEmailOtp = async () => {
+    if (otpCode.length !== 6) {
+      toast({ title: "Invalid OTP", description: "Please enter the 6-digit code.", variant: "destructive" });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Verify the OTP
+      const result = await verifyEmailOtp(pendingSignupData?.email || email, otpCode);
+      
+      if (!result.success) {
+        throw new Error(result.error || "OTP verification failed");
+      }
+
+      // If we have pending signup data, complete the registration
+      if (pendingSignupData) {
+        const { data, error } = await supabase.auth.signUp({
+          email: pendingSignupData.email,
+          password: pendingSignupData.password,
+          options: {
+            data: { full_name: pendingSignupData.fullName },
+          },
+        });
+
+        if (error) throw error;
+
+        if (data.session) {
+          toast({
+            title: "Account created!",
+            description: "Welcome! Your account has been verified and created successfully.",
+          });
+          navigate("/");
+        } else {
+          // Auto-confirm should handle this, but fallback to login
+          toast({
+            title: "Account created!",
+            description: "Please sign in with your credentials.",
+          });
+          setStep("login");
+        }
+        
+        setPendingSignupData(null);
+      }
+      
+      setOtpCode("");
+    } catch (error: any) {
+      toast({ title: "Verification failed", description: error.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -123,23 +175,17 @@ const Auth = () => {
   };
 
   const formatPhoneNumber = (phoneNumber: string): string => {
-    // Remove all non-digit characters except +
     let cleaned = phoneNumber.replace(/[^\d+]/g, "");
-    
-    // Ensure it starts with +
     if (!cleaned.startsWith("+")) {
-      // If it starts with country code digits, add +
       if (cleaned.length >= 10) {
         cleaned = "+" + cleaned;
       }
     }
-    
     return cleaned;
   };
 
   const validatePhoneNumber = (phoneNumber: string): boolean => {
     const formatted = formatPhoneNumber(phoneNumber);
-    // Must start with + and have at least 10 digits total
     return /^\+[1-9]\d{9,14}$/.test(formatted);
   };
 
@@ -160,25 +206,26 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithOtp({ 
-        phone: formattedPhone,
-        options: {
-          channel: "sms",
-        }
+      // Send OTP via our edge function
+      const { data, error } = await supabase.functions.invoke("send-otp", {
+        body: { action: "send", phone: formattedPhone, type: "phone" },
       });
 
-      if (error) {
-        // Handle specific error cases
-        if (error.message.includes("Phone auth is disabled") || error.message.includes("provider is not enabled")) {
-          throw new Error("Phone authentication is not enabled. Please contact the administrator to enable phone auth in the backend settings.");
-        }
-        throw error;
-      }
+      if (error) throw error;
 
       toast({
-        title: "OTP sent successfully!",
+        title: "OTP sent!",
         description: `A 6-digit verification code has been sent to ${formattedPhone}`,
       });
+      
+      // For demo purposes, show the OTP if returned
+      if (data?.demo_otp) {
+        toast({
+          title: "Demo Mode",
+          description: `Your OTP code is: ${data.demo_otp}`,
+        });
+      }
+      
       setStep("phone-verify");
     } catch (error: any) {
       toast({ 
@@ -186,47 +233,6 @@ const Auth = () => {
         description: error.message || "An error occurred while sending OTP", 
         variant: "destructive" 
       });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerifyOtp = async () => {
-    if (otpCode.length !== 6) {
-      toast({ title: "Invalid OTP", description: "Please enter the 6-digit code.", variant: "destructive" });
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const { data, error } = await supabase.auth.verifyOtp({
-        email,
-        token: otpCode,
-        type: "email",
-      });
-
-      if (error) {
-        if (error.message.includes("Token has expired") || error.message.includes("expired")) {
-          throw new Error("OTP has expired. Please request a new code.");
-        }
-        if (error.message.includes("Invalid") || error.message.includes("invalid")) {
-          throw new Error("Invalid OTP code. Please check and try again.");
-        }
-        throw error;
-      }
-
-      if (data.session) {
-        toast({ title: "Account verified!", description: "Your account has been verified successfully." });
-        navigate("/");
-      } else {
-        // For signup verification, we might need to sign them in
-        toast({ title: "Account verified!", description: "Please login with your credentials." });
-        setStep("login");
-        setOtpCode("");
-      }
-    } catch (error: any) {
-      toast({ title: "Verification failed", description: error.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -242,26 +248,37 @@ const Auth = () => {
 
     try {
       const formattedPhone = formatPhoneNumber(phone);
-      const { data, error } = await supabase.auth.verifyOtp({
-        phone: formattedPhone,
-        token: otpCode,
-        type: "sms",
+      
+      // Verify OTP via our edge function
+      const { data, error } = await supabase.functions.invoke("send-otp", {
+        body: { action: "verify", phone: formattedPhone, otp: otpCode, type: "phone" },
       });
 
-      if (error) {
-        if (error.message.includes("Token has expired") || error.message.includes("expired")) {
-          throw new Error("OTP has expired. Please request a new code.");
-        }
-        if (error.message.includes("Invalid") || error.message.includes("invalid")) {
-          throw new Error("Invalid OTP code. Please check and try again.");
-        }
-        throw error;
+      if (error) throw error;
+      
+      if (!data.success) {
+        throw new Error(data.error || "OTP verification failed");
       }
 
-      if (data.session) {
-        toast({ title: "Welcome!", description: "You've successfully logged in via phone." });
-        navigate("/");
+      // After phone verification, sign in using Supabase phone auth
+      // Note: This requires phone auth to be enabled in Supabase
+      const { data: authData, error: authError } = await supabase.auth.signInWithOtp({
+        phone: formattedPhone,
+      });
+
+      if (authError) {
+        // If Supabase phone auth is not enabled, show success but inform user
+        toast({ 
+          title: "Phone Verified!", 
+          description: "Phone authentication is not fully configured. Please use email login.",
+        });
+        setStep("login");
+        setOtpCode("");
+        return;
       }
+
+      toast({ title: "Welcome!", description: "You've successfully logged in via phone." });
+      navigate("/");
     } catch (error: any) {
       toast({ title: "Verification failed", description: error.message, variant: "destructive" });
     } finally {
@@ -274,10 +291,12 @@ const Auth = () => {
 
     try {
       if (step === "phone-verify") {
-        const formattedPhone = phone.startsWith("+") ? phone : `+${phone}`;
-        await supabase.auth.signInWithOtp({ phone: formattedPhone });
-      } else {
-        await supabase.auth.resend({ type: "signup", email });
+        const formattedPhone = formatPhoneNumber(phone);
+        await supabase.functions.invoke("send-otp", {
+          body: { action: "send", phone: formattedPhone, type: "phone" },
+        });
+      } else if (step === "verify-email-otp") {
+        await sendEmailOtp(pendingSignupData?.email || email);
       }
       toast({ title: "OTP Resent!", description: "A new verification code has been sent." });
     } catch (error: any) {
@@ -301,7 +320,7 @@ const Auth = () => {
       
       <p className="text-center text-sm text-muted-foreground">
         We've sent a 6-digit code to{" "}
-        <strong>{type === "email" ? email : phone}</strong>
+        <strong>{type === "email" ? (pendingSignupData?.email || email) : phone}</strong>
       </p>
 
       <div className="flex justify-center">
@@ -315,7 +334,7 @@ const Auth = () => {
       </div>
 
       <Button
-        onClick={type === "email" ? handleVerifyOtp : handleVerifyPhoneOtp}
+        onClick={type === "email" ? handleVerifyEmailOtp : handleVerifyPhoneOtp}
         className="w-full"
         disabled={loading || otpCode.length !== 6}
       >
@@ -329,7 +348,7 @@ const Auth = () => {
         </button>
         <br />
         <button
-          onClick={() => { setStep("login"); setOtpCode(""); }}
+          onClick={() => { setStep("login"); setOtpCode(""); setPendingSignupData(null); }}
           className="text-sm text-muted-foreground hover:text-foreground flex items-center justify-center gap-1 mx-auto"
         >
           <ArrowLeft className="h-3 w-3" /> Back to login
@@ -358,7 +377,7 @@ const Auth = () => {
               <p className="text-muted-foreground mt-2">
                 {step === "login" && "Welcome back"}
                 {step === "signup" && "Create your account"}
-                {step === "verify-otp" && "Verify your email"}
+                {step === "verify-email-otp" && "Verify your email"}
                 {step === "forgot-password" && "Reset your password"}
                 {step === "reset-sent" && "Check your email"}
                 {step === "phone-login" && "Login with phone"}
@@ -368,8 +387,10 @@ const Auth = () => {
           </div>
 
           <AnimatePresence mode="wait">
-            {/* OTP Verification */}
-            {step === "verify-otp" && renderOtpVerification("email")}
+            {/* Email OTP Verification */}
+            {step === "verify-email-otp" && renderOtpVerification("email")}
+            
+            {/* Phone OTP Verification */}
             {step === "phone-verify" && renderOtpVerification("phone")}
 
             {/* Forgot Password */}
@@ -493,7 +514,12 @@ const Auth = () => {
                   </TabsList>
 
                   <TabsContent value="login">
-                    <form onSubmit={handleLogin} className="space-y-4">
+                    <motion.form
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      onSubmit={handleLogin}
+                      className="space-y-4"
+                    >
                       <div>
                         <Label htmlFor="email">Email</Label>
                         <div className="relative">
@@ -511,16 +537,7 @@ const Auth = () => {
                       </div>
 
                       <div>
-                        <div className="flex justify-between items-center">
-                          <Label htmlFor="password">Password</Label>
-                          <button
-                            type="button"
-                            onClick={() => setStep("forgot-password")}
-                            className="text-xs text-accent hover:underline"
-                          >
-                            Forgot password?
-                          </button>
-                        </div>
+                        <Label htmlFor="password">Password</Label>
                         <div className="relative">
                           <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                           <Input
@@ -542,15 +559,37 @@ const Auth = () => {
                         </div>
                       </div>
 
+                      <div className="flex items-center justify-between text-sm">
+                        <button
+                          type="button"
+                          onClick={() => setStep("forgot-password")}
+                          className="text-accent hover:underline"
+                        >
+                          Forgot password?
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setStep("phone-login")}
+                          className="text-accent hover:underline flex items-center gap-1"
+                        >
+                          <Phone className="h-3 w-3" /> Login with phone
+                        </button>
+                      </div>
+
                       <Button type="submit" className="w-full" disabled={loading}>
                         {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                         {loading ? "Signing in..." : "Sign In"}
                       </Button>
-                    </form>
+                    </motion.form>
                   </TabsContent>
 
                   <TabsContent value="signup">
-                    <form onSubmit={handleSignup} className="space-y-4">
+                    <motion.form
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      onSubmit={handleSignup}
+                      className="space-y-4"
+                    >
                       <div>
                         <Label htmlFor="fullName">Full Name</Label>
                         <div className="relative">
@@ -568,11 +607,11 @@ const Auth = () => {
                       </div>
 
                       <div>
-                        <Label htmlFor="signup-email">Email</Label>
+                        <Label htmlFor="signupEmail">Email</Label>
                         <div className="relative">
                           <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                           <Input
-                            id="signup-email"
+                            id="signupEmail"
                             type="email"
                             placeholder="you@example.com"
                             value={email}
@@ -584,17 +623,18 @@ const Auth = () => {
                       </div>
 
                       <div>
-                        <Label htmlFor="signup-password">Password</Label>
+                        <Label htmlFor="signupPassword">Password</Label>
                         <div className="relative">
                           <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                           <Input
-                            id="signup-password"
+                            id="signupPassword"
                             type={showPassword ? "text" : "password"}
                             placeholder="••••••••"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             className="pl-10 pr-10"
                             required
+                            minLength={6}
                           />
                           <button
                             type="button"
@@ -604,36 +644,18 @@ const Auth = () => {
                             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                           </button>
                         </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Minimum 6 characters
+                        </p>
                       </div>
 
                       <Button type="submit" className="w-full" disabled={loading}>
                         {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                         {loading ? "Creating account..." : "Create Account"}
                       </Button>
-                    </form>
+                    </motion.form>
                   </TabsContent>
                 </Tabs>
-
-                <div className="mt-6">
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-                    </div>
-                  </div>
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full mt-4"
-                    onClick={() => setStep("phone-login")}
-                  >
-                    <Phone className="mr-2 h-4 w-4" />
-                    Login with Phone Number
-                  </Button>
-                </div>
               </motion.div>
             )}
           </AnimatePresence>
