@@ -7,26 +7,87 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
 import { CardSkeleton } from "@/components/LoadingSkeleton";
-import { Loader2 } from "lucide-react";
+import { Loader2, Languages } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const ITEMS_PER_PAGE = 6;
+
+interface TranslatedArticle extends Article {
+  originalTitle: string;
+  originalContent: string;
+  originalSummary: string;
+}
 
 export const NewsSection = ({ showAll = false }: { showAll?: boolean }) => {
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [isVisible, setIsVisible] = useState(false);
-  const [articles, setArticles] = useState<Article[]>([]);
+  const [articles, setArticles] = useState<TranslatedArticle[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
+  const [translatingIds, setTranslatingIds] = useState<Set<string>>(new Set());
   const loadMoreRef = useRef<HTMLDivElement>(null);
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const { translatePost } = useTranslation();
+  const prevLanguageRef = useRef(language);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 100);
     fetchPosts(1, true);
     return () => clearTimeout(timer);
   }, []);
+
+  // Translate articles when language changes
+  useEffect(() => {
+    if (prevLanguageRef.current !== language && articles.length > 0) {
+      translateArticles(articles);
+    }
+    prevLanguageRef.current = language;
+  }, [language]);
+
+  const translateArticles = async (articlesToTranslate: TranslatedArticle[]) => {
+    if (language === "en") {
+      // Reset to original content
+      setArticles(articlesToTranslate.map(article => ({
+        ...article,
+        title: article.originalTitle,
+        fullContent: article.originalContent,
+        summary: article.originalSummary,
+      })));
+      return;
+    }
+
+    // Mark all as translating
+    setTranslatingIds(new Set(articlesToTranslate.map(a => String(a.id))));
+
+    const translatedArticles = await Promise.all(
+      articlesToTranslate.map(async (article) => {
+        try {
+          const translation = await translatePost(
+            String(article.id),
+            language,
+            article.originalTitle,
+            article.originalContent,
+            article.originalSummary
+          );
+
+          return {
+            ...article,
+            title: translation.title,
+            fullContent: translation.content,
+            summary: translation.excerpt || article.originalSummary,
+          };
+        } catch (error) {
+          console.error(`Translation failed for ${article.id}:`, error);
+          return article;
+        }
+      })
+    );
+
+    setArticles(translatedArticles);
+    setTranslatingIds(new Set());
+  };
 
   const fetchPosts = async (pageNum: number, reset = false) => {
     if (reset) {
@@ -48,17 +109,20 @@ export const NewsSection = ({ showAll = false }: { showAll?: boolean }) => {
       .range(from, to);
 
     if (data) {
-      const mappedArticles = data.map((post) => ({
+      const mappedArticles: TranslatedArticle[] = data.map((post) => ({
         id: post.id,
         title: post.title,
+        originalTitle: post.title,
         date: new Date(post.created_at).toLocaleDateString("en-US", {
           year: "numeric",
           month: "long",
           day: "numeric",
         }),
         summary: post.excerpt || "",
+        originalSummary: post.excerpt || "",
         image: post.image_url || "",
         fullContent: post.content,
+        originalContent: post.content,
         category: post.category || "News",
         videoUrl: post.video_url,
         isPinned: post.is_pinned || false,
@@ -66,10 +130,19 @@ export const NewsSection = ({ showAll = false }: { showAll?: boolean }) => {
         likesCount: post.likes_count || 0,
       }));
 
+      let newArticles: TranslatedArticle[];
       if (reset) {
-        setArticles(mappedArticles);
+        newArticles = mappedArticles;
       } else {
-        setArticles((prev) => [...prev, ...mappedArticles]);
+        newArticles = [...articles, ...mappedArticles];
+      }
+
+      // If language is not English, translate new articles
+      if (language !== "en") {
+        setArticles(newArticles);
+        await translateArticles(newArticles);
+      } else {
+        setArticles(newArticles);
       }
 
       const totalLoaded = reset ? mappedArticles.length : articles.length + mappedArticles.length;
@@ -107,8 +180,14 @@ export const NewsSection = ({ showAll = false }: { showAll?: boolean }) => {
               {t("latestNews")}
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto px-2">
-              Stay informed about our ongoing projects, initiatives, and community developments
+              {t("newsDescription")}
             </p>
+            {translatingIds.size > 0 && (
+              <div className="flex items-center justify-center gap-2 mt-4 text-sm text-muted-foreground">
+                <Languages className="h-4 w-4 animate-pulse" />
+                <span>Translating content...</span>
+              </div>
+            )}
           </div>
         )}
 
@@ -124,8 +203,13 @@ export const NewsSection = ({ showAll = false }: { showAll?: boolean }) => {
               {articles.map((article, index) => (
                 <div
                   key={article.id}
-                  className={`${isVisible ? 'fade-in-up' : 'opacity-0'} animate-delay-${Math.min((index + 1) * 100, 600)}`}
+                  className={`${isVisible ? 'fade-in-up' : 'opacity-0'} animate-delay-${Math.min((index + 1) * 100, 600)} relative`}
                 >
+                  {translatingIds.has(String(article.id)) && (
+                    <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center rounded-xl">
+                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    </div>
+                  )}
                   <NewsCard
                     article={article}
                     onClick={() => setSelectedArticle(article)}
@@ -140,7 +224,7 @@ export const NewsSection = ({ showAll = false }: { showAll?: boolean }) => {
                 {isLoadingMore && (
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Loader2 className="h-5 w-5 animate-spin" />
-                    <span>Loading more...</span>
+                    <span>{t("loading")}</span>
                   </div>
                 )}
                 {!hasMore && articles.length > 0 && (
