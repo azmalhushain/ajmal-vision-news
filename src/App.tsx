@@ -40,7 +40,9 @@ import EmailTemplates from "./pages/admin/EmailTemplates";
 import EmailMarketing from "./pages/admin/EmailMarketing";
 import EmailTemplateBuilder from "./pages/admin/EmailTemplateBuilderPage";
 import EngagementDashboard from "./pages/admin/EngagementDashboard";
+import ABTestingDashboard from "./pages/admin/ABTestingDashboard";
 import UserProfile from "./pages/UserProfile";
+import SubscriberPreferences from "./pages/SubscriberPreferences";
 
 const queryClient = new QueryClient();
 
@@ -58,6 +60,7 @@ const AnimatedRoutes = () => {
         <Route path="/podcasts" element={<><Navigation /><Podcasts /></>} />
         <Route path="/gallery" element={<><Navigation /><Gallery /></>} />
         <Route path="/contact" element={<><Navigation /><Contact /></>} />
+        <Route path="/preferences" element={<><Navigation /><SubscriberPreferences /></>} />
         
         {/* Auth route */}
         <Route path="/auth" element={<Auth />} />
@@ -82,6 +85,7 @@ const AnimatedRoutes = () => {
           <Route path="email-templates" element={<EmailTemplates />} />
           <Route path="email-marketing" element={<EmailMarketing />} />
           <Route path="email-builder" element={<EmailTemplateBuilder />} />
+          <Route path="ab-testing" element={<ABTestingDashboard />} />
           <Route path="users" element={<Users />} />
           <Route path="analytics" element={<Analytics />} />
           <Route path="engagement" element={<EngagementDashboard />} />

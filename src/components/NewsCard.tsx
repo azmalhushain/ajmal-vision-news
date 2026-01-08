@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
-import { Calendar, Pin, Video, Heart, MessageCircle, Eye } from "lucide-react";
+import { Calendar, Pin, Video, Heart, Eye } from "lucide-react";
 import { Article } from "@/types/article";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ShareButtons } from "@/components/ShareButtons";
+import { SEOHead } from "@/components/SEOHead";
 
 interface NewsCardProps {
   article: Article;
@@ -11,9 +12,24 @@ interface NewsCardProps {
 
 export const NewsCard = ({ article, onClick }: NewsCardProps) => {
   const { t } = useLanguage();
+  
+  // Generate proper share URL with full domain
+  const shareUrl = `/news#${article.id}`;
+  const shareImage = article.image || "https://storage.googleapis.com/gpt-engineer-file-uploads/6j4N84GNxsXn52PqWIVTQd9p8RI2/social-images/social-1764428453124-image1.jpg";
 
   return (
-    <article className="glass-card glass-hover rounded-2xl overflow-hidden group h-full flex flex-col relative transition-all duration-300">
+    <article 
+      className="glass-card glass-hover rounded-2xl overflow-hidden group h-full flex flex-col relative transition-all duration-300"
+      itemScope
+      itemType="https://schema.org/NewsArticle"
+    >
+      {/* Hidden SEO meta for this article */}
+      <meta itemProp="headline" content={article.title} />
+      <meta itemProp="description" content={article.summary} />
+      <meta itemProp="image" content={shareImage} />
+      <meta itemProp="datePublished" content={article.date} />
+      <meta itemProp="author" content="Ajmal Akhtar Azad" />
+      
       {/* Pinned indicator */}
       {article.isPinned && (
         <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-10">
@@ -30,6 +46,7 @@ export const NewsCard = ({ article, onClick }: NewsCardProps) => {
             src={article.image || "/placeholder.svg"}
             alt={article.title}
             loading="lazy"
+            itemProp="image"
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         </div>
@@ -50,12 +67,13 @@ export const NewsCard = ({ article, onClick }: NewsCardProps) => {
         <div className="flex items-center justify-between text-muted-foreground text-xs sm:text-sm mb-2 sm:mb-3">
           <div className="flex items-center gap-1.5 sm:gap-2">
             <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
-            <time>{article.date}</time>
+            <time dateTime={article.date} itemProp="datePublished">{article.date}</time>
           </div>
           <ShareButtons
-            url={`/news/${article.id}`}
+            url={shareUrl}
             title={article.title}
             description={article.summary}
+            image={shareImage}
             variant="dropdown"
             size="sm"
           />
@@ -64,11 +82,12 @@ export const NewsCard = ({ article, onClick }: NewsCardProps) => {
         <h3 
           className="text-base sm:text-lg md:text-xl font-bold text-foreground mb-2 sm:mb-3 line-clamp-2 group-hover:text-accent transition-colors cursor-pointer"
           onClick={onClick}
+          itemProp="headline"
         >
           {article.title}
         </h3>
 
-        <p className="text-muted-foreground text-sm mb-3 sm:mb-4 line-clamp-2 sm:line-clamp-3 flex-1">
+        <p className="text-muted-foreground text-sm mb-3 sm:mb-4 line-clamp-2 sm:line-clamp-3 flex-1" itemProp="description">
           {article.summary}
         </p>
 
