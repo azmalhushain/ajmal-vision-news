@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const corsHeaders = {
@@ -14,6 +13,49 @@ const otpStore = new Map<string, { otp: string; expiresAt: number; type: "email"
 
 function generateOTP(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+// Send SMS via Twilio
+async function sendSMSViaTwilio(phone: string, message: string): Promise<boolean> {
+  const TWILIO_ACCOUNT_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
+  const TWILIO_AUTH_TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN");
+  const TWILIO_PHONE_NUMBER = Deno.env.get("TWILIO_PHONE_NUMBER");
+
+  if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
+    console.error("Twilio credentials not configured");
+    return false;
+  }
+
+  try {
+    const response = await fetch(
+      `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Basic ${btoa(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`)}`,
+        },
+        body: new URLSearchParams({
+          To: phone,
+          From: TWILIO_PHONE_NUMBER,
+          Body: message,
+        }),
+      }
+    );
+
+    const result = await response.json();
+    
+    if (response.ok) {
+      console.log("SMS sent successfully:", result.sid);
+      return true;
+    } else {
+      console.error("Twilio error:", result);
+      return false;
+    }
+  } catch (error) {
+    console.error("Failed to send SMS:", error);
+    return false;
+  }
 }
 
 serve(async (req) => {
@@ -71,18 +113,27 @@ serve(async (req) => {
 
         console.log("Email OTP sent:", emailResponse);
       } else if (type === "phone") {
-        // For phone OTP, we would typically use Twilio or similar
-        // Since we don't have Twilio configured, we'll return the OTP for demo purposes
-        // In production, integrate with SMS provider
-        console.log(`Phone OTP for ${phone}: ${generatedOtp}`);
+        // Send SMS via Twilio
+        const message = `Your Ajmal Vision News verification code is: ${generatedOtp}. This code expires in 10 minutes.`;
+        const smsSent = await sendSMSViaTwilio(phone, message);
         
-        // For demo, we'll just log it - in production use Twilio
+        if (!smsSent) {
+          // Fallback: Return OTP for demo if Twilio fails
+          console.log(`Phone OTP for ${phone}: ${generatedOtp} (Twilio not configured, demo mode)`);
+          return new Response(
+            JSON.stringify({ 
+              success: true, 
+              message: "OTP sent to phone (demo mode - Twilio not fully configured)",
+              demo_otp: generatedOtp 
+            }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        
         return new Response(
           JSON.stringify({ 
             success: true, 
-            message: "OTP sent to phone",
-            // Only for demo/testing - remove in production
-            demo_otp: generatedOtp 
+            message: "OTP sent to your phone via SMS"
           }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );

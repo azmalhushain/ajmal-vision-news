@@ -20,6 +20,7 @@ import {
   Send,
   Newspaper,
   TrendingUp,
+  FlaskConical,
 } from "lucide-react";
 
 interface MenuItem {
@@ -57,6 +58,7 @@ const menuSections: MenuSection[] = [
       { icon: Heart, label: "Post Stats", path: "/admin/post-stats" },
       { icon: Mail, label: "Newsletter", path: "/admin/newsletter" },
       { icon: Send, label: "Email Marketing", path: "/admin/email-marketing" },
+      { icon: FlaskConical, label: "A/B Testing", path: "/admin/ab-testing" },
       { icon: Newspaper, label: "Email Builder", path: "/admin/email-builder" },
       { icon: Phone, label: "Contact Messages", path: "/admin/contact-messages" },
     ],

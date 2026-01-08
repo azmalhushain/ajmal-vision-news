@@ -185,6 +185,60 @@ export type Database = {
         }
         Relationships: []
       }
+      email_ab_tests: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          status: string | null
+          test_name: string
+          variant_a_click_count: number | null
+          variant_a_open_count: number | null
+          variant_a_sent_count: number | null
+          variant_a_subject: string
+          variant_b_click_count: number | null
+          variant_b_open_count: number | null
+          variant_b_sent_count: number | null
+          variant_b_subject: string
+          winning_variant: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          status?: string | null
+          test_name: string
+          variant_a_click_count?: number | null
+          variant_a_open_count?: number | null
+          variant_a_sent_count?: number | null
+          variant_a_subject: string
+          variant_b_click_count?: number | null
+          variant_b_open_count?: number | null
+          variant_b_sent_count?: number | null
+          variant_b_subject: string
+          winning_variant?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          status?: string | null
+          test_name?: string
+          variant_a_click_count?: number | null
+          variant_a_open_count?: number | null
+          variant_a_sent_count?: number | null
+          variant_a_subject?: string
+          variant_b_click_count?: number | null
+          variant_b_open_count?: number | null
+          variant_b_sent_count?: number | null
+          variant_b_subject?: string
+          winning_variant?: string | null
+        }
+        Relationships: []
+      }
       email_analytics: {
         Row: {
           clicked_at: string | null
@@ -738,6 +792,56 @@ export type Database = {
             columns: ["post_id"]
             isOneToOne: false
             referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscriber_preferences: {
+        Row: {
+          created_at: string
+          email_frequency: string | null
+          id: string
+          preferred_time: string | null
+          receive_breaking_news: boolean | null
+          receive_event_notifications: boolean | null
+          receive_promotional: boolean | null
+          receive_weekly_digest: boolean | null
+          subscriber_id: string
+          unsubscribed_categories: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email_frequency?: string | null
+          id?: string
+          preferred_time?: string | null
+          receive_breaking_news?: boolean | null
+          receive_event_notifications?: boolean | null
+          receive_promotional?: boolean | null
+          receive_weekly_digest?: boolean | null
+          subscriber_id: string
+          unsubscribed_categories?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email_frequency?: string | null
+          id?: string
+          preferred_time?: string | null
+          receive_breaking_news?: boolean | null
+          receive_event_notifications?: boolean | null
+          receive_promotional?: boolean | null
+          receive_weekly_digest?: boolean | null
+          subscriber_id?: string
+          unsubscribed_categories?: string[] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriber_preferences_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: true
+            referencedRelation: "newsletter_subscribers"
             referencedColumns: ["id"]
           },
         ]

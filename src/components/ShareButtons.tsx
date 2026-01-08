@@ -21,30 +21,36 @@ export const ShareButtons = ({
   url,
   title,
   description = "",
+  image = "",
   variant = "inline",
   size = "md",
 }: ShareButtonsProps) => {
   const { toast } = useToast();
-  const fullUrl = url.startsWith("http") ? url : `${window.location.origin}${url}`;
+  const siteUrl = "https://ajmal-vision-news.lovable.app";
+  const fullUrl = url.startsWith("http") ? url : `${siteUrl}${url}`;
   const encodedUrl = encodeURIComponent(fullUrl);
   const encodedTitle = encodeURIComponent(title);
   const encodedDescription = encodeURIComponent(description);
+  const encodedImage = encodeURIComponent(image);
 
+  // Facebook uses Open Graph tags from the page, so we just share the URL
+  // For best results, ensure the target page has proper OG meta tags
   const shareLinks = {
-    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encodedTitle}`,
-    twitter: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`,
+    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
+    twitter: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}&via=AjmalAkhtarAzad`,
     linkedin: `https://www.linkedin.com/shareArticle?mini=true&url=${encodedUrl}&title=${encodedTitle}&summary=${encodedDescription}`,
-    whatsapp: `https://wa.me/?text=${encodedTitle}%20${encodedUrl}`,
+    whatsapp: `https://wa.me/?text=${encodedTitle}%0A%0A${encodedDescription}%0A%0A${encodedUrl}`,
+    telegram: `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}`,
   };
 
   const handleShare = (platform: keyof typeof shareLinks) => {
-    window.open(shareLinks[platform], "_blank", "width=600,height=400");
+    window.open(shareLinks[platform], "_blank", "width=600,height=500,noopener,noreferrer");
   };
 
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(fullUrl);
-      toast({ title: "Link copied to clipboard!" });
+      toast({ title: "Link copied!", description: "Share it with anyone." });
     } catch {
       toast({ title: "Failed to copy link", variant: "destructive" });
     }
@@ -59,7 +65,7 @@ export const ShareButtons = ({
           url: fullUrl,
         });
       } catch {
-        // User cancelled
+        // User cancelled or error
       }
     }
   };
@@ -71,7 +77,7 @@ export const ShareButtons = ({
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className={buttonSize}>
+          <Button variant="ghost" size="icon" className={buttonSize} aria-label="Share this article">
             <Share2 className={iconSize} />
           </Button>
         </DropdownMenuTrigger>
@@ -96,7 +102,7 @@ export const ShareButtons = ({
             <Link2 className="h-4 w-4 mr-2" />
             Copy Link
           </DropdownMenuItem>
-          {navigator.share && (
+          {typeof navigator !== 'undefined' && navigator.share && (
             <DropdownMenuItem onClick={handleNativeShare} className="cursor-pointer">
               <Share2 className="h-4 w-4 mr-2" />
               More Options
@@ -116,6 +122,7 @@ export const ShareButtons = ({
         className={`${buttonSize} hover:bg-blue-600/10 hover:text-blue-600`}
         onClick={() => handleShare("facebook")}
         title="Share on Facebook"
+        aria-label="Share on Facebook"
       >
         <Facebook className={iconSize} />
       </Button>
@@ -125,6 +132,7 @@ export const ShareButtons = ({
         className={`${buttonSize} hover:bg-sky-500/10 hover:text-sky-500`}
         onClick={() => handleShare("twitter")}
         title="Share on Twitter/X"
+        aria-label="Share on Twitter"
       >
         <Twitter className={iconSize} />
       </Button>
@@ -134,6 +142,7 @@ export const ShareButtons = ({
         className={`${buttonSize} hover:bg-blue-700/10 hover:text-blue-700`}
         onClick={() => handleShare("linkedin")}
         title="Share on LinkedIn"
+        aria-label="Share on LinkedIn"
       >
         <Linkedin className={iconSize} />
       </Button>
@@ -143,6 +152,7 @@ export const ShareButtons = ({
         className={`${buttonSize} hover:bg-green-500/10 hover:text-green-500`}
         onClick={() => handleShare("whatsapp")}
         title="Share on WhatsApp"
+        aria-label="Share on WhatsApp"
       >
         <Send className={iconSize} />
       </Button>
@@ -152,6 +162,7 @@ export const ShareButtons = ({
         className={buttonSize}
         onClick={handleCopyLink}
         title="Copy Link"
+        aria-label="Copy link to clipboard"
       >
         <Link2 className={iconSize} />
       </Button>
