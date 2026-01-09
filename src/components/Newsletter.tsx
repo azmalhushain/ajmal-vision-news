@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mail, Send, CheckCircle, Loader2 } from "lucide-react";
+import { Mail, Send, CheckCircle, Loader2, Bell, BellOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 export const Newsletter = () => {
   const [email, setEmail] = useState("");
@@ -12,6 +13,7 @@ export const Newsletter = () => {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const { toast } = useToast();
   const { t } = useLanguage();
+  const { isSupported, isSubscribed: isPushSubscribed, isLoading: isPushLoading, subscribe, unsubscribe } = usePushNotifications();
 
   const sendEmailNotification = async (subscriberEmail: string) => {
     try {
@@ -74,6 +76,14 @@ export const Newsletter = () => {
     });
   };
 
+  const handlePushToggle = async () => {
+    if (isPushSubscribed) {
+      await unsubscribe();
+    } else {
+      await subscribe();
+    }
+  };
+
   if (isSubscribed) {
     return (
       <div className="bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 rounded-2xl p-8 text-center">
@@ -81,7 +91,37 @@ export const Newsletter = () => {
           <CheckCircle className="h-8 w-8 text-green-500" />
         </div>
         <h3 className="text-xl font-bold text-foreground mb-2">Thank You!</h3>
-        <p className="text-muted-foreground">You've successfully subscribed to our newsletter.</p>
+        <p className="text-muted-foreground mb-4">You've successfully subscribed to our newsletter.</p>
+        
+        {/* Push Notification Toggle after subscription */}
+        {isSupported && (
+          <div className="mt-4 pt-4 border-t border-border/50">
+            <p className="text-sm text-muted-foreground mb-3">
+              Want instant notifications for new posts?
+            </p>
+            <Button
+              variant={isPushSubscribed ? "outline" : "default"}
+              size="sm"
+              onClick={handlePushToggle}
+              disabled={isPushLoading}
+              className="gap-2"
+            >
+              {isPushLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : isPushSubscribed ? (
+                <>
+                  <BellOff className="h-4 w-4" />
+                  Disable Notifications
+                </>
+              ) : (
+                <>
+                  <Bell className="h-4 w-4" />
+                  Enable Notifications
+                </>
+              )}
+            </Button>
+          </div>
+        )}
       </div>
     );
   }
@@ -124,6 +164,31 @@ export const Newsletter = () => {
               )}
             </Button>
           </form>
+          
+          {/* Push Notification Toggle */}
+          {isSupported && (
+            <div className="mt-6 p-4 rounded-lg bg-secondary/50 border border-border/30">
+              <div className="flex items-center justify-center gap-3">
+                <Bell className="h-5 w-5 text-primary" />
+                <span className="text-sm text-foreground">Get instant browser notifications</span>
+                <Button
+                  variant={isPushSubscribed ? "outline" : "secondary"}
+                  size="sm"
+                  onClick={handlePushToggle}
+                  disabled={isPushLoading}
+                  className="ml-2"
+                >
+                  {isPushLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : isPushSubscribed ? (
+                    "Enabled ✓"
+                  ) : (
+                    "Enable"
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
           
           <p className="text-xs text-muted-foreground mt-4">
             {t("noSpam")}
