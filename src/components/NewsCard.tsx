@@ -76,6 +76,7 @@ export const NewsCard = ({ article, onClick }: NewsCardProps) => {
             image={shareImage}
             variant="dropdown"
             size="sm"
+            postId={String(article.id)}
           />
         </div>
 
