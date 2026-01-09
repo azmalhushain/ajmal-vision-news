@@ -15,6 +15,7 @@ interface ShareButtonsProps {
   image?: string;
   variant?: "inline" | "dropdown";
   size?: "sm" | "md" | "lg";
+  postId?: string;
 }
 
 export const ShareButtons = ({
@@ -24,23 +25,34 @@ export const ShareButtons = ({
   image = "",
   variant = "inline",
   size = "md",
+  postId,
 }: ShareButtonsProps) => {
   const { toast } = useToast();
   const siteUrl = "https://ajmal-vision-news.lovable.app";
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://kpswxkuzfnafsqeqaunt.supabase.co";
+  
+  // Use og-image edge function for social sharing to get proper OG meta tags
+  const getShareUrl = () => {
+    if (postId) {
+      return `${supabaseUrl}/functions/v1/og-image?post=${postId}`;
+    }
+    // For pages, use the direct URL
+    return url.startsWith("http") ? url : `${siteUrl}${url}`;
+  };
+  
+  const shareUrl = getShareUrl();
   const fullUrl = url.startsWith("http") ? url : `${siteUrl}${url}`;
-  const encodedUrl = encodeURIComponent(fullUrl);
+  const encodedShareUrl = encodeURIComponent(shareUrl);
   const encodedTitle = encodeURIComponent(title);
   const encodedDescription = encodeURIComponent(description);
-  const encodedImage = encodeURIComponent(image);
 
-  // Facebook uses Open Graph tags from the page, so we just share the URL
-  // For best results, ensure the target page has proper OG meta tags
+  // Build share links with proper OG meta tag URL for crawlers
   const shareLinks = {
-    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
-    twitter: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}&via=AjmalAkhtarAzad`,
-    linkedin: `https://www.linkedin.com/shareArticle?mini=true&url=${encodedUrl}&title=${encodedTitle}&summary=${encodedDescription}`,
-    whatsapp: `https://wa.me/?text=${encodedTitle}%0A%0A${encodedDescription}%0A%0A${encodedUrl}`,
-    telegram: `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}`,
+    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedShareUrl}&quote=${encodedTitle}`,
+    twitter: `https://twitter.com/intent/tweet?url=${encodedShareUrl}&text=${encodedTitle}&via=AjmalAkhtarAzad`,
+    linkedin: `https://www.linkedin.com/shareArticle?mini=true&url=${encodedShareUrl}&title=${encodedTitle}&summary=${encodedDescription}`,
+    whatsapp: `https://wa.me/?text=${encodedTitle}%0A%0A${encodedDescription}%0A%0A${encodeURIComponent(fullUrl)}`,
+    telegram: `https://t.me/share/url?url=${encodedShareUrl}&text=${encodedTitle}`,
   };
 
   const handleShare = (platform: keyof typeof shareLinks) => {

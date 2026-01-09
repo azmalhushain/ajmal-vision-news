@@ -746,6 +746,71 @@ export type Database = {
         }
         Relationships: []
       }
+      push_notifications: {
+        Row: {
+          body: string
+          created_at: string
+          icon: string | null
+          id: string
+          post_id: string | null
+          sent_at: string
+          title: string
+          url: string | null
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          icon?: string | null
+          id?: string
+          post_id?: string | null
+          sent_at?: string
+          title: string
+          url?: string | null
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          icon?: string | null
+          id?: string
+          post_id?: string | null
+          sent_at?: string
+          title?: string
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_notifications_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      push_subscriptions: {
+        Row: {
+          created_at: string
+          endpoint: string
+          id: string
+          keys: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          endpoint: string
+          id?: string
+          keys: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          endpoint?: string
+          id?: string
+          keys?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       scheduled_emails: {
         Row: {
           content: string
@@ -954,6 +1019,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_ab_test_counter: {
+        Args: { column_name: string; test_id: string }
+        Returns: undefined
       }
     }
     Enums: {

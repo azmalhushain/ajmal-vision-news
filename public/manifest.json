@@ -1,0 +1,27 @@
+{
+  "name": "Ajmal Akhtar Azad - Mayor",
+  "short_name": "Ajmal Vision",
+  "description": "Official website of Mayor Ajmal Akhtar Azad - Bhokraha Narsingh Municipality",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "https://storage.googleapis.com/gpt-engineer-file-uploads/6j4N84GNxsXn52PqWIVTQd9p8RI2/uploads/1764428477117-logo.jpg.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://storage.googleapis.com/gpt-engineer-file-uploads/6j4N84GNxsXn52PqWIVTQd9p8RI2/uploads/1764428477117-logo.jpg.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["news", "government"],
+  "lang": "en",
+  "dir": "ltr"
+}
