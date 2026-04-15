@@ -1,8 +1,10 @@
 User-agent: Googlebot
 Allow: /
+Crawl-delay: 1
 
 User-agent: Bingbot
 Allow: /
+Crawl-delay: 2
 
 User-agent: Twitterbot
 Allow: /
@@ -12,5 +14,9 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /admin/
+Disallow: /auth
+Disallow: /reset-password
 
+Sitemap: https://www.ajmalakhtar.com.np/sitemap.xml
 Sitemap: https://kpswxkuzfnafsqeqaunt.supabase.co/functions/v1/sitemap

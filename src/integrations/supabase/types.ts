@@ -494,6 +494,33 @@ export type Database = {
         }
         Relationships: []
       }
+      otp_codes: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          identifier: string
+          otp: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          identifier: string
+          otp: string
+          type?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          identifier?: string
+          otp?: string
+          type?: string
+        }
+        Relationships: []
+      }
       podcasts: {
         Row: {
           audio_url: string
@@ -1013,6 +1040,7 @@ export type Database = {
     }
     Functions: {
       auto_publish_scheduled_posts: { Args: never; Returns: undefined }
+      cleanup_expired_otps: { Args: never; Returns: undefined }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
