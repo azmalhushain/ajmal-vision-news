@@ -65,6 +65,7 @@ const AnimatedRoutes = () => {
         
         {/* Auth route */}
         <Route path="/auth" element={<Auth />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/profile" element={<><Navigation /><UserProfile /></>} />
         
         {/* Admin routes */}
