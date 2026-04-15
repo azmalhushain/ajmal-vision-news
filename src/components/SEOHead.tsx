@@ -25,7 +25,7 @@ export const SEOHead = ({
   modifiedTime,
   category,
 }: SEOHeadProps) => {
-  const siteUrl = "https://ajmal-vision-news.lovable.app";
+  const siteUrl = "https://www.ajmalakhtar.com.np";
   const fullUrl = url ? `${siteUrl}${url}` : (typeof window !== 'undefined' ? window.location.href : siteUrl);
   const siteName = "Ajmal Akhtar Azad";
   
