@@ -1,21 +1,16 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
-
-// In-memory store for OTPs (in production, use Redis or database)
-const otpStore = new Map<string, { otp: string; expiresAt: number; type: "email" | "phone" }>();
-
 function generateOTP(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-// Send SMS via Twilio
 async function sendSMSViaTwilio(phone: string, message: string): Promise<boolean> {
   const TWILIO_ACCOUNT_SID = Deno.env.get("TWILIO_ACCOUNT_SID");
   const TWILIO_AUTH_TOKEN = Deno.env.get("TWILIO_AUTH_TOKEN");
@@ -44,7 +39,6 @@ async function sendSMSViaTwilio(phone: string, message: string): Promise<boolean
     );
 
     const result = await response.json();
-    
     if (response.ok) {
       console.log("SMS sent successfully:", result.sid);
       return true;
@@ -64,38 +58,56 @@ serve(async (req) => {
   }
 
   try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, serviceRoleKey);
+
     const { action, email, phone, otp, type = "email" } = await req.json();
     console.log(`OTP action: ${action}, type: ${type}`);
 
+    // Clean up expired OTPs
+    await supabase.from("otp_codes").delete().lt("expires_at", new Date().toISOString());
+
     if (action === "send") {
       const generatedOtp = generateOTP();
-      const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes expiry
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
       const identifier = type === "email" ? email : phone;
 
       if (!identifier) {
         throw new Error(`${type === "email" ? "Email" : "Phone"} is required`);
       }
 
-      // Store OTP
-      otpStore.set(identifier, { otp: generatedOtp, expiresAt, type });
+      // Delete any existing OTP for this identifier
+      await supabase.from("otp_codes").delete().eq("identifier", identifier);
+
+      // Store OTP in database
+      const { error: insertError } = await supabase.from("otp_codes").insert({
+        identifier,
+        otp: generatedOtp,
+        type,
+        expires_at: expiresAt,
+      });
+
+      if (insertError) {
+        console.error("Failed to store OTP:", insertError);
+        throw new Error("Failed to generate OTP");
+      }
 
       if (type === "email") {
-        // Send OTP via email
         const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-        
         if (!RESEND_API_KEY) {
-          console.error("RESEND_API_KEY not configured");
           throw new Error("Email service not configured");
         }
 
-        const emailResponse = await resend.emails.send({
+        const resend = new Resend(RESEND_API_KEY);
+        await resend.emails.send({
           from: "Ajmal Vision News <onboarding@resend.dev>",
           to: [email],
           subject: "Your Verification Code - Ajmal Vision News",
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
               <div style="text-align: center; margin-bottom: 30px;">
-                <h1 style="color: #1a365d; margin: 0;">Ajmal Vision News</h1>
+                <h1 style="color: #1a365d;">Ajmal Vision News</h1>
               </div>
               <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 30px; text-align: center; margin-bottom: 20px;">
                 <h2 style="color: white; margin: 0 0 10px 0;">Your Verification Code</h2>
@@ -110,33 +122,16 @@ serve(async (req) => {
             </div>
           `,
         });
-
-        console.log("Email OTP sent:", emailResponse);
       } else if (type === "phone") {
-        // Send SMS via Twilio
         const message = `Your Ajmal Vision News verification code is: ${generatedOtp}. This code expires in 10 minutes.`;
         const smsSent = await sendSMSViaTwilio(phone, message);
-        
+
         if (!smsSent) {
-          // Fallback: Return OTP for demo if Twilio fails
-          console.log(`Phone OTP for ${phone}: ${generatedOtp} (Twilio not configured, demo mode)`);
           return new Response(
-            JSON.stringify({ 
-              success: true, 
-              message: "OTP sent to phone (demo mode - Twilio not fully configured)",
-              demo_otp: generatedOtp 
-            }),
+            JSON.stringify({ success: true, message: "OTP sent (demo mode)", demo_otp: generatedOtp }),
             { headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
-        
-        return new Response(
-          JSON.stringify({ 
-            success: true, 
-            message: "OTP sent to your phone via SMS"
-          }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
       }
 
       return new Response(
@@ -146,38 +141,37 @@ serve(async (req) => {
 
     } else if (action === "verify") {
       const identifier = type === "email" ? email : phone;
-      
+
       if (!identifier || !otp) {
         throw new Error("Identifier and OTP are required");
       }
 
-      const storedData = otpStore.get(identifier);
+      const { data: storedOtp, error: fetchError } = await supabase
+        .from("otp_codes")
+        .select("*")
+        .eq("identifier", identifier)
+        .gt("expires_at", new Date().toISOString())
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
 
-      if (!storedData) {
+      if (fetchError || !storedOtp) {
         return new Response(
-          JSON.stringify({ success: false, error: "No OTP found. Please request a new code." }),
+          JSON.stringify({ success: false, error: "No valid OTP found. Please request a new code." }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
-      if (Date.now() > storedData.expiresAt) {
-        otpStore.delete(identifier);
-        return new Response(
-          JSON.stringify({ success: false, error: "OTP has expired. Please request a new code." }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      if (storedData.otp !== otp) {
+      if (storedOtp.otp !== otp) {
         return new Response(
           JSON.stringify({ success: false, error: "Invalid OTP. Please check and try again." }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
-      // OTP verified successfully
-      otpStore.delete(identifier);
-      
+      // Delete used OTP
+      await supabase.from("otp_codes").delete().eq("id", storedOtp.id);
+
       return new Response(
         JSON.stringify({ success: true, message: "OTP verified successfully" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -185,7 +179,6 @@ serve(async (req) => {
     }
 
     throw new Error("Invalid action");
-
   } catch (error: any) {
     console.error("OTP error:", error);
     return new Response(
