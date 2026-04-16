@@ -43,6 +43,23 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) {
+        toast({ title: "Google sign-in failed", description: String(result.error), variant: "destructive" });
+      }
+      if (result.redirected) return;
+    } catch (error: any) {
+      toast({ title: "Google sign-in failed", description: error.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const sendEmailOtp = async (emailAddress: string) => {
     const { error } = await supabase.functions.invoke("send-otp", {
       body: { action: "send", email: emailAddress, type: "email" },
