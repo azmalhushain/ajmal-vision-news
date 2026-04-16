@@ -8,7 +8,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { AnimatePresence } from "framer-motion";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { Navigation } from "@/components/Navigation";
-import { PageLoader } from "@/components/PageLoader";
+
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Vision from "./pages/Vision";
@@ -101,21 +101,7 @@ const AnimatedRoutes = () => {
 };
 
 const AppContent = () => {
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  return (
-    <>
-      <AnimatePresence mode="wait">
-        {isLoading && <PageLoader key="loader" />}
-      </AnimatePresence>
-      <AnimatedRoutes />
-    </>
-  );
+  return <AnimatedRoutes />;
 };
 
 const App = () => (
