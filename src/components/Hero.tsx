@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowDown, Play } from "lucide-react";
-import mayorImage from "@/assets/news-infrastructure.jpg";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Hero = () => {
@@ -71,30 +70,56 @@ export const Hero = () => {
               isVisible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-10"
             )}
           >
-            <div className="relative group max-w-md mx-auto lg:max-w-none">
-              <div className="absolute -inset-4 bg-accent/20 rounded-3xl blur-2xl group-hover:bg-accent/30 transition-all duration-500" />
-              <img
-                src={content?.hero_image_url || mayorImage}
-                alt="Mayor Ajmal Akhtar Azad"
-                loading="eager"
-                className="relative rounded-3xl shadow-2xl transform group-hover:scale-[1.02] transition-transform duration-500 w-full"
-              />
-              
-              {/* Floating Stats */}
-              <div className="absolute -bottom-4 -right-2 sm:-bottom-6 sm:-right-6 glass-card p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl transform hover:scale-110 transition-transform duration-300 animate-delay-500 fade-in-up">
-                <div className="text-xl sm:text-2xl md:text-4xl font-black text-accent">{content?.stat1_number || "15+"}</div>
-                <div className="text-xs sm:text-sm text-muted-foreground uppercase tracking-wider">
-                  {content?.stat1_label || "Projects Completed"}
+            {content?.hero_image_url ? (
+              <div className="relative group max-w-md mx-auto lg:max-w-none">
+                <div className="absolute -inset-4 bg-accent/20 rounded-3xl blur-2xl group-hover:bg-accent/30 transition-all duration-500" />
+                <img
+                  src={content.hero_image_url}
+                  alt="Mayor Ajmal Akhtar Azad"
+                  loading="eager"
+                  className="relative rounded-3xl shadow-2xl transform group-hover:scale-[1.02] transition-transform duration-500 w-full"
+                />
+                
+                {/* Floating Stats */}
+                <div className="absolute -bottom-4 -right-2 sm:-bottom-6 sm:-right-6 glass-card p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl transform hover:scale-110 transition-transform duration-300 animate-delay-500 fade-in-up">
+                  <div className="text-xl sm:text-2xl md:text-4xl font-black text-accent">{content?.stat1_number || "15+"}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground uppercase tracking-wider">
+                    {content?.stat1_label || "Projects Completed"}
+                  </div>
+                </div>
+                
+                <div className="absolute -top-4 -left-2 sm:-top-6 sm:-left-6 glass-card p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl transform hover:scale-110 transition-transform duration-300 animate-delay-600 fade-in-up">
+                  <div className="text-xl sm:text-2xl md:text-4xl font-black text-accent">{content?.stat2_number || "500+"}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground uppercase tracking-wider">
+                    {content?.stat2_label || "Families Benefited"}
+                  </div>
                 </div>
               </div>
-              
-              <div className="absolute -top-4 -left-2 sm:-top-6 sm:-left-6 glass-card p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl transform hover:scale-110 transition-transform duration-300 animate-delay-600 fade-in-up">
-                <div className="text-xl sm:text-2xl md:text-4xl font-black text-accent">{content?.stat2_number || "500+"}</div>
-                <div className="text-xs sm:text-sm text-muted-foreground uppercase tracking-wider">
-                  {content?.stat2_label || "Families Benefited"}
+            ) : (
+              <div className="relative group max-w-md mx-auto lg:max-w-none">
+                <div className="absolute -inset-4 bg-accent/20 rounded-3xl blur-2xl group-hover:bg-accent/30 transition-all duration-500" />
+                <div className="relative rounded-3xl shadow-2xl bg-muted/30 border border-border/50 aspect-[4/5] flex items-center justify-center">
+                  <div className="text-center space-y-3 p-6">
+                    <div className="text-6xl font-black text-accent/40">AAA</div>
+                    <p className="text-sm text-muted-foreground">Hero image set from Admin Panel</p>
+                  </div>
+                </div>
+                
+                <div className="absolute -bottom-4 -right-2 sm:-bottom-6 sm:-right-6 glass-card p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl transform hover:scale-110 transition-transform duration-300">
+                  <div className="text-xl sm:text-2xl md:text-4xl font-black text-accent">{content?.stat1_number || "15+"}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground uppercase tracking-wider">
+                    {content?.stat1_label || "Projects Completed"}
+                  </div>
+                </div>
+                
+                <div className="absolute -top-4 -left-2 sm:-top-6 sm:-left-6 glass-card p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl transform hover:scale-110 transition-transform duration-300">
+                  <div className="text-xl sm:text-2xl md:text-4xl font-black text-accent">{content?.stat2_number || "500+"}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground uppercase tracking-wider">
+                    {content?.stat2_label || "Families Benefited"}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
