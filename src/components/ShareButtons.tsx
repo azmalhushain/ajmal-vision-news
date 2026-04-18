@@ -51,7 +51,7 @@ export const ShareButtons = ({
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedShareUrl}&quote=${encodedTitle}`,
     twitter: `https://twitter.com/intent/tweet?url=${encodedShareUrl}&text=${encodedTitle}&via=AjmalAkhtarAzad`,
     linkedin: `https://www.linkedin.com/shareArticle?mini=true&url=${encodedShareUrl}&title=${encodedTitle}&summary=${encodedDescription}`,
-    whatsapp: `https://wa.me/?text=${encodedTitle}%0A%0A${encodedDescription}%0A%0A${encodeURIComponent(fullUrl)}`,
+    whatsapp: `https://wa.me/?text=${encodedTitle}%0A%0A${encodedDescription}%0A%0A${encodedShareUrl}`,
     telegram: `https://t.me/share/url?url=${encodedShareUrl}&text=${encodedTitle}`,
   };
 
