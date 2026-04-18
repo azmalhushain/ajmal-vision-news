@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, Globe, Search, User, LogOut, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useLanguage, LANGUAGE_META, type Language } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import {
   DropdownMenu,
@@ -154,13 +154,17 @@ export const Navigation = () => {
                   <span className="uppercase text-xs font-semibold">{language}</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setLanguage("en")} className={language === "en" ? "bg-accent/10" : ""}>
-                  🇬🇧 English
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setLanguage("ne")} className={language === "ne" ? "bg-accent/10" : ""}>
-                  🇳🇵 नेपाली
-                </DropdownMenuItem>
+              <DropdownMenuContent align="end" className="max-h-72 overflow-y-auto">
+                {(Object.keys(LANGUAGE_META) as Language[]).map((code) => (
+                  <DropdownMenuItem
+                    key={code}
+                    onClick={() => setLanguage(code)}
+                    className={language === code ? "bg-accent/10" : ""}
+                  >
+                    <span className="mr-2">{LANGUAGE_META[code].flag}</span>
+                    {LANGUAGE_META[code].native}
+                  </DropdownMenuItem>
+                ))}
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -226,13 +230,13 @@ export const Navigation = () => {
                   <span className="uppercase text-xs">{language}</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setLanguage("en")}>
-                  🇬🇧 English
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setLanguage("ne")}>
-                  🇳🇵 नेपाली
-                </DropdownMenuItem>
+              <DropdownMenuContent align="end" className="max-h-72 overflow-y-auto">
+                {(Object.keys(LANGUAGE_META) as Language[]).map((code) => (
+                  <DropdownMenuItem key={code} onClick={() => setLanguage(code)}>
+                    <span className="mr-2">{LANGUAGE_META[code].flag}</span>
+                    {LANGUAGE_META[code].native}
+                  </DropdownMenuItem>
+                ))}
               </DropdownMenuContent>
             </DropdownMenu>
 
