@@ -127,9 +127,11 @@ serve(async (req) => {
         const smsSent = await sendSMSViaTwilio(phone, message);
 
         if (!smsSent) {
+          // Delete the stored OTP since it could not be delivered
+          await supabase.from("otp_codes").delete().eq("identifier", identifier);
           return new Response(
-            JSON.stringify({ success: true, message: "OTP sent (demo mode)", demo_otp: generatedOtp }),
-            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            JSON.stringify({ error: "SMS service is not configured. Please contact support." }),
+            { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
       }
