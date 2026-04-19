@@ -1,13 +1,13 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useRef, Suspense, useState, FormEvent } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { useEffect, useRef, Suspense, useState } from "react";
 import { motion } from "framer-motion";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Float, Sparkles, Environment, OrbitControls } from "@react-three/drei";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ArrowLeft, Home, Search, Newspaper, User, Mail } from "lucide-react";
 import * as THREE from "three";
 import { SEOHead } from "@/components/SEOHead";
+import { GlobalSearch } from "@/components/GlobalSearch";
 
 const FuzzyMonster = () => {
   const group = useRef<THREE.Group>(null);
@@ -104,20 +104,24 @@ const QUICK_LINKS = [
 
 const NotFound = () => {
   const location = useLocation();
-  const navigate = useNavigate();
-  const [query, setQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
 
   useEffect(() => {
     console.error("404 Error: User attempted to access non-existent route:", location.pathname);
     window.scrollTo(0, 0);
   }, [location.pathname]);
 
-  const handleSearch = (e: FormEvent) => {
-    e.preventDefault();
-    const q = query.trim();
-    if (!q) return;
-    navigate(`/news?search=${encodeURIComponent(q)}`);
-  };
+  // Open search with ⌘K / Ctrl+K
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   return (
     <>
@@ -201,23 +205,18 @@ const NotFound = () => {
               Let's get you back somewhere familiar...
             </p>
 
-            {/* Search */}
-            <form
-              onSubmit={handleSearch}
-              className="mt-6 mx-auto flex max-w-md items-center gap-2 rounded-full border border-foreground/15 bg-background/60 backdrop-blur px-2 py-1.5 shadow-lg"
+            {/* Search trigger */}
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="mt-6 mx-auto flex w-full max-w-md items-center gap-3 rounded-full border border-foreground/15 bg-background/60 backdrop-blur px-5 py-3 text-left text-muted-foreground shadow-lg transition hover:bg-background/80 hover:border-foreground/30"
+              aria-label="Open search"
             >
-              <Search className="ml-2 h-4 w-4 text-muted-foreground shrink-0" />
-              <Input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search posts..."
-                className="border-0 bg-transparent shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
-                aria-label="Search posts"
-              />
-              <Button type="submit" size="sm" className="rounded-full">
-                Search
-              </Button>
-            </form>
+              <Search className="h-4 w-4 shrink-0" />
+              <span className="flex-1 text-sm">Search posts, podcasts, gallery...</span>
+              <kbd className="hidden sm:inline-flex h-5 items-center rounded border border-foreground/20 bg-background/60 px-1.5 text-[10px] font-medium">
+                ⌘K
+              </kbd>
+            </button>
 
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               <Button
