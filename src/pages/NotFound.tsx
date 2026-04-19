@@ -1,10 +1,11 @@
-import { Link, useLocation } from "react-router-dom";
-import { useEffect, useRef, Suspense } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useRef, Suspense, useState, FormEvent } from "react";
 import { motion } from "framer-motion";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Float, Sparkles, Environment, OrbitControls } from "@react-three/drei";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Home } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { ArrowLeft, Home, Search, Newspaper, User, Mail } from "lucide-react";
 import * as THREE from "three";
 import { SEOHead } from "@/components/SEOHead";
 
@@ -95,13 +96,28 @@ const FuzzyMonster = () => {
   );
 };
 
+const QUICK_LINKS = [
+  { to: "/news", label: "News", icon: Newspaper },
+  { to: "/about", label: "About", icon: User },
+  { to: "/contact", label: "Contact", icon: Mail },
+];
+
 const NotFound = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     console.error("404 Error: User attempted to access non-existent route:", location.pathname);
     window.scrollTo(0, 0);
   }, [location.pathname]);
+
+  const handleSearch = (e: FormEvent) => {
+    e.preventDefault();
+    const q = query.trim();
+    if (!q) return;
+    navigate(`/news?search=${encodeURIComponent(q)}`);
+  };
 
   return (
     <>
@@ -185,7 +201,25 @@ const NotFound = () => {
               Let's get you back somewhere familiar...
             </p>
 
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            {/* Search */}
+            <form
+              onSubmit={handleSearch}
+              className="mt-6 mx-auto flex max-w-md items-center gap-2 rounded-full border border-foreground/15 bg-background/60 backdrop-blur px-2 py-1.5 shadow-lg"
+            >
+              <Search className="ml-2 h-4 w-4 text-muted-foreground shrink-0" />
+              <Input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search posts..."
+                className="border-0 bg-transparent shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                aria-label="Search posts"
+              />
+              <Button type="submit" size="sm" className="rounded-full">
+                Search
+              </Button>
+            </form>
+
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               <Button
                 variant="outline"
                 size="lg"
@@ -204,6 +238,26 @@ const NotFound = () => {
                   Back to Home
                 </Button>
               </Link>
+            </div>
+
+            {/* Quick links */}
+            <div className="mt-8">
+              <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-3">
+                Popular pages
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                {QUICK_LINKS.map(({ to, label, icon: Icon }) => (
+                  <Link key={to} to={to}>
+                    <Button
+                      variant="ghost"
+                      className="rounded-full bg-background/40 backdrop-blur hover:bg-background/70 border border-foreground/10"
+                    >
+                      <Icon className="mr-2 h-4 w-4" />
+                      {label}
+                    </Button>
+                  </Link>
+                ))}
+              </div>
             </div>
           </motion.div>
         </div>
