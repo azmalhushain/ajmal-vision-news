@@ -1,7 +1,99 @@
 import { Link, useLocation } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useRef, Suspense } from "react";
+import { motion } from "framer-motion";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { Float, Sparkles, Environment, OrbitControls } from "@react-three/drei";
 import { Button } from "@/components/ui/button";
-import { Home } from "lucide-react";
+import { ArrowLeft, Home } from "lucide-react";
+import * as THREE from "three";
+import { SEOHead } from "@/components/SEOHead";
+
+const FuzzyMonster = () => {
+  const group = useRef<THREE.Group>(null);
+  const leftEye = useRef<THREE.Mesh>(null);
+  const rightEye = useRef<THREE.Mesh>(null);
+
+  useFrame((state) => {
+    const t = state.clock.getElapsedTime();
+    if (group.current) {
+      group.current.rotation.y = Math.sin(t * 0.5) * 0.25;
+      group.current.position.y = Math.sin(t * 1.2) * 0.08;
+    }
+    // Wandering eye look
+    const lookX = Math.sin(t * 0.8) * 0.08;
+    const lookY = Math.cos(t * 0.6) * 0.05;
+    [leftEye, rightEye].forEach((ref) => {
+      if (ref.current) {
+        ref.current.position.x += (lookX - (ref.current.userData.baseX ?? ref.current.position.x) + (ref.current.userData.baseX ?? 0)) * 0;
+      }
+    });
+    if (leftEye.current) leftEye.current.position.set(-0.32 + lookX, 0.55 + lookY, 0.78);
+    if (rightEye.current) rightEye.current.position.set(0.32 + lookX, 0.55 + lookY, 0.78);
+  });
+
+  return (
+    <group ref={group} position={[0, -0.4, 0]}>
+      {/* Body — fuzzy via layered noisy spheres */}
+      <mesh castShadow>
+        <sphereGeometry args={[1, 64, 64]} />
+        <meshStandardMaterial color="#3aa8ff" roughness={0.95} metalness={0} />
+      </mesh>
+      {/* Fuzz layers */}
+      {[1.02, 1.04, 1.06].map((s, i) => (
+        <mesh key={i} scale={s}>
+          <sphereGeometry args={[1, 32, 32]} />
+          <meshStandardMaterial
+            color="#5fb8ff"
+            transparent
+            opacity={0.18 - i * 0.04}
+            roughness={1}
+          />
+        </mesh>
+      ))}
+      {/* Eye whites */}
+      <mesh ref={leftEye} position={[-0.32, 0.55, 0.78]}>
+        <sphereGeometry args={[0.22, 32, 32]} />
+        <meshStandardMaterial color="#ffffff" roughness={0.3} />
+      </mesh>
+      <mesh ref={rightEye} position={[0.32, 0.55, 0.78]}>
+        <sphereGeometry args={[0.22, 32, 32]} />
+        <meshStandardMaterial color="#ffffff" roughness={0.3} />
+      </mesh>
+      {/* Pupils */}
+      <mesh position={[-0.32, 0.55, 0.96]}>
+        <sphereGeometry args={[0.09, 24, 24]} />
+        <meshStandardMaterial color="#0a1a2a" />
+      </mesh>
+      <mesh position={[0.32, 0.55, 0.96]}>
+        <sphereGeometry args={[0.09, 24, 24]} />
+        <meshStandardMaterial color="#0a1a2a" />
+      </mesh>
+      {/* Mouth */}
+      <mesh position={[0, 0.15, 0.92]} rotation={[Math.PI / 2, 0, 0]}>
+        <torusGeometry args={[0.12, 0.05, 16, 32, Math.PI]} />
+        <meshStandardMaterial color="#1a3a5a" />
+      </mesh>
+      {/* Little arm scratching head */}
+      <mesh position={[0.85, 0.7, 0.2]} rotation={[0, 0, -0.6]}>
+        <capsuleGeometry args={[0.14, 0.5, 8, 16]} />
+        <meshStandardMaterial color="#3aa8ff" roughness={0.95} />
+      </mesh>
+      <mesh position={[1.0, 1.05, 0.2]}>
+        <sphereGeometry args={[0.16, 24, 24]} />
+        <meshStandardMaterial color="#3aa8ff" roughness={0.95} />
+      </mesh>
+      {/* Feet */}
+      <mesh position={[-0.45, -0.95, 0.3]}>
+        <sphereGeometry args={[0.28, 32, 32]} />
+        <meshStandardMaterial color="#2a98ef" roughness={0.95} />
+      </mesh>
+      <mesh position={[0.45, -0.95, 0.3]}>
+        <sphereGeometry args={[0.28, 32, 32]} />
+        <meshStandardMaterial color="#2a98ef" roughness={0.95} />
+      </mesh>
+    </group>
+  );
+};
 
 const NotFound = () => {
   const location = useLocation();
@@ -12,21 +104,111 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background pt-20">
-      <div className="text-center space-y-8 px-4">
-        <h1 className="text-9xl font-black text-accent">404</h1>
-        <h2 className="text-4xl font-bold text-foreground">Page Not Found</h2>
-        <p className="text-xl text-muted-foreground max-w-md mx-auto">
-          The page you're looking for doesn't exist or has been moved.
-        </p>
-        <Link to="/">
-          <Button size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground transform hover:scale-105 transition-transform">
-            <Home className="mr-2 h-5 w-5" />
-            Back to Home
-          </Button>
-        </Link>
+    <>
+      <SEOHead
+        title="404 — Page Not Found | Ajmal Akhtar Azad"
+        description="Oops, this page doesn't exist. Let's get you back somewhere familiar."
+      />
+      <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-[#bfe1ff] via-[#dcefff] to-[#f3f9ff] dark:from-[#0a1628] dark:via-[#0f2440] dark:to-[#1a3258]">
+        {/* Soft cloud blobs */}
+        <div className="pointer-events-none absolute inset-0">
+          {[...Array(6)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute rounded-full bg-white/40 dark:bg-white/5 blur-3xl"
+              style={{
+                width: `${180 + i * 40}px`,
+                height: `${180 + i * 40}px`,
+                top: `${(i * 17) % 80}%`,
+                left: `${(i * 23) % 90}%`,
+              }}
+              animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
+              transition={{ duration: 12 + i * 2, repeat: Infinity, ease: "easeInOut" }}
+            />
+          ))}
+        </div>
+
+        <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4 py-20">
+          {/* Giant 404 behind the 3D model */}
+          <div className="relative w-full max-w-5xl">
+            <motion.h1
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="pointer-events-none select-none text-center font-black tracking-tighter text-white/70 dark:text-white/10"
+              style={{
+                fontSize: "clamp(180px, 32vw, 420px)",
+                lineHeight: 1,
+                textShadow: "0 8px 40px rgba(255,255,255,0.4)",
+              }}
+            >
+              404
+            </motion.h1>
+
+            {/* 3D Canvas overlaid */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="h-[55vh] w-[55vh] max-h-[480px] max-w-[480px]">
+                <Canvas camera={{ position: [0, 0.2, 4.2], fov: 45 }} shadows>
+                  <Suspense fallback={null}>
+                    <ambientLight intensity={0.6} />
+                    <directionalLight position={[3, 5, 4]} intensity={1.2} castShadow />
+                    <directionalLight position={[-3, 2, -2]} intensity={0.4} color="#a5d8ff" />
+                    <Float speed={1.6} rotationIntensity={0.3} floatIntensity={0.8}>
+                      <FuzzyMonster />
+                    </Float>
+                    <Sparkles count={40} scale={6} size={2} speed={0.4} color="#ffffff" />
+                    <Environment preset="sunset" />
+                    <OrbitControls
+                      enableZoom={false}
+                      enablePan={false}
+                      autoRotate
+                      autoRotateSpeed={0.6}
+                      minPolarAngle={Math.PI / 2.4}
+                      maxPolarAngle={Math.PI / 1.8}
+                    />
+                  </Suspense>
+                </Canvas>
+              </div>
+            </div>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
+            className="mt-8 text-center"
+          >
+            <h2 className="text-3xl md:text-5xl font-bold text-foreground tracking-tight">
+              Oops, I think we're lost
+            </h2>
+            <p className="mt-3 text-base md:text-lg text-muted-foreground max-w-md mx-auto">
+              Let's get you back somewhere familiar...
+            </p>
+
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => window.history.back()}
+                className="rounded-full backdrop-blur bg-background/60 border-foreground/20 hover:bg-background/80"
+              >
+                <ArrowLeft className="mr-2 h-5 w-5" />
+                Go Back
+              </Button>
+              <Link to="/">
+                <Button
+                  size="lg"
+                  className="rounded-full bg-foreground text-background hover:bg-foreground/90 shadow-lg"
+                >
+                  <Home className="mr-2 h-5 w-5" />
+                  Back to Home
+                </Button>
+              </Link>
+            </div>
+          </motion.div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
