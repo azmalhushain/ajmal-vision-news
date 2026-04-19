@@ -1,12 +1,13 @@
 import { Link, useLocation } from "react-router-dom";
-import { useEffect, useRef, Suspense } from "react";
+import { useEffect, useRef, Suspense, useState } from "react";
 import { motion } from "framer-motion";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Float, Sparkles, Environment, OrbitControls } from "@react-three/drei";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Home } from "lucide-react";
+import { ArrowLeft, Home, Search, Newspaper, User, Mail } from "lucide-react";
 import * as THREE from "three";
 import { SEOHead } from "@/components/SEOHead";
+import { GlobalSearch } from "@/components/GlobalSearch";
 
 const FuzzyMonster = () => {
   const group = useRef<THREE.Group>(null);
@@ -95,13 +96,32 @@ const FuzzyMonster = () => {
   );
 };
 
+const QUICK_LINKS = [
+  { to: "/news", label: "News", icon: Newspaper },
+  { to: "/about", label: "About", icon: User },
+  { to: "/contact", label: "Contact", icon: Mail },
+];
+
 const NotFound = () => {
   const location = useLocation();
+  const [searchOpen, setSearchOpen] = useState(false);
 
   useEffect(() => {
     console.error("404 Error: User attempted to access non-existent route:", location.pathname);
     window.scrollTo(0, 0);
   }, [location.pathname]);
+
+  // Open search with ⌘K / Ctrl+K
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   return (
     <>
@@ -185,7 +205,20 @@ const NotFound = () => {
               Let's get you back somewhere familiar...
             </p>
 
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            {/* Search trigger */}
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="mt-6 mx-auto flex w-full max-w-md items-center gap-3 rounded-full border border-foreground/15 bg-background/60 backdrop-blur px-5 py-3 text-left text-muted-foreground shadow-lg transition hover:bg-background/80 hover:border-foreground/30"
+              aria-label="Open search"
+            >
+              <Search className="h-4 w-4 shrink-0" />
+              <span className="flex-1 text-sm">Search posts, podcasts, gallery...</span>
+              <kbd className="hidden sm:inline-flex h-5 items-center rounded border border-foreground/20 bg-background/60 px-1.5 text-[10px] font-medium">
+                ⌘K
+              </kbd>
+            </button>
+
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               <Button
                 variant="outline"
                 size="lg"
@@ -205,9 +238,31 @@ const NotFound = () => {
                 </Button>
               </Link>
             </div>
+
+            {/* Quick links */}
+            <div className="mt-8">
+              <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-3">
+                Popular pages
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                {QUICK_LINKS.map(({ to, label, icon: Icon }) => (
+                  <Link key={to} to={to}>
+                    <Button
+                      variant="ghost"
+                      className="rounded-full bg-background/40 backdrop-blur hover:bg-background/70 border border-foreground/10"
+                    >
+                      <Icon className="mr-2 h-4 w-4" />
+                      {label}
+                    </Button>
+                  </Link>
+                ))}
+              </div>
+            </div>
           </motion.div>
         </div>
       </div>
+
+      <GlobalSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
 };
