@@ -98,12 +98,39 @@ serve(async (req) => {
       }
 
       console.log(`Email click: ${emailId}, link: ${link}`);
-      
-      // Redirect to the actual link
+
+      // Validate redirect target against allowlist to prevent open-redirect abuse
+      const allowedHosts = [
+        "ajmal-vision-news.lovable.app",
+        "ajmalazad.lovable.app",
+        "www.ajmalakhtar.com.np",
+        "ajmalakhtar.com.np",
+        "bhokrahanarsingh.gov.np",
+      ];
+      let safeTarget: string | null = null;
+      try {
+        const parsed = new URL(decodeURIComponent(link));
+        if (
+          (parsed.protocol === "https:" || parsed.protocol === "http:") &&
+          allowedHosts.includes(parsed.hostname)
+        ) {
+          safeTarget = parsed.toString();
+        }
+      } catch {
+        safeTarget = null;
+      }
+
+      if (!safeTarget) {
+        return new Response("Invalid redirect target", {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "text/plain" },
+        });
+      }
+
       return new Response(null, {
         status: 302,
-        headers: { 
-          "Location": decodeURIComponent(link),
+        headers: {
+          "Location": safeTarget,
           ...corsHeaders,
         },
       });

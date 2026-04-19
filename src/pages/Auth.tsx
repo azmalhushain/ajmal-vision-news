@@ -237,14 +237,6 @@ const Auth = () => {
         description: `A 6-digit verification code has been sent to ${formattedPhone}`,
       });
       
-      // For demo purposes, show the OTP if returned
-      if (data?.demo_otp) {
-        toast({
-          title: "Demo Mode",
-          description: `Your OTP code is: ${data.demo_otp}`,
-        });
-      }
-      
       setStep("phone-verify");
     } catch (error: any) {
       toast({ 
