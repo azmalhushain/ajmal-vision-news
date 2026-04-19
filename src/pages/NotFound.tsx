@@ -261,6 +261,8 @@ const NotFound = () => {
           </motion.div>
         </div>
       </div>
+
+      <GlobalSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
 };
