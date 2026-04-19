@@ -57,27 +57,21 @@ serve(async (req) => {
     };
     const targetLangName = languageNames[targetLanguage] || targetLanguage;
 
-    // Translate using Lovable AI
-    const systemPrompt = `You are a professional translator. Translate the following content to ${targetLangName}. 
-Maintain the original formatting, HTML tags, and structure. 
-Keep proper nouns, names, and technical terms as is when appropriate.
-Provide natural, fluent translations that read well in the target language.
-Return a JSON object with translated_title, translated_content, and translated_excerpt fields.`;
+    // Translate using Lovable AI with tool-calling for guaranteed structured output
+    const systemPrompt = `You are a professional translator. Translate content to ${targetLangName}.
+Maintain original formatting and HTML tags exactly. Keep proper nouns and technical terms when appropriate.
+Provide natural, fluent translations. Always call the return_translation tool with your result.`;
 
-    const userPrompt = `Translate this content to ${targetLangName}:
+    const userPrompt = `Translate the following to ${targetLangName}.
 
-Title: ${title}
+TITLE:
+${title}
 
-Content: ${content}
+CONTENT:
+${content}
 
-Excerpt: ${excerpt || ""}
-
-Return ONLY a valid JSON object with these fields:
-{
-  "translated_title": "...",
-  "translated_content": "...",
-  "translated_excerpt": "..."
-}`;
+EXCERPT:
+${excerpt || ""}`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -91,7 +85,26 @@ Return ONLY a valid JSON object with these fields:
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
         ],
-        temperature: 0.3,
+        tools: [
+          {
+            type: "function",
+            function: {
+              name: "return_translation",
+              description: "Return the translated title, content, and excerpt.",
+              parameters: {
+                type: "object",
+                properties: {
+                  translated_title: { type: "string" },
+                  translated_content: { type: "string" },
+                  translated_excerpt: { type: "string" },
+                },
+                required: ["translated_title", "translated_content", "translated_excerpt"],
+                additionalProperties: false,
+              },
+            },
+          },
+        ],
+        tool_choice: { type: "function", function: { name: "return_translation" } },
       }),
     });
 
@@ -114,24 +127,33 @@ Return ONLY a valid JSON object with these fields:
     }
 
     const aiResponse = await response.json();
-    const translatedText = aiResponse.choices?.[0]?.message?.content;
+    const message = aiResponse.choices?.[0]?.message;
+    const toolCall = message?.tool_calls?.[0];
+    const argsStr = toolCall?.function?.arguments;
 
-    if (!translatedText) {
-      throw new Error("No translation received from AI");
+    let parsedTranslation: any;
+    if (argsStr) {
+      try {
+        parsedTranslation = typeof argsStr === "string" ? JSON.parse(argsStr) : argsStr;
+      } catch (e) {
+        console.error("Failed to parse tool arguments:", argsStr);
+      }
     }
 
-    // Parse the JSON response
-    let parsedTranslation;
-    try {
-      // Extract JSON from the response (in case it's wrapped in markdown code blocks)
-      const jsonMatch = translatedText.match(/\{[\s\S]*\}/);
+    // Fallback: try to parse content as JSON if no tool call
+    if (!parsedTranslation && message?.content) {
+      const jsonMatch = message.content.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-        parsedTranslation = JSON.parse(jsonMatch[0]);
-      } else {
-        throw new Error("No JSON found in response");
+        try {
+          parsedTranslation = JSON.parse(jsonMatch[0]);
+        } catch {
+          // ignore
+        }
       }
-    } catch (parseError) {
-      console.error("Failed to parse translation response:", translatedText);
+    }
+
+    if (!parsedTranslation) {
+      console.error("No valid translation in AI response:", JSON.stringify(aiResponse).slice(0, 500));
       throw new Error("Failed to parse translation response");
     }
 
