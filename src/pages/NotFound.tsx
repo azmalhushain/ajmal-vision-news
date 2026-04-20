@@ -9,88 +9,151 @@ import * as THREE from "three";
 import { SEOHead } from "@/components/SEOHead";
 import { GlobalSearch } from "@/components/GlobalSearch";
 
-const FuzzyMonster = () => {
+const Astronaut = () => {
   const group = useRef<THREE.Group>(null);
-  const leftEye = useRef<THREE.Mesh>(null);
-  const rightEye = useRef<THREE.Mesh>(null);
 
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
     if (group.current) {
-      group.current.rotation.y = Math.sin(t * 0.5) * 0.25;
-      group.current.position.y = Math.sin(t * 1.2) * 0.08;
+      // Gentle zero-gravity tumble
+      group.current.rotation.x = Math.sin(t * 0.4) * 0.2;
+      group.current.rotation.y = t * 0.3;
+      group.current.rotation.z = Math.cos(t * 0.35) * 0.15;
+      group.current.position.y = Math.sin(t * 0.8) * 0.12;
+      group.current.position.x = Math.cos(t * 0.5) * 0.08;
     }
-    // Wandering eye look
-    const lookX = Math.sin(t * 0.8) * 0.08;
-    const lookY = Math.cos(t * 0.6) * 0.05;
-    [leftEye, rightEye].forEach((ref) => {
-      if (ref.current) {
-        ref.current.position.x += (lookX - (ref.current.userData.baseX ?? ref.current.position.x) + (ref.current.userData.baseX ?? 0)) * 0;
-      }
-    });
-    if (leftEye.current) leftEye.current.position.set(-0.32 + lookX, 0.55 + lookY, 0.78);
-    if (rightEye.current) rightEye.current.position.set(0.32 + lookX, 0.55 + lookY, 0.78);
   });
 
   return (
-    <group ref={group} position={[0, -0.4, 0]}>
-      {/* Body — fuzzy via layered noisy spheres */}
-      <mesh castShadow>
-        <sphereGeometry args={[1, 64, 64]} />
-        <meshStandardMaterial color="#3aa8ff" roughness={0.95} metalness={0} />
+    <group ref={group} position={[0, -0.2, 0]}>
+      {/* Helmet — glass visor */}
+      <mesh castShadow position={[0, 0.85, 0]}>
+        <sphereGeometry args={[0.55, 48, 48]} />
+        <meshPhysicalMaterial
+          color="#ffffff"
+          roughness={0.05}
+          metalness={0.1}
+          transmission={0.6}
+          thickness={0.4}
+          clearcoat={1}
+          clearcoatRoughness={0}
+          envMapIntensity={1.5}
+        />
       </mesh>
-      {/* Fuzz layers */}
-      {[1.02, 1.04, 1.06].map((s, i) => (
-        <mesh key={i} scale={s}>
-          <sphereGeometry args={[1, 32, 32]} />
-          <meshStandardMaterial
-            color="#5fb8ff"
-            transparent
-            opacity={0.18 - i * 0.04}
-            roughness={1}
-          />
-        </mesh>
-      ))}
-      {/* Eye whites */}
-      <mesh ref={leftEye} position={[-0.32, 0.55, 0.78]}>
-        <sphereGeometry args={[0.22, 32, 32]} />
-        <meshStandardMaterial color="#ffffff" roughness={0.3} />
+      {/* Visor tint — front */}
+      <mesh position={[0, 0.85, 0.18]}>
+        <sphereGeometry args={[0.42, 32, 32, 0, Math.PI * 2, 0, Math.PI / 1.6]} />
+        <meshPhysicalMaterial
+          color="#0a2540"
+          roughness={0.1}
+          metalness={0.8}
+          clearcoat={1}
+          envMapIntensity={2}
+        />
       </mesh>
-      <mesh ref={rightEye} position={[0.32, 0.55, 0.78]}>
-        <sphereGeometry args={[0.22, 32, 32]} />
-        <meshStandardMaterial color="#ffffff" roughness={0.3} />
+      {/* Helmet ring */}
+      <mesh position={[0, 0.42, 0]}>
+        <torusGeometry args={[0.42, 0.06, 16, 48]} />
+        <meshStandardMaterial color="#d8d8e0" roughness={0.4} metalness={0.6} />
       </mesh>
-      {/* Pupils */}
-      <mesh position={[-0.32, 0.55, 0.96]}>
-        <sphereGeometry args={[0.09, 24, 24]} />
-        <meshStandardMaterial color="#0a1a2a" />
+
+      {/* Torso — suit */}
+      <mesh castShadow position={[0, -0.05, 0]}>
+        <capsuleGeometry args={[0.55, 0.5, 16, 32]} />
+        <meshStandardMaterial color="#f2f3f7" roughness={0.7} metalness={0.05} />
       </mesh>
-      <mesh position={[0.32, 0.55, 0.96]}>
-        <sphereGeometry args={[0.09, 24, 24]} />
-        <meshStandardMaterial color="#0a1a2a" />
+      {/* Chest control panel */}
+      <mesh position={[0, 0.05, 0.52]}>
+        <boxGeometry args={[0.35, 0.22, 0.05]} />
+        <meshStandardMaterial color="#1a2540" roughness={0.5} metalness={0.3} />
       </mesh>
-      {/* Mouth */}
-      <mesh position={[0, 0.15, 0.92]} rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[0.12, 0.05, 16, 32, Math.PI]} />
-        <meshStandardMaterial color="#1a3a5a" />
+      <mesh position={[-0.08, 0.05, 0.56]}>
+        <sphereGeometry args={[0.025, 16, 16]} />
+        <meshStandardMaterial emissive="#ff4a4a" emissiveIntensity={2} color="#ff4a4a" />
       </mesh>
-      {/* Little arm scratching head */}
-      <mesh position={[0.85, 0.7, 0.2]} rotation={[0, 0, -0.6]}>
-        <capsuleGeometry args={[0.14, 0.5, 8, 16]} />
-        <meshStandardMaterial color="#3aa8ff" roughness={0.95} />
+      <mesh position={[0.08, 0.05, 0.56]}>
+        <sphereGeometry args={[0.025, 16, 16]} />
+        <meshStandardMaterial emissive="#4aff7a" emissiveIntensity={2} color="#4aff7a" />
       </mesh>
-      <mesh position={[1.0, 1.05, 0.2]}>
-        <sphereGeometry args={[0.16, 24, 24]} />
-        <meshStandardMaterial color="#3aa8ff" roughness={0.95} />
+
+      {/* Backpack */}
+      <mesh position={[0, -0.05, -0.5]}>
+        <boxGeometry args={[0.65, 0.7, 0.3]} />
+        <meshStandardMaterial color="#e0e1e6" roughness={0.6} metalness={0.1} />
       </mesh>
-      {/* Feet */}
-      <mesh position={[-0.45, -0.95, 0.3]}>
-        <sphereGeometry args={[0.28, 32, 32]} />
-        <meshStandardMaterial color="#2a98ef" roughness={0.95} />
+
+      {/* Arms */}
+      <mesh position={[-0.7, 0.05, 0.1]} rotation={[0.2, 0, 0.7]}>
+        <capsuleGeometry args={[0.16, 0.55, 8, 16]} />
+        <meshStandardMaterial color="#f2f3f7" roughness={0.7} />
       </mesh>
-      <mesh position={[0.45, -0.95, 0.3]}>
-        <sphereGeometry args={[0.28, 32, 32]} />
-        <meshStandardMaterial color="#2a98ef" roughness={0.95} />
+      <mesh position={[0.7, 0.05, -0.1]} rotation={[-0.3, 0, -0.5]}>
+        <capsuleGeometry args={[0.16, 0.55, 8, 16]} />
+        <meshStandardMaterial color="#f2f3f7" roughness={0.7} />
+      </mesh>
+      {/* Gloves */}
+      <mesh position={[-0.95, -0.3, 0.25]}>
+        <sphereGeometry args={[0.18, 24, 24]} />
+        <meshStandardMaterial color="#c83a3a" roughness={0.6} />
+      </mesh>
+      <mesh position={[0.95, -0.25, -0.3]}>
+        <sphereGeometry args={[0.18, 24, 24]} />
+        <meshStandardMaterial color="#c83a3a" roughness={0.6} />
+      </mesh>
+
+      {/* Legs */}
+      <mesh position={[-0.25, -0.75, 0]} rotation={[0.3, 0, 0.1]}>
+        <capsuleGeometry args={[0.18, 0.55, 8, 16]} />
+        <meshStandardMaterial color="#f2f3f7" roughness={0.7} />
+      </mesh>
+      <mesh position={[0.25, -0.75, 0]} rotation={[-0.2, 0, -0.1]}>
+        <capsuleGeometry args={[0.18, 0.55, 8, 16]} />
+        <meshStandardMaterial color="#f2f3f7" roughness={0.7} />
+      </mesh>
+      {/* Boots */}
+      <mesh position={[-0.32, -1.15, 0.1]}>
+        <boxGeometry args={[0.28, 0.18, 0.38]} />
+        <meshStandardMaterial color="#2a3550" roughness={0.5} metalness={0.3} />
+      </mesh>
+      <mesh position={[0.32, -1.15, 0.05]}>
+        <boxGeometry args={[0.28, 0.18, 0.38]} />
+        <meshStandardMaterial color="#2a3550" roughness={0.5} metalness={0.3} />
+      </mesh>
+
+      {/* Flag patch on arm */}
+      <mesh position={[-0.78, 0.15, 0.25]} rotation={[0, 0, 0.7]}>
+        <planeGeometry args={[0.14, 0.1]} />
+        <meshStandardMaterial color="#c83a3a" side={THREE.DoubleSide} />
+      </mesh>
+    </group>
+  );
+};
+
+const Earth = () => {
+  const ref = useRef<THREE.Mesh>(null);
+  useFrame((state) => {
+    if (ref.current) ref.current.rotation.y = state.clock.getElapsedTime() * 0.15;
+  });
+  return (
+    <group position={[2.2, -1.4, -2]}>
+      <mesh ref={ref}>
+        <sphereGeometry args={[0.55, 48, 48]} />
+        <meshStandardMaterial
+          color="#2a6fb8"
+          roughness={0.7}
+          emissive="#0a2540"
+          emissiveIntensity={0.2}
+        />
+      </mesh>
+      {/* Continents — rough patches */}
+      <mesh rotation={[0.3, 0.5, 0]}>
+        <sphereGeometry args={[0.553, 32, 32]} />
+        <meshStandardMaterial color="#3aa05a" transparent opacity={0.5} roughness={1} />
+      </mesh>
+      {/* Atmosphere glow */}
+      <mesh scale={1.12}>
+        <sphereGeometry args={[0.55, 32, 32]} />
+        <meshBasicMaterial color="#6ab8ff" transparent opacity={0.15} />
       </mesh>
     </group>
   );
@@ -173,11 +236,12 @@ const NotFound = () => {
                     <ambientLight intensity={0.6} />
                     <directionalLight position={[3, 5, 4]} intensity={1.2} castShadow />
                     <directionalLight position={[-3, 2, -2]} intensity={0.4} color="#a5d8ff" />
-                    <Float speed={1.6} rotationIntensity={0.3} floatIntensity={0.8}>
-                      <FuzzyMonster />
+                    <Float speed={1.2} rotationIntensity={0.4} floatIntensity={1}>
+                      <Astronaut />
                     </Float>
-                    <Sparkles count={40} scale={6} size={2} speed={0.4} color="#ffffff" />
-                    <Environment preset="sunset" />
+                    <Earth />
+                    <Sparkles count={120} scale={10} size={1.5} speed={0.2} color="#ffffff" />
+                    <Environment preset="night" />
                     <OrbitControls
                       enableZoom={false}
                       enablePan={false}
