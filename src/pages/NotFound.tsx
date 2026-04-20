@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useEffect, useRef, Suspense, useState, useMemo } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Float, Sparkles, Environment, OrbitControls, Stars } from "@react-three/drei";
+import { Float, Sparkles, Environment, OrbitControls, Stars, useGLTF } from "@react-three/drei";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Home, Search, Newspaper, User, Mail } from "lucide-react";
 import * as THREE from "three";
