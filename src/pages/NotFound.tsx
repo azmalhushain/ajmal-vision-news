@@ -9,47 +9,36 @@ import * as THREE from "three";
 import { SEOHead } from "@/components/SEOHead";
 import { GlobalSearch } from "@/components/GlobalSearch";
 
-// Procedural fabric/suit roughness texture
-const useSuitTextures = () => {
-  return useMemo(() => {
-    const size = 512;
-    const roughCanvas = document.createElement("canvas");
-    roughCanvas.width = roughCanvas.height = size;
-    const rctx = roughCanvas.getContext("2d")!;
-    rctx.fillStyle = "#b8b8b8";
-    rctx.fillRect(0, 0, size, size);
-    rctx.strokeStyle = "rgba(80,80,80,0.35)";
-    rctx.lineWidth = 1;
-    for (let i = 0; i < size; i += 4) {
-      rctx.beginPath();
-      rctx.moveTo(0, i);
-      rctx.lineTo(size, i);
-      rctx.stroke();
-      rctx.beginPath();
-      rctx.moveTo(i, 0);
-      rctx.lineTo(i, size);
-      rctx.stroke();
-    }
-    for (let i = 0; i < 1500; i++) {
-      const x = Math.random() * size;
-      const y = Math.random() * size;
-      const r = Math.random() * 2;
-      rctx.fillStyle = `rgba(${40 + Math.random() * 40},${40 + Math.random() * 40},${40 + Math.random() * 40},${Math.random() * 0.4})`;
-      rctx.beginPath();
-      rctx.arc(x, y, r, 0, Math.PI * 2);
-      rctx.fill();
-    }
-    const roughTex = new THREE.CanvasTexture(roughCanvas);
-    roughTex.wrapS = roughTex.wrapT = THREE.RepeatWrapping;
-    roughTex.repeat.set(3, 3);
-    roughTex.anisotropy = 8;
-    return { roughTex };
-  }, []);
-};
+// Public-domain NASA astronaut model, served via jsDelivr CDN
+const ASTRONAUT_GLB_URL =
+  "https://cdn.jsdelivr.net/gh/nasa/NASA-3D-Resources@master/3D%20Models/Astronaut/Astronaut.glb";
 
 const Astronaut = () => {
   const group = useRef<THREE.Group>(null);
-  const { roughTex } = useSuitTextures();
+  const { scene } = useGLTF(ASTRONAUT_GLB_URL);
+
+  // Clone so we don't mutate the cached scene, and enhance materials for realism
+  const cloned = useMemo(() => {
+    const s = scene.clone(true);
+    s.traverse((obj) => {
+      const mesh = obj as THREE.Mesh;
+      if (mesh.isMesh) {
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        const mat = mesh.material as THREE.MeshStandardMaterial;
+        if (mat && "roughness" in mat) {
+          mat.envMapIntensity = 1.2;
+          // Boost the visor / glass to look reflective if name hints
+          const name = (mesh.name || "").toLowerCase();
+          if (name.includes("visor") || name.includes("glass") || name.includes("helmet")) {
+            mat.metalness = Math.max(mat.metalness ?? 0, 0.6);
+            mat.roughness = Math.min(mat.roughness ?? 1, 0.15);
+          }
+        }
+      }
+    });
+    return s;
+  }, [scene]);
 
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
@@ -62,215 +51,15 @@ const Astronaut = () => {
     }
   });
 
-  const suitProps = {
-    color: "#eef0f3",
-    roughnessMap: roughTex,
-    roughness: 0.85,
-    metalness: 0.05,
-  } as const;
-
   return (
-    <group ref={group} position={[0, -0.2, 0]} scale={1.0}>
-      {/* HELMET — glass dome */}
-      <mesh castShadow position={[0, 0.85, 0]}>
-        <sphereGeometry args={[0.56, 96, 96]} />
-        <meshPhysicalMaterial
-          color="#ffffff"
-          roughness={0.02}
-          metalness={0}
-          transmission={0.85}
-          thickness={0.5}
-          ior={1.45}
-          clearcoat={1}
-          clearcoatRoughness={0}
-          envMapIntensity={2}
-          transparent
-          opacity={0.9}
-        />
-      </mesh>
-      {/* Gold reflective visor */}
-      <mesh position={[0, 0.85, 0.05]}>
-        <sphereGeometry args={[0.5, 64, 64, 0, Math.PI * 2, Math.PI * 0.18, Math.PI * 0.55]} />
-        <meshPhysicalMaterial
-          color="#d4a14a"
-          roughness={0.05}
-          metalness={1}
-          clearcoat={1}
-          clearcoatRoughness={0.02}
-          envMapIntensity={2.5}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-      {/* Visor highlight */}
-      <mesh position={[-0.18, 1.0, 0.45]} rotation={[0, 0, -0.4]}>
-        <planeGeometry args={[0.08, 0.22]} />
-        <meshBasicMaterial color="#ffffff" transparent opacity={0.35} />
-      </mesh>
-      {/* Helmet collar */}
-      <mesh position={[0, 0.42, 0]} castShadow>
-        <torusGeometry args={[0.45, 0.07, 24, 64]} />
-        <meshStandardMaterial color="#c8ccd2" roughness={0.3} metalness={0.85} />
-      </mesh>
-      {/* Helmet lights */}
-      {[-0.42, 0.42].map((x, i) => (
-        <group key={i}>
-          <mesh position={[x, 0.95, 0.18]}>
-            <cylinderGeometry args={[0.05, 0.05, 0.06, 16]} />
-            <meshStandardMaterial color="#2a2a30" roughness={0.4} metalness={0.8} />
-          </mesh>
-          <mesh position={[x, 0.95, 0.215]}>
-            <sphereGeometry args={[0.04, 16, 16]} />
-            <meshStandardMaterial color="#fffbe5" emissive="#fff2c2" emissiveIntensity={1.2} />
-          </mesh>
-        </group>
-      ))}
-
-      {/* TORSO */}
-      <mesh castShadow receiveShadow position={[0, -0.05, 0]}>
-        <capsuleGeometry args={[0.58, 0.55, 24, 48]} />
-        <meshStandardMaterial {...suitProps} />
-      </mesh>
-      {/* Chest plate */}
-      <mesh castShadow position={[0, 0.05, 0.5]}>
-        <boxGeometry args={[0.45, 0.32, 0.08]} />
-        <meshStandardMaterial color="#e4e6ea" roughness={0.45} metalness={0.3} />
-      </mesh>
-      {/* Control panel */}
-      <mesh position={[0, 0.05, 0.545]}>
-        <boxGeometry args={[0.32, 0.2, 0.02]} />
-        <meshStandardMaterial color="#13182a" roughness={0.4} metalness={0.5} />
-      </mesh>
-      {[
-        { x: -0.1, c: "#ff3a3a" },
-        { x: -0.03, c: "#ffb13a" },
-        { x: 0.04, c: "#3aff7a" },
-        { x: 0.11, c: "#3ab8ff" },
-      ].map((l, i) => (
-        <mesh key={i} position={[l.x, 0.08, 0.56]}>
-          <sphereGeometry args={[0.018, 12, 12]} />
-          <meshStandardMaterial color={l.c} emissive={l.c} emissiveIntensity={3} />
-        </mesh>
-      ))}
-      {/* Hose tubes chest→pack */}
-      <mesh position={[-0.22, 0.18, 0.3]} rotation={[0.5, 0, 0.3]}>
-        <torusGeometry args={[0.12, 0.025, 12, 32, Math.PI]} />
-        <meshStandardMaterial color="#c0c4cc" roughness={0.5} metalness={0.4} />
-      </mesh>
-      <mesh position={[0.22, 0.18, 0.3]} rotation={[0.5, 0, -0.3]}>
-        <torusGeometry args={[0.12, 0.025, 12, 32, Math.PI]} />
-        <meshStandardMaterial color="#c0c4cc" roughness={0.5} metalness={0.4} />
-      </mesh>
-
-      {/* BACKPACK (PLSS) */}
-      <mesh castShadow position={[0, -0.05, -0.5]}>
-        <boxGeometry args={[0.7, 0.78, 0.32]} />
-        <meshStandardMaterial color="#dfe1e6" roughness={0.55} metalness={0.15} />
-      </mesh>
-      <mesh position={[0, 0.15, -0.66]}>
-        <boxGeometry args={[0.55, 0.18, 0.02]} />
-        <meshStandardMaterial color="#9ea2aa" roughness={0.6} metalness={0.3} />
-      </mesh>
-      <mesh position={[0, -0.15, -0.66]}>
-        <boxGeometry args={[0.55, 0.22, 0.02]} />
-        <meshStandardMaterial color="#9ea2aa" roughness={0.6} metalness={0.3} />
-      </mesh>
-      {/* Antenna */}
-      <mesh position={[0.22, 0.4, -0.55]}>
-        <cylinderGeometry args={[0.008, 0.008, 0.35, 8]} />
-        <meshStandardMaterial color="#888" metalness={0.8} roughness={0.3} />
-      </mesh>
-      <mesh position={[0.22, 0.58, -0.55]}>
-        <sphereGeometry args={[0.025, 12, 12]} />
-        <meshStandardMaterial color="#ff3a3a" emissive="#ff3a3a" emissiveIntensity={1.5} />
-      </mesh>
-
-      {/* ARMS */}
-      <mesh castShadow position={[-0.72, 0.1, 0.05]} rotation={[0.2, 0, 0.65]}>
-        <capsuleGeometry args={[0.17, 0.5, 12, 24]} />
-        <meshStandardMaterial {...suitProps} />
-      </mesh>
-      <mesh castShadow position={[-1.0, -0.18, 0.18]} rotation={[0.3, 0, 0.9]}>
-        <capsuleGeometry args={[0.15, 0.4, 12, 24]} />
-        <meshStandardMaterial {...suitProps} />
-      </mesh>
-      <mesh castShadow position={[0.72, 0.1, -0.05]} rotation={[-0.3, 0, -0.55]}>
-        <capsuleGeometry args={[0.17, 0.5, 12, 24]} />
-        <meshStandardMaterial {...suitProps} />
-      </mesh>
-      <mesh castShadow position={[1.02, -0.12, -0.22]} rotation={[-0.4, 0, -0.85]}>
-        <capsuleGeometry args={[0.15, 0.4, 12, 24]} />
-        <meshStandardMaterial {...suitProps} />
-      </mesh>
-      {/* Joint bands */}
-      <mesh position={[-0.85, -0.05, 0.1]} rotation={[0, 0, 0.8]}>
-        <torusGeometry args={[0.16, 0.025, 12, 24]} />
-        <meshStandardMaterial color="#a8acb4" metalness={0.5} roughness={0.4} />
-      </mesh>
-      <mesh position={[0.85, -0.02, -0.13]} rotation={[0, 0, -0.7]}>
-        <torusGeometry args={[0.16, 0.025, 12, 24]} />
-        <meshStandardMaterial color="#a8acb4" metalness={0.5} roughness={0.4} />
-      </mesh>
-      {/* Gloves */}
-      <mesh castShadow position={[-1.18, -0.4, 0.32]}>
-        <sphereGeometry args={[0.19, 32, 32]} />
-        <meshStandardMaterial color="#b22a2a" roughness={0.55} metalness={0.05} />
-      </mesh>
-      <mesh castShadow position={[1.2, -0.32, -0.42]}>
-        <sphereGeometry args={[0.19, 32, 32]} />
-        <meshStandardMaterial color="#b22a2a" roughness={0.55} metalness={0.05} />
-      </mesh>
-
-      {/* HIPS / LEGS */}
-      <mesh castShadow position={[0, -0.55, 0]}>
-        <cylinderGeometry args={[0.5, 0.45, 0.18, 32]} />
-        <meshStandardMaterial color="#d4d6da" roughness={0.5} metalness={0.2} />
-      </mesh>
-      <mesh castShadow position={[-0.26, -0.85, 0.02]} rotation={[0.25, 0, 0.08]}>
-        <capsuleGeometry args={[0.2, 0.5, 12, 24]} />
-        <meshStandardMaterial {...suitProps} />
-      </mesh>
-      <mesh castShadow position={[0.26, -0.85, 0.02]} rotation={[-0.18, 0, -0.08]}>
-        <capsuleGeometry args={[0.2, 0.5, 12, 24]} />
-        <meshStandardMaterial {...suitProps} />
-      </mesh>
-      <mesh position={[-0.32, -1.1, 0.13]} rotation={[0.25, 0, 0.08]}>
-        <torusGeometry args={[0.2, 0.03, 12, 24]} />
-        <meshStandardMaterial color="#a8acb4" metalness={0.5} roughness={0.4} />
-      </mesh>
-      <mesh position={[0.32, -1.1, 0.13]} rotation={[-0.18, 0, -0.08]}>
-        <torusGeometry args={[0.2, 0.03, 12, 24]} />
-        <meshStandardMaterial color="#a8acb4" metalness={0.5} roughness={0.4} />
-      </mesh>
-      <mesh castShadow position={[-0.36, -1.3, 0.18]} rotation={[0.35, 0, 0.05]}>
-        <capsuleGeometry args={[0.18, 0.42, 12, 24]} />
-        <meshStandardMaterial {...suitProps} />
-      </mesh>
-      <mesh castShadow position={[0.32, -1.28, 0.13]} rotation={[-0.25, 0, -0.05]}>
-        <capsuleGeometry args={[0.18, 0.42, 12, 24]} />
-        <meshStandardMaterial {...suitProps} />
-      </mesh>
-      {/* Boots */}
-      <mesh castShadow position={[-0.42, -1.62, 0.32]} rotation={[0.35, 0, 0]}>
-        <boxGeometry args={[0.3, 0.18, 0.45]} />
-        <meshStandardMaterial color="#1f2438" roughness={0.4} metalness={0.5} />
-      </mesh>
-      <mesh castShadow position={[0.38, -1.6, 0.28]} rotation={[-0.25, 0, 0]}>
-        <boxGeometry args={[0.3, 0.18, 0.45]} />
-        <meshStandardMaterial color="#1f2438" roughness={0.4} metalness={0.5} />
-      </mesh>
-
-      {/* Patches */}
-      <mesh position={[-0.85, 0.18, 0.22]} rotation={[0, -0.3, 0.7]}>
-        <planeGeometry args={[0.15, 0.1]} />
-        <meshStandardMaterial color="#b22a2a" side={THREE.DoubleSide} roughness={0.7} />
-      </mesh>
-      <mesh position={[0.16, -0.1, 0.55]}>
-        <circleGeometry args={[0.06, 32]} />
-        <meshStandardMaterial color="#1a3a8a" roughness={0.6} />
-      </mesh>
+    <group ref={group} position={[0, -0.2, 0]} scale={1.6}>
+      <primitive object={cloned} />
     </group>
   );
 };
+
+useGLTF.preload(ASTRONAUT_GLB_URL);
+
 
 // Procedural Earth textures
 const useEarthTextures = () => {
