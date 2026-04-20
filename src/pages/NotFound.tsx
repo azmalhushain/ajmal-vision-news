@@ -236,11 +236,12 @@ const NotFound = () => {
                     <ambientLight intensity={0.6} />
                     <directionalLight position={[3, 5, 4]} intensity={1.2} castShadow />
                     <directionalLight position={[-3, 2, -2]} intensity={0.4} color="#a5d8ff" />
-                    <Float speed={1.6} rotationIntensity={0.3} floatIntensity={0.8}>
-                      <FuzzyMonster />
+                    <Float speed={1.2} rotationIntensity={0.4} floatIntensity={1}>
+                      <Astronaut />
                     </Float>
-                    <Sparkles count={40} scale={6} size={2} speed={0.4} color="#ffffff" />
-                    <Environment preset="sunset" />
+                    <Earth />
+                    <Sparkles count={120} scale={10} size={1.5} speed={0.2} color="#ffffff" />
+                    <Environment preset="night" />
                     <OrbitControls
                       enableZoom={false}
                       enablePan={false}
