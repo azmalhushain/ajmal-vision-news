@@ -249,7 +249,7 @@ const NotFound = () => {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
-              className="pointer-events-none select-none text-center font-black tracking-tighter text-white/70 dark:text-white/10"
+              className="pointer-events-none select-none text-center font-black tracking-tighter text-white/10"
               style={{
                 fontSize: "clamp(180px, 32vw, 420px)",
                 lineHeight: 1,
