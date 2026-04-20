@@ -192,21 +192,52 @@ const NotFound = () => {
         title="404 — Page Not Found | Ajmal Akhtar Azad"
         description="Oops, this page doesn't exist. Let's get you back somewhere familiar."
       />
-      <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-[#bfe1ff] via-[#dcefff] to-[#f3f9ff] dark:from-[#0a1628] dark:via-[#0f2440] dark:to-[#1a3258]">
-        {/* Soft cloud blobs */}
+      <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-[#02020a] via-[#0a0a2e] to-[#1a0b3d]">
+        {/* Nebula glows */}
         <div className="pointer-events-none absolute inset-0">
-          {[...Array(6)].map((_, i) => (
+          <div className="absolute -top-20 -left-20 h-[500px] w-[500px] rounded-full bg-purple-600/20 blur-3xl" />
+          <div className="absolute top-1/3 -right-32 h-[600px] w-[600px] rounded-full bg-blue-600/20 blur-3xl" />
+          <div className="absolute -bottom-32 left-1/4 h-[450px] w-[450px] rounded-full bg-fuchsia-600/15 blur-3xl" />
+        </div>
+        {/* Twinkling stars */}
+        <div className="pointer-events-none absolute inset-0">
+          {[...Array(80)].map((_, i) => {
+            const size = Math.random() * 2 + 0.5;
+            return (
+              <motion.div
+                key={i}
+                className="absolute rounded-full bg-white"
+                style={{
+                  width: `${size}px`,
+                  height: `${size}px`,
+                  top: `${Math.random() * 100}%`,
+                  left: `${Math.random() * 100}%`,
+                }}
+                animate={{ opacity: [0.2, 1, 0.2] }}
+                transition={{
+                  duration: 2 + Math.random() * 3,
+                  repeat: Infinity,
+                  delay: Math.random() * 3,
+                  ease: "easeInOut",
+                }}
+              />
+            );
+          })}
+        </div>
+        {/* Shooting stars */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          {[...Array(3)].map((_, i) => (
             <motion.div
               key={i}
-              className="absolute rounded-full bg-white/40 dark:bg-white/5 blur-3xl"
-              style={{
-                width: `${180 + i * 40}px`,
-                height: `${180 + i * 40}px`,
-                top: `${(i * 17) % 80}%`,
-                left: `${(i * 23) % 90}%`,
+              className="absolute h-px w-20 bg-gradient-to-r from-transparent via-white to-transparent"
+              style={{ top: `${20 + i * 25}%`, left: "-10%" }}
+              animate={{ x: ["0vw", "120vw"], opacity: [0, 1, 0] }}
+              transition={{
+                duration: 2.5,
+                repeat: Infinity,
+                delay: i * 4 + 2,
+                ease: "easeOut",
               }}
-              animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
-              transition={{ duration: 12 + i * 2, repeat: Infinity, ease: "easeInOut" }}
             />
           ))}
         </div>
