@@ -5,6 +5,7 @@ import { Footer } from "@/components/Footer";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { PageTransition } from "@/components/PageTransition";
 import { PageLoadingSkeleton } from "@/components/LoadingSkeleton";
+import { SEOHead } from "@/components/SEOHead";
 
 const iconMap: Record<string, LucideIcon> = {
   Handshake,
