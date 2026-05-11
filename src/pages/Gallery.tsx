@@ -17,6 +17,9 @@ interface GalleryImage {
   title: string;
   category: string;
   is_pinned: boolean;
+  alt_text?: string | null;
+  width?: number | null;
+  height?: number | null;
 }
 
 const Gallery = () => {
