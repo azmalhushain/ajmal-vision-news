@@ -111,7 +111,9 @@ const Gallery = () => {
               </Button>
               <img
                 src={selectedImage.image_url}
-                alt={selectedImage.title}
+                alt={selectedImage.alt_text || `${selectedImage.title} — ${selectedImage.category}`}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-auto max-h-[80vh] object-contain rounded-2xl shadow-2xl"
               />
               <div className="mt-4 flex items-center justify-between">
