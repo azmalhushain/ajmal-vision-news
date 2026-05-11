@@ -17,6 +17,9 @@ interface GalleryImage {
   title: string;
   category: string;
   is_pinned: boolean;
+  alt_text?: string | null;
+  width?: number | null;
+  height?: number | null;
 }
 
 const Gallery = () => {
@@ -108,7 +111,9 @@ const Gallery = () => {
               </Button>
               <img
                 src={selectedImage.image_url}
-                alt={selectedImage.title}
+                alt={selectedImage.alt_text || `${selectedImage.title} — ${selectedImage.category}`}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-auto max-h-[80vh] object-contain rounded-2xl shadow-2xl"
               />
               <div className="mt-4 flex items-center justify-between">

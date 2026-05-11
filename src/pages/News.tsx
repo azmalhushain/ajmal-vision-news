@@ -16,10 +16,12 @@ const News = () => {
   return (
     <PageTransition>
       <div className="min-h-screen pt-24">
-      <SEOHead 
-        title="News & Updates - Ajmal Akhtar Azad"
-        description="Stay informed about our development initiatives and community programs."
+      <SEOHead
+        title="News & Updates — Mayor Ajmal Akhtar Azad"
+        description="Latest news, announcements, and updates from Mayor Ajmal Akhtar Azad and Bhokraha Narsingh Municipality, Sunsari, Nepal."
         url="/news"
+        keywords="Bhokraha Narsingh news, Mayor Ajmal Akhtar Azad updates, Sunsari news, municipal announcements, Nepal local government"
+        type="website"
       />
       
         {/* Hero Section */}
