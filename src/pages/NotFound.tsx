@@ -292,8 +292,10 @@ const NotFound = () => {
   return (
     <>
       <SEOHead
-        title="404 — Page Not Found | Ajmal Akhtar Azad"
-        description="Oops, this page doesn't exist. Let's get you back somewhere familiar."
+        title="Page Not Found (404) — Ajmal Akhtar Azad"
+        description="The page you're looking for doesn't exist. Explore our latest news, vision, gallery, or get in touch with the office of Mayor Ajmal Akhtar Azad."
+        url="/404"
+        noIndex
       />
       <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-[#02020a] via-[#0a0a2e] to-[#1a0b3d]">
         {/* Nebula glows (slow opposite-direction parallax) */}
