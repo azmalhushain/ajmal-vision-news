@@ -361,37 +361,49 @@ export type Database = {
       }
       gallery_images: {
         Row: {
+          alt_text: string | null
+          aspect_ratio: number | null
           category: string
           created_at: string | null
           display_order: number
+          height: number | null
           id: string
           image_url: string
           is_active: boolean | null
           is_pinned: boolean | null
           title: string
           updated_at: string | null
+          width: number | null
         }
         Insert: {
+          alt_text?: string | null
+          aspect_ratio?: number | null
           category?: string
           created_at?: string | null
           display_order?: number
+          height?: number | null
           id?: string
           image_url: string
           is_active?: boolean | null
           is_pinned?: boolean | null
           title: string
           updated_at?: string | null
+          width?: number | null
         }
         Update: {
+          alt_text?: string | null
+          aspect_ratio?: number | null
           category?: string
           created_at?: string | null
           display_order?: number
+          height?: number | null
           id?: string
           image_url?: string
           is_active?: boolean | null
           is_pinned?: boolean | null
           title?: string
           updated_at?: string | null
+          width?: number | null
         }
         Relationships: []
       }
