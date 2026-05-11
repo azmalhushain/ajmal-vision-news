@@ -36,12 +36,17 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       {isOpen && (
-        <SEOHead 
+        <SEOHead
           title={`${article.title} - Ajmal Akhtar Azad`}
           description={article.summary}
           image={article.image || undefined}
+          imageAlt={`${article.title} — ${article.category}`}
           url={`/news/${article.id}`}
           type="article"
+          category={article.category}
+          keywords={`${article.category}, ${article.title}, Bhokraha Narsingh, Ajmal Akhtar Azad, news`}
+          publishedTime={article.date ? new Date(article.date).toISOString() : undefined}
+          modifiedTime={article.date ? new Date(article.date).toISOString() : undefined}
         />
       )}
       <DialogContent className="glass-card w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto border-2 border-border p-0 sm:p-6">
@@ -85,7 +90,9 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
             <div className="relative w-full h-48 sm:h-64 md:h-80 rounded-lg overflow-hidden sm:-mx-6 sm:-mt-6 mb-2">
               <img
                 src={article.image}
-                alt={article.title}
+                alt={`${article.title} — ${article.category} news from Bhokraha Narsingh Municipality`}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover"
               />
             </div>
