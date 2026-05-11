@@ -77,6 +77,12 @@ const About = () => {
 
   return (
     <PageTransition>
+      <SEOHead
+        title="About Mayor Ajmal Akhtar Azad — Bhokraha Narsingh"
+        description="Learn about Mayor Ajmal Akhtar Azad — his journey, values, and achievements serving Bhokraha Narsingh Municipality with transparency and inclusivity."
+        url="/about"
+        keywords="About Ajmal Akhtar Azad, Mayor biography, Bhokraha Narsingh, Sunsari, public service"
+      />
       <div className="min-h-screen pt-24">
       {/* Hero Section */}
       <section className="py-20 bg-gradient-to-b from-background to-secondary">

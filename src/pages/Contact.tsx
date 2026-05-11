@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Footer } from "@/components/Footer";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { PageTransition } from "@/components/PageTransition";
+import { SEOHead } from "@/components/SEOHead";
 import { PageLoadingSkeleton } from "@/components/LoadingSkeleton";
 import { motion } from "framer-motion";
 
@@ -143,6 +144,12 @@ const Contact = () => {
 
   return (
     <PageTransition>
+      <SEOHead
+        title="Contact Mayor Ajmal Akhtar Azad — Bhokraha Narsingh"
+        description="Get in touch with the office of Mayor Ajmal Akhtar Azad. Address, phone, email and office hours for Bhokraha Narsingh Municipality, Sunsari."
+        url="/contact"
+        keywords="Contact Mayor, Bhokraha Narsingh Municipality office, Ajmal Akhtar Azad, Sunsari"
+      />
       <div className="min-h-screen pt-24">
         {/* Hero Section */}
         <section className="py-20 bg-gradient-to-b from-background to-secondary">
