@@ -3,6 +3,7 @@ import { Building2, Heart, GraduationCap, Users, Sprout, Laptop } from "lucide-r
 import { Footer } from "@/components/Footer";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { PageTransition } from "@/components/PageTransition";
+import { SEOHead } from "@/components/SEOHead";
 import { motion } from "framer-motion";
 
 const Vision = () => {
@@ -114,6 +115,12 @@ const Vision = () => {
 
   return (
     <PageTransition>
+      <SEOHead
+        title="Vision & Priorities — Mayor Ajmal Akhtar Azad"
+        description="People-first development for Bhokraha Narsingh: infrastructure, healthcare, education, agriculture and digital governance led by Mayor Ajmal Akhtar Azad."
+        url="/vision"
+        keywords="Vision, Bhokraha Narsingh development, infrastructure, healthcare, education, Mayor Ajmal Akhtar Azad"
+      />
       <div className="min-h-screen pt-24">
         {/* Hero Section */}
         <section className="py-20 bg-gradient-to-b from-background to-secondary">
