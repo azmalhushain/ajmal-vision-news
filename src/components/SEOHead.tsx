@@ -11,6 +11,8 @@ interface SEOHeadProps {
   publishedTime?: string;
   modifiedTime?: string;
   category?: string;
+  noIndex?: boolean;
+  imageAlt?: string;
 }
 
 export const SEOHead = ({
@@ -24,6 +26,8 @@ export const SEOHead = ({
   publishedTime,
   modifiedTime,
   category,
+  noIndex = false,
+  imageAlt,
 }: SEOHeadProps) => {
   const siteUrl = "https://www.ajmalakhtar.com.np";
   const fullUrl = url ? `${siteUrl}${url}` : (typeof window !== 'undefined' ? window.location.href : siteUrl);
@@ -42,8 +46,8 @@ export const SEOHead = ({
       <meta name="description" content={truncatedDescription} />
       <meta name="keywords" content={keywords} />
       <meta name="author" content={author} />
-      <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-      <meta name="googlebot" content="index, follow" />
+      <meta name="robots" content={noIndex ? "noindex, nofollow" : "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"} />
+      <meta name="googlebot" content={noIndex ? "noindex, nofollow" : "index, follow"} />
       <meta name="language" content="English" />
       <meta name="revisit-after" content="3 days" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -57,7 +61,7 @@ export const SEOHead = ({
       <meta property="og:image" content={image} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
-      <meta property="og:image:alt" content={truncatedTitle} />
+      <meta property="og:image:alt" content={imageAlt || truncatedTitle} />
       <meta property="og:url" content={fullUrl} />
       <meta property="og:locale" content="en_US" />
 
