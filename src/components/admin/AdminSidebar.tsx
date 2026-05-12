@@ -21,6 +21,7 @@ import {
   Newspaper,
   TrendingUp,
   FlaskConical,
+  Trophy,
 } from "lucide-react";
 
 interface MenuItem {
@@ -49,6 +50,12 @@ const menuSections: MenuSection[] = [
       { icon: FileText, label: "Posts", path: "/admin/posts" },
       { icon: Mic, label: "Podcasts", path: "/admin/podcasts" },
       { icon: Image, label: "Gallery", path: "/admin/gallery" },
+    ],
+  },
+  {
+    title: "Sports / KPL",
+    items: [
+      { icon: Trophy, label: "KPL3 Manager", path: "/admin/sports" },
     ],
   },
   {

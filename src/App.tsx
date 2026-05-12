@@ -45,6 +45,7 @@ import EngagementDashboard from "./pages/admin/EngagementDashboard";
 import ABTestingDashboard from "./pages/admin/ABTestingDashboard";
 import UserProfile from "./pages/UserProfile";
 import SubscriberPreferences from "./pages/SubscriberPreferences";
+import SportsManager from "./pages/admin/SportsManager";
 
 const queryClient = new QueryClient();
 
@@ -93,6 +94,7 @@ const AnimatedRoutes = () => {
           <Route path="analytics" element={<Analytics />} />
           <Route path="engagement" element={<EngagementDashboard />} />
           <Route path="settings" element={<Settings />} />
+          <Route path="sports" element={<SportsManager />} />
         </Route>
         
         <Route path="*" element={<NotFound />} />
