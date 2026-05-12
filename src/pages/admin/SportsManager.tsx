@@ -257,7 +257,7 @@ const FixturesTab = ({ tournamentId }: { tournamentId: string }) => {
   const openEdit = (r: Row) => { setEditing(r); setForm({ ...r, scheduled_at: r.scheduled_at ? new Date(r.scheduled_at).toISOString().slice(0, 16) : "" }); setOpen(true); };
 
   const save = async () => {
-    const payload = { ...form, tournament_id: tournamentId };
+    const payload: Row = { ...form, tournament_id: tournamentId };
     if (payload.scheduled_at && typeof payload.scheduled_at === "string") payload.scheduled_at = new Date(payload.scheduled_at).toISOString();
     const q = editing ? db.from("matches").update(payload).eq("id", editing.id) : db.from("matches").insert(payload);
     const { error } = await q;
