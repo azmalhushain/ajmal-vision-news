@@ -10,7 +10,7 @@ import { CardSkeleton } from "@/components/LoadingSkeleton";
 import { Loader2, Languages } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 
-const ITEMS_PER_PAGE = 6;
+const ITEMS_PER_PAGE = 9;
 
 interface TranslatedArticle extends Article {
   originalTitle: string;
@@ -18,7 +18,13 @@ interface TranslatedArticle extends Article {
   originalSummary: string;
 }
 
-export const NewsSection = ({ showAll = false }: { showAll?: boolean }) => {
+interface NewsSectionProps {
+  showAll?: boolean;
+  category?: string; // "All" or specific
+  query?: string;
+}
+
+export const NewsSection = ({ showAll = false, category = "All", query = "" }: NewsSectionProps) => {
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [articles, setArticles] = useState<TranslatedArticle[]>([]);
