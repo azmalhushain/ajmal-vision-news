@@ -45,6 +45,7 @@ import EngagementDashboard from "./pages/admin/EngagementDashboard";
 import ABTestingDashboard from "./pages/admin/ABTestingDashboard";
 import UserProfile from "./pages/UserProfile";
 import SubscriberPreferences from "./pages/SubscriberPreferences";
+import SportsManager from "./pages/admin/SportsManager";
 
 const queryClient = new QueryClient();
 
