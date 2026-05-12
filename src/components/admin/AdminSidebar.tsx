@@ -53,6 +53,12 @@ const menuSections: MenuSection[] = [
     ],
   },
   {
+    title: "Sports / KPL",
+    items: [
+      { icon: Trophy, label: "KPL3 Manager", path: "/admin/sports" },
+    ],
+  },
+  {
     title: "Engagement",
     items: [
       { icon: MessageCircle, label: "Comments", path: "/admin/comments" },
