@@ -112,11 +112,22 @@ export const NewsSection = ({ showAll = false, category = "All", query = "" }: N
     const from = (pageNum - 1) * limit;
     const to = from + limit - 1;
 
-    const { data, count } = await supabase
+    let q = supabase
       .from("posts")
       .select("*", { count: "exact" })
-      .eq("status", "published")
+      .eq("status", "published");
+
+    if (category && category !== "All") {
+      q = q.eq("category", category);
+    }
+    if (query && query.trim()) {
+      const term = `%${query.trim()}%`;
+      q = q.or(`title.ilike.${term},excerpt.ilike.${term},content.ilike.${term}`);
+    }
+
+    const { data, count } = await q
       .order("is_pinned", { ascending: false })
+      .order("display_order", { ascending: true })
       .order("created_at", { ascending: false })
       .range(from, to);
 
