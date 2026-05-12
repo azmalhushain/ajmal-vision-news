@@ -1,153 +1,72 @@
 
-# Master Plan — Routing Fix, SEO, Gallery Upgrade, KPL3 Sports Portal
+# Phase 4 Execution Plan — News Upgrades + KPL3 Sports Portal
 
-This is a large scope. To keep things shippable, the work is organized into **5 phases**. Each phase ends in a working, deployable site. You can pause/redirect after any phase.
-
----
-
-## Phase 1 — Fix Netlify SPA 404 on refresh (HIGHEST PRIORITY)
-
-**Problem:** `ajmalakhtar.com.np` is served from Netlify. Netlify treats `/vision`, `/about`, etc. as missing files and shows its built-in 404 instead of letting React Router handle them.
-
-**Fix:**
-1. Create `public/_redirects` containing:
-   ```
-   /*    /index.html   200
-   ```
-2. Create `netlify.toml` at project root with the same SPA fallback + cache headers for `/assets/*` and security headers (X-Frame-Options, Referrer-Policy, etc.).
-3. Verify Vite copies `public/_redirects` into `dist/` on build (default behavior — confirmed).
-4. After deploy: test `/vision`, `/about`, `/news`, `/gallery`, `/contact`, a deep article URL, and `/this-does-not-exist` (should hit our custom astronaut 404, not Netlify's).
-
-**Outcome:** All routes work on refresh, direct link, and Google result clicks.
+The combined ask is very large. To stay shippable and keep each turn reviewable, I'll split it into **three sub-phases (4A, 4B, 4C)**. Each ends in a working deploy.
 
 ---
 
-## Phase 2 — Per-page SEO + indexing
+## Sub-phase 4A — News upgrades (ship first, ~1 turn)
 
-Project already has `SEOHead` and a sitemap edge function. Gaps to close:
+Scope is small and high-impact, unblocks everything else.
 
-1. **Audit + add `<SEOHead>`** to every public page that's missing one or has stale data: `Home`, `About`, `Vision`, `News`, `Podcasts`, `Contact` (Gallery already has it). Each gets unique title (<60 chars), description (<160), keywords, OG image, canonical.
-2. **Per-article SEO:** when a `NewsModal`/article opens, push article-specific meta + `NewsArticle` JSON-LD (already partly supported in `SEOHead`).
-3. **Sitemap:** extend the existing `sitemap` edge function to include all static routes + published posts + gallery + podcasts + (later) KPL3 pages. Make sure `robots.txt` already references it (it does).
-4. **Heading hierarchy pass:** ensure exactly one `<h1>` per page, semantic `<main>`, `<article>`, `<nav>`, `<section>`.
-5. **Schema markup:** `WebSite`, `Person`, `GovernmentOffice` already in `index.html`. Add `BreadcrumbList` to inner pages and `SportsEvent` later for KPL3.
-6. **Performance basics:** add `loading="lazy"` + `decoding="async"` to all `<img>`, route-level code-splitting via `React.lazy` for admin and heavy public pages, preload primary font subset.
+1. **Category chips + search bar** on `/news`
+   - Chips: All, Development, Education, Health, Environment, Infrastructure, Events, Announcements (derived dynamically from existing post categories + a default set).
+   - Debounced search input filters by `title`, `excerpt`, `content` (Postgres `ilike`).
+   - URL-synced (`?cat=Health&q=road`) so filters survive refresh / share.
 
-**Outcome:** Lighthouse SEO ≥ 95, every page indexable with unique metadata.
+2. **RSS feed** at `/rss.xml`
+   - New edge function `rss-feed` returns `application/rss+xml` of latest 50 published posts (title, link, description, pubDate, category, enclosure for image).
+   - Add `<link rel="alternate" type="application/rss+xml">` to News page head.
+   - Add a small "RSS" button on the News hero linking to `/rss.xml`.
+   - Netlify redirect `/rss.xml → /functions/v1/rss-feed`.
 
----
+3. **Auto OG/Twitter/FB share image per article**
+   - `og-image` edge function already exists — extend it to render a branded card (title, category badge, mayor logo, gradient bg) using `@vercel/og`-style SVG.
+   - `NewsModal`/article SEO already passes `image` prop. Update `SEOHead` so when an article has no `image_url`, it falls back to `https://…/functions/v1/og-image?postId={id}`.
+   - Admin `PostEditor` already supports a featured image upload — add a small "Use auto-generated share image" toggle that simply leaves `image_url` blank.
 
-## Phase 3 — Gallery upgrade (no auto-crop)
+4. **Infinite scroll on News** — already implemented in `NewsSection.tsx` (verified: IntersectionObserver + `ITEMS_PER_PAGE = 6`). I'll bump page size to 9 and add a graceful "Load more" button fallback for users without IO support.
 
-Replace the current admin gallery editor and public gallery with a pro-grade flow.
+5. **Admin News CMS** — `PostEditor.tsx` + `/admin/posts` already exist (create/edit/publish/category/featured image/scheduled publish). I'll audit and add: drag-to-reorder via `display_order` column (new migration), bulk publish/unpublish, and a category dropdown with the same canonical list as the public chips.
 
-**Admin (`/admin/gallery`):**
-- Drag-and-drop **bulk upload** (react-dropzone) with multi-file queue, per-file progress, thumbnail preview before upload.
-- **No automatic cropping or resizing.** Original file uploaded to `post-images` bucket (or new `gallery` bucket).
-- Optional **manual crop/edit modal** (react-easy-crop) that the admin opens per image only if they want to.
-- Client-side **lossless-ish compression** using `browser-image-compression` (quality 0.9, max dim 2400) — toggleable, off by default to fully preserve quality.
-- Auto-detect orientation (landscape/portrait/square) and store `width`, `height`, `aspect_ratio` columns so the public grid can lay out without CLS.
-- Drag-to-reorder, pin, category tagging, bulk delete.
-
-**Schema change (migration):**
-- `gallery_images` add: `width int`, `height int`, `aspect_ratio numeric`, `blur_hash text null`, `alt_text text`.
-
-**Public (`/gallery`):**
-- True **masonry layout** (`react-masonry-css`) honoring each image's natural aspect ratio — no cropping, no stretching, `object-fit: contain` fallback.
-- **Lazy loading** + low-quality placeholder using stored dimensions (prevents CLS).
-- Lightbox viewer (`yet-another-react-lightbox`) with swipe, zoom, share.
-- Filter by category, "Pinned first" preserved.
-
-**Outcome:** Admins can mass-upload originals; public gallery shows mixed sizes beautifully without distortion.
+**Deliverables:** Updated `News.tsx`, `NewsSection.tsx`, new `NewsFilters.tsx`, new `rss-feed` edge function, `netlify.toml` redirect, OG fallback, migration adding `posts.display_order int default 0`.
 
 ---
 
-## Phase 4 — KPL3 Sports Portal (foundation + admin CMS)
+## Sub-phase 4B — KPL3 backend + admin CMS (~1–2 turns)
 
-New top-level section at `/sports` with sub-routes.
+1. **DB migration** for all KPL3 tables (`tournaments`, `teams`, `players`, `matches`, `match_innings`, `sports_news`, `sports_media`, `social_posts_cache`) with full RLS (public SELECT on published, admin ALL via `has_role`).
+2. **Seed** `KPL3` tournament + the 7 announced teams (Birtamode Heats, Everest Thunders, Gorkha Avengers, BN Koshi Arnas, Namuna Blasters, Itahari Adarsh Giants, Purbeli Super Kings).
+3. **Storage buckets** `sports-media` (public) and `sports-logos` (public).
+4. **Admin sidebar group "Sports / KPL3"** with editors:
+   - Tournaments • Teams (logo upload, colors) • Players (photo, role, jersey) • Fixtures (schedule a match) • **Live Score Console** (per-match form: runs, wickets, overs, status, result, commentary note) • Sports News (reuse rich-text editor pattern from `PostEditor`) • Media (bulk upload, no auto-crop, manual crop optional — reuses `GalleryBulkUploader` + `CropDialog`) • Facebook Sync placeholder (UI only in 4B).
+5. Realtime enabled on `matches` and `match_innings`.
 
-### Routes
-```
-/sports                  → KPL3 landing (live banner, next match, latest news, standings preview)
-/sports/fixtures         → Full schedule, filterable by team/date
-/sports/standings        → Points table, NRR
-/sports/teams            → Team grid
-/sports/teams/:slug      → Team detail (squad, fixtures, results)
-/sports/players/:slug    → Player profile + stats
-/sports/matches/:id      → Match center (scorecard, commentary, highlights)
-/sports/news             → Sports news feed
-/sports/news/:slug       → Article
-/sports/gallery          → Match photos & videos
-```
-
-### Database (new tables, migrations)
-- `tournaments` (id, name, slug, season, start_date, end_date, venue, sponsor_logo_urls jsonb, status)
-- `teams` (id, tournament_id, name, slug, logo_url, jersey_url, captain_player_id, home_ground, founded, color_primary, color_secondary)
-- `players` (id, team_id, name, slug, photo_url, role, jersey_number, batting_style, bowling_style, dob, bio, stats jsonb)
-- `matches` (id, tournament_id, team_a_id, team_b_id, match_no, scheduled_at, venue, status enum: scheduled|live|completed|abandoned, toss_winner_id, toss_decision, result_text, winner_id, poster_url)
-- `match_innings` (id, match_id, batting_team_id, runs, wickets, overs, extras, declared bool)
-- `match_events` (id, match_id, over_no, ball_no, event_type, runs, batsman_id, bowler_id, fielder_id, commentary)  — for ball-by-ball if you ever want it
-- `sports_news` (id, tournament_id, title, slug, excerpt, content, cover_url, tags[], status, published_at, author_id, views)
-- `sports_media` (id, tournament_id, match_id null, type enum: image|video|reel, url, thumbnail_url, caption, source enum: upload|youtube|facebook, display_order, is_pinned)
-- `social_posts_cache` (id, source enum: facebook|instagram, external_id unique, posted_at, message, media_urls jsonb, permalink, raw jsonb, fetched_at) — for Facebook feed sync
-- All tables: RLS — public SELECT for published rows, admin ALL via `has_role(auth.uid(),'admin')`.
-
-### Admin dashboard additions
-New sidebar group **Sports / KPL3**:
-- Tournaments • Teams • Players • Fixtures • Live Score Console (manual update form per match: runs/wickets/overs/result/commentary) • News (rich text editor, tags) • Media (bulk upload, no auto-crop, manual crop optional) • Sponsors • Facebook Sync (status + manual refresh button)
-
-### Public UI components
-- `LiveMatchBanner` (sticky on home + sports landing when a match is `live`) with auto-refresh every 30 s via Supabase Realtime on `matches` row.
-- `MatchCard`, `ScorecardTable`, `StandingsTable` (computed from `matches` results), `PlayerCard`, `TeamCard`.
-- `CountdownToNextMatch`, `NewsTickerBar`, `SponsorMarquee`.
-- ESPN/Cricbuzz-inspired dark glass UI, framer-motion transitions, fully responsive.
-
-### Homepage integration
-Add to `Home`: Latest Match Result • Upcoming Match Countdown • Featured KPL3 Highlight • Trending Sports News strip • Sponsor showcase.
-
-### Seed data
-Migration seeds the 7 announced teams (Birtamode Heats, Everest Thunders, Gorkha Avengers, BN Koshi Arnas, Namuna Blasters, Itahari Adarsh Giants, Purbeli Super Kings), tournament `KPL3` with dates `2026-03-21 → 2026-04-03`, venue "Dr. Khalil Azad Cricket Khel Maidan, Sunsari".
-
-**Outcome:** Fully manageable sports section even before any external API is wired.
+**Deliverables:** 1 large migration, ~10 new admin pages under `src/pages/admin/sports/`, sidebar update, route additions in `App.tsx`.
 
 ---
 
-## Phase 5 — Facebook auto-sync + finishing touches
+## Sub-phase 4C — KPL3 public portal + Home integration + Facebook sync (~1–2 turns)
 
-### Facebook Page integration (policy-compliant)
-- Edge function `fb-sync-kpl` runs on a `pg_cron` schedule (every 30 min).
-- Uses **Facebook Graph API** `/{page-id}/posts?fields=id,message,created_time,full_picture,attachments,permalink_url` with a long-lived **Page Access Token**.
-- **Required from you:** Facebook App ID, App Secret, KPL Page ID, long-lived Page Access Token. I'll request these via secrets when this phase starts.
-- Cached in `social_posts_cache`; public component `FacebookFeed` renders newest-first card grid with lazy thumbnails and link-out to Facebook.
-- Admin toggle: enable/disable sync, force refresh, hide individual posts.
-- Fallback if API unavailable: Facebook Page Plugin embed.
+1. Public routes under `/sports/*` (landing, fixtures, standings, teams, team detail, players, match center, sports news).
+2. ESPN/Cricbuzz-style dark glass UI components: `LiveMatchBanner`, `MatchCard`, `ScorecardTable`, `StandingsTable`, `PlayerCard`, `TeamCard`, `CountdownToNextMatch`, `SponsorMarquee`.
+3. Home page integration strip (live banner + next match countdown + featured sports news + sponsors).
+4. Sitemap extension: `/sports`, `/sports/fixtures`, dynamic team/player/match URLs.
+5. `SportsEvent` JSON-LD on each match page; `BreadcrumbList` on inner pages.
+6. **Facebook auto-sync** via `fb-sync-kpl` edge function (Graph API + `pg_cron` every 30 min). Requires you to provide: **Facebook App ID, App Secret, KPL Page ID, long-lived Page Access Token** (I'll request via secrets at 4C start). Fallback: official Facebook Page Plugin embed.
 
-### Live score (optional, deferred)
-- Manual updates already cover requirement. If you later want auto, we can add CricAPI / RapidAPI cricket source behind another secret.
-
-### Final polish
-- Lighthouse pass (perf/SEO/a11y/best-practices).
-- Add `SportsEvent` JSON-LD on each match page.
-- Add `/sports`, `/sports/fixtures`, etc. + dynamic match/news URLs to sitemap.
-- Caching: `react-query` `staleTime` tuning, image CDN headers.
+**Deliverables:** ~12 public pages/components, edge function `fb-sync-kpl`, sitemap update, secrets request.
 
 ---
 
-## Technical notes (for implementation)
+## Why split this way
 
-- All new colors/spacing via existing HSL design tokens — no hard-coded hex.
-- Heavy admin pages and `/sports/*` lazy-loaded with `React.lazy` + `Suspense`.
-- Realtime: enable replication on `matches`, `match_innings`, `social_posts_cache`.
-- Storage bucket strategy: keep `post-images` for posts; add buckets `gallery` and `sports-media` (public read, admin write).
-- New deps: `react-dropzone`, `react-easy-crop`, `browser-image-compression`, `react-masonry-css`, `yet-another-react-lightbox`.
+Phase 4 alone touches 10+ database tables, 20+ new files, realtime, an external Graph API integration, and a fresh public section. Doing it plus the News work in one turn would be unreliable to review and almost certain to mix unrelated regressions. Splitting lets each turn build cleanly on a green deploy.
 
----
+## Suggested order
 
-## Suggested execution order after approval
-1. Phase 1 (≈ 1 short turn) — unblocks the live site immediately.
-2. Phase 2 (1–2 turns).
-3. Phase 3 (2 turns: schema + admin, then public grid).
-4. Phase 4 (3–4 turns: schema → admin CMS → public pages → home integration).
-5. Phase 5 (1–2 turns, requires your Facebook credentials).
+1. Approve → I ship **4A** now (News chips + search + RSS + OG fallback + admin polish).
+2. Then **4B** (KPL3 schema + admin CMS).
+3. Then **4C** (KPL3 public + Facebook sync — needs your FB credentials).
 
-Approve this plan and I'll start with **Phase 1** so refresh-404s are gone first, then proceed through the rest.
+Reply "go" to start with **4A**, or tell me to reorder/trim.

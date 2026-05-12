@@ -10,7 +10,7 @@ import { CardSkeleton } from "@/components/LoadingSkeleton";
 import { Loader2, Languages } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 
-const ITEMS_PER_PAGE = 6;
+const ITEMS_PER_PAGE = 9;
 
 interface TranslatedArticle extends Article {
   originalTitle: string;
@@ -18,7 +18,13 @@ interface TranslatedArticle extends Article {
   originalSummary: string;
 }
 
-export const NewsSection = ({ showAll = false }: { showAll?: boolean }) => {
+interface NewsSectionProps {
+  showAll?: boolean;
+  category?: string; // "All" or specific
+  query?: string;
+}
+
+export const NewsSection = ({ showAll = false, category = "All", query = "" }: NewsSectionProps) => {
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [articles, setArticles] = useState<TranslatedArticle[]>([]);
@@ -37,6 +43,12 @@ export const NewsSection = ({ showAll = false }: { showAll?: boolean }) => {
     fetchPosts(1, true);
     return () => clearTimeout(timer);
   }, []);
+
+  // Refetch when filters change
+  useEffect(() => {
+    fetchPosts(1, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [category, query]);
 
   // Translate articles when language changes
   useEffect(() => {
@@ -100,11 +112,22 @@ export const NewsSection = ({ showAll = false }: { showAll?: boolean }) => {
     const from = (pageNum - 1) * limit;
     const to = from + limit - 1;
 
-    const { data, count } = await supabase
+    let q = supabase
       .from("posts")
       .select("*", { count: "exact" })
-      .eq("status", "published")
+      .eq("status", "published");
+
+    if (category && category !== "All") {
+      q = q.eq("category", category);
+    }
+    if (query && query.trim()) {
+      const term = `%${query.trim()}%`;
+      q = q.or(`title.ilike.${term},excerpt.ilike.${term},content.ilike.${term}`);
+    }
+
+    const { data, count } = await q
       .order("is_pinned", { ascending: false })
+      .order("display_order", { ascending: true })
       .order("created_at", { ascending: false })
       .range(from, to);
 

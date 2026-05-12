@@ -2,6 +2,20 @@
   command = "npm run build"
   publish = "dist"
 
+# RSS feed proxied to the rss-feed edge function (must come BEFORE SPA fallback)
+[[redirects]]
+  from = "/rss.xml"
+  to = "https://kpswxkuzfnafsqeqaunt.supabase.co/functions/v1/rss-feed"
+  status = 200
+  force = true
+
+# Sitemap proxied to the sitemap edge function
+[[redirects]]
+  from = "/sitemap.xml"
+  to = "https://kpswxkuzfnafsqeqaunt.supabase.co/functions/v1/sitemap"
+  status = 200
+  force = true
+
 # SPA fallback — every unknown path serves index.html so React Router can handle it
 [[redirects]]
   from = "/*"
