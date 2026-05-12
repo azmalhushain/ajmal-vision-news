@@ -94,6 +94,7 @@ const AnimatedRoutes = () => {
           <Route path="analytics" element={<Analytics />} />
           <Route path="engagement" element={<EngagementDashboard />} />
           <Route path="settings" element={<Settings />} />
+          <Route path="sports" element={<SportsManager />} />
         </Route>
         
         <Route path="*" element={<NotFound />} />
