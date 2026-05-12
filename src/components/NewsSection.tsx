@@ -44,6 +44,12 @@ export const NewsSection = ({ showAll = false, category = "All", query = "" }: N
     return () => clearTimeout(timer);
   }, []);
 
+  // Refetch when filters change
+  useEffect(() => {
+    fetchPosts(1, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [category, query]);
+
   // Translate articles when language changes
   useEffect(() => {
     if (prevLanguageRef.current !== language && articles.length > 0) {
