@@ -21,6 +21,7 @@ import {
   Newspaper,
   TrendingUp,
   FlaskConical,
+  Trophy,
 } from "lucide-react";
 
 interface MenuItem {
