@@ -41,3 +41,6 @@ verify_jwt = false
 
 [functions.rss-feed]
 verify_jwt = false
+
+[functions.fb-sync-kpl]
+verify_jwt = false

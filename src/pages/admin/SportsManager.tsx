@@ -15,7 +15,8 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { Trophy, Users, Calendar, Radio, Newspaper, Image as ImageIcon, Plus, Pencil, Trash2 } from "lucide-react";
+import { Trophy, Users, Calendar, Radio, Newspaper, Image as ImageIcon, Plus, Pencil, Trash2, Upload, RefreshCw } from "lucide-react";
+import { uploadSportsLogo } from "@/lib/sportsHelpers";
 
 // Avoid type-gen lag: use the client untyped for the new tables.
 const db: any = supabase;
@@ -95,7 +96,21 @@ const TeamsTab = ({ tournamentId }: { tournamentId: string }) => {
               <div><Label>Short name</Label><Input value={form.short_name || ""} onChange={e => setForm({ ...form, short_name: e.target.value })} /></div>
               <div><Label>Slug</Label><Input value={form.slug || ""} placeholder="auto" onChange={e => setForm({ ...form, slug: e.target.value })} /></div>
             </div>
-            <div><Label>Logo URL</Label><Input value={form.logo_url || ""} onChange={e => setForm({ ...form, logo_url: e.target.value })} /></div>
+            <div>
+              <Label>Logo</Label>
+              <div className="flex items-center gap-3">
+                {form.logo_url && <img src={form.logo_url} alt="" className="w-12 h-12 rounded-full object-cover border" />}
+                <Input value={form.logo_url || ""} placeholder="https://… or upload →" onChange={e => setForm({ ...form, logo_url: e.target.value })} />
+                <label className="cursor-pointer">
+                  <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                    const f = e.target.files?.[0]; if (!f) return;
+                    try { const url = await uploadSportsLogo(f, "team"); setForm({ ...form, logo_url: url }); toast({ title: "Uploaded" }); }
+                    catch (err: any) { toast({ title: "Upload failed", description: err.message, variant: "destructive" }); }
+                  }} />
+                  <Button type="button" size="icon" variant="outline" asChild><span><Upload className="h-4 w-4" /></span></Button>
+                </label>
+              </div>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <div><Label>Primary color</Label><Input type="color" value={form.color_primary || "#000000"} onChange={e => setForm({ ...form, color_primary: e.target.value })} /></div>
               <div><Label>Secondary color</Label><Input type="color" value={form.color_secondary || "#FFFFFF"} onChange={e => setForm({ ...form, color_secondary: e.target.value })} /></div>
@@ -327,7 +342,12 @@ const FixturesTab = ({ tournamentId }: { tournamentId: string }) => {
             <div><Label>Scheduled at</Label><Input type="datetime-local" value={form.scheduled_at || ""} onChange={e => setForm({ ...form, scheduled_at: e.target.value })} /></div>
             <div><Label>Venue</Label><Input value={form.venue || ""} onChange={e => setForm({ ...form, venue: e.target.value })} /></div>
             <div><Label>Poster URL</Label><Input value={form.poster_url || ""} onChange={e => setForm({ ...form, poster_url: e.target.value })} /></div>
-            <div className="flex items-center gap-2"><Switch checked={form.is_featured || false} onCheckedChange={v => setForm({ ...form, is_featured: v })} /><Label>Featured</Label></div>
+            <div><Label>YouTube live URL</Label><Input value={form.youtube_url || ""} placeholder="https://youtube.com/watch?v=… or /live/…" onChange={e => setForm({ ...form, youtube_url: e.target.value })} /></div>
+            <div><Label>Facebook post URL</Label><Input value={form.facebook_post_url || ""} placeholder="https://facebook.com/…" onChange={e => setForm({ ...form, facebook_post_url: e.target.value })} /></div>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2"><Switch checked={form.is_featured || false} onCheckedChange={v => setForm({ ...form, is_featured: v })} /><Label>Featured</Label></div>
+              <div className="flex items-center gap-2"><Switch checked={form.is_live_stream || false} onCheckedChange={v => setForm({ ...form, is_live_stream: v })} /><Label>Stream live on site</Label></div>
+            </div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={save}>{editing ? "Update" : "Schedule"}</Button></DialogFooter>
         </DialogContent>
@@ -462,6 +482,7 @@ const LiveScoreTab = ({ tournamentId }: { tournamentId: string }) => {
               <div><Label>Result text</Label><Input value={match.result_text || ""} onChange={e => setMatch({ ...match, result_text: e.target.value })} onBlur={e => updateMatch({ result_text: e.target.value })} placeholder="e.g. BMH won by 24 runs" /></div>
             </div>
             <div><Label>Commentary note</Label><Textarea rows={2} value={match.commentary_note || ""} onChange={e => setMatch({ ...match, commentary_note: e.target.value })} onBlur={e => updateMatch({ commentary_note: e.target.value })} /></div>
+            <div><Label>YouTube live URL</Label><Input value={match.youtube_url || ""} placeholder="Paste a YouTube live link to broadcast on /sports" onChange={e => setMatch({ ...match, youtube_url: e.target.value })} onBlur={e => updateMatch({ youtube_url: e.target.value })} /></div>
           </div>
         )}
       </CardContent>
@@ -585,10 +606,17 @@ const SportsManager = () => {
           <h1 className="text-2xl font-bold flex items-center gap-2"><Trophy className="h-6 w-6 text-primary" /> Sports / KPL</h1>
           <p className="text-sm text-muted-foreground">{current?.name} · {current?.season}</p>
         </div>
-        <Select value={tournamentId} onValueChange={setTournamentId}>
-          <SelectTrigger className="w-72"><SelectValue placeholder="Select tournament" /></SelectTrigger>
-          <SelectContent>{tournaments.map(t => <SelectItem key={t.id} value={t.id}>{t.name} ({t.season})</SelectItem>)}</SelectContent>
-        </Select>
+        <div className="flex gap-2 flex-wrap">
+          <Button size="sm" variant="outline" onClick={async () => {
+            const { data, error } = await supabase.functions.invoke("fb-sync-kpl");
+            if (error) return alert("Sync failed: " + error.message);
+            alert(`Facebook sync: ${data?.upserted || 0} posts updated.`);
+          }}><RefreshCw className="h-4 w-4 mr-1" /> Sync Facebook now</Button>
+          <Select value={tournamentId} onValueChange={setTournamentId}>
+            <SelectTrigger className="w-72"><SelectValue placeholder="Select tournament" /></SelectTrigger>
+            <SelectContent>{tournaments.map(t => <SelectItem key={t.id} value={t.id}>{t.name} ({t.season})</SelectItem>)}</SelectContent>
+          </Select>
+        </div>
       </div>
 
       {tournamentId && (

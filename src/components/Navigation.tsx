@@ -88,6 +88,7 @@ export const Navigation = () => {
     { name: t("vision"), path: "/vision" },
     { name: t("news"), path: "/news" },
     { name: t("podcasts"), path: "/podcasts" },
+    { name: "Sports", path: "/sports" },
     { name: t("gallery"), path: "/gallery" },
     { name: t("contact"), path: "/contact" },
   ];
