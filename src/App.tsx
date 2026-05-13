@@ -46,6 +46,8 @@ import ABTestingDashboard from "./pages/admin/ABTestingDashboard";
 import UserProfile from "./pages/UserProfile";
 import SubscriberPreferences from "./pages/SubscriberPreferences";
 import SportsManager from "./pages/admin/SportsManager";
+import Sports from "./pages/Sports";
+import MatchCenter from "./pages/sports/MatchCenter";
 
 const queryClient = new QueryClient();
 
@@ -63,6 +65,8 @@ const AnimatedRoutes = () => {
         <Route path="/podcasts" element={<><Navigation /><Podcasts /></>} />
         <Route path="/gallery" element={<><Navigation /><Gallery /></>} />
         <Route path="/contact" element={<><Navigation /><Contact /></>} />
+        <Route path="/sports" element={<><Navigation /><Sports /></>} />
+        <Route path="/sports/match/:id" element={<><Navigation /><MatchCenter /></>} />
         <Route path="/preferences" element={<><Navigation /><SubscriberPreferences /></>} />
         
         {/* Auth route */}
