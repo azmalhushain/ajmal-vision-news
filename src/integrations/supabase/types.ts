@@ -535,9 +535,11 @@ export type Database = {
         Row: {
           commentary_note: string | null
           created_at: string
+          facebook_post_url: string | null
           highlights_url: string | null
           id: string
           is_featured: boolean
+          is_live_stream: boolean
           match_no: number | null
           poster_url: string | null
           result_text: string | null
@@ -551,13 +553,16 @@ export type Database = {
           updated_at: string
           venue: string | null
           winner_id: string | null
+          youtube_url: string | null
         }
         Insert: {
           commentary_note?: string | null
           created_at?: string
+          facebook_post_url?: string | null
           highlights_url?: string | null
           id?: string
           is_featured?: boolean
+          is_live_stream?: boolean
           match_no?: number | null
           poster_url?: string | null
           result_text?: string | null
@@ -571,13 +576,16 @@ export type Database = {
           updated_at?: string
           venue?: string | null
           winner_id?: string | null
+          youtube_url?: string | null
         }
         Update: {
           commentary_note?: string | null
           created_at?: string
+          facebook_post_url?: string | null
           highlights_url?: string | null
           id?: string
           is_featured?: boolean
+          is_live_stream?: boolean
           match_no?: number | null
           poster_url?: string | null
           result_text?: string | null
@@ -591,6 +599,7 @@ export type Database = {
           updated_at?: string
           venue?: string | null
           winner_id?: string | null
+          youtube_url?: string | null
         }
         Relationships: [
           {
@@ -1491,6 +1500,7 @@ export type Database = {
           description: string | null
           display_order: number
           end_date: string | null
+          facebook_page_url: string | null
           id: string
           is_active: boolean
           name: string
@@ -1501,6 +1511,7 @@ export type Database = {
           status: string
           updated_at: string
           venue: string | null
+          youtube_channel_url: string | null
         }
         Insert: {
           banner_url?: string | null
@@ -1508,6 +1519,7 @@ export type Database = {
           description?: string | null
           display_order?: number
           end_date?: string | null
+          facebook_page_url?: string | null
           id?: string
           is_active?: boolean
           name: string
@@ -1518,6 +1530,7 @@ export type Database = {
           status?: string
           updated_at?: string
           venue?: string | null
+          youtube_channel_url?: string | null
         }
         Update: {
           banner_url?: string | null
@@ -1525,6 +1538,7 @@ export type Database = {
           description?: string | null
           display_order?: number
           end_date?: string | null
+          facebook_page_url?: string | null
           id?: string
           is_active?: boolean
           name?: string
@@ -1535,6 +1549,7 @@ export type Database = {
           status?: string
           updated_at?: string
           venue?: string | null
+          youtube_channel_url?: string | null
         }
         Relationships: []
       }
