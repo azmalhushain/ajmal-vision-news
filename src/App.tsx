@@ -48,6 +48,7 @@ import SubscriberPreferences from "./pages/SubscriberPreferences";
 import SportsManager from "./pages/admin/SportsManager";
 import Sports from "./pages/Sports";
 import MatchCenter from "./pages/sports/MatchCenter";
+import { LiveScoreTicker } from "./components/sports/LiveScoreTicker";
 
 const queryClient = new QueryClient();
 
