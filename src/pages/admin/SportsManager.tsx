@@ -484,6 +484,11 @@ const LiveScoreTab = ({ tournamentId }: { tournamentId: string }) => {
             </div>
             <div><Label>Commentary note</Label><Textarea rows={2} value={match.commentary_note || ""} onChange={e => setMatch({ ...match, commentary_note: e.target.value })} onBlur={e => updateMatch({ commentary_note: e.target.value })} /></div>
             <div><Label>YouTube live URL</Label><Input value={match.youtube_url || ""} placeholder="Paste a YouTube live link to broadcast on /sports" onChange={e => setMatch({ ...match, youtube_url: e.target.value })} onBlur={e => updateMatch({ youtube_url: e.target.value })} /></div>
+
+            <div className="border-t pt-4">
+              <p className="font-semibold mb-2 flex items-center gap-2">⚾ Ball-by-ball entry (AI auto-calculates score)</p>
+              <BallByBallPad matchId={selectedId} onChange={() => loadOne(selectedId)} />
+            </div>
           </div>
         )}
       </CardContent>
