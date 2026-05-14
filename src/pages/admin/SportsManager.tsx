@@ -608,6 +608,12 @@ const SportsManager = () => {
         </div>
         <div className="flex gap-2 flex-wrap">
           <Button size="sm" variant="outline" onClick={async () => {
+            if (!confirm("Import teams & fixtures from kplt20.org? This may take ~30s.")) return;
+            const { data, error } = await supabase.functions.invoke("kpl-import");
+            if (error) return alert("Import failed: " + error.message);
+            alert(`KPL import: +${data?.teamsCreated || 0} teams, +${data?.matchesCreated || 0} matches.${data?.errors?.length ? "\nWarnings:\n" + data.errors.join("\n") : ""}`);
+          }}><Upload className="h-4 w-4 mr-1" /> Import from kplt20.org</Button>
+          <Button size="sm" variant="outline" onClick={async () => {
             const { data, error } = await supabase.functions.invoke("fb-sync-kpl");
             if (error) return alert("Sync failed: " + error.message);
             alert(`Facebook sync: ${data?.upserted || 0} posts updated.`);
