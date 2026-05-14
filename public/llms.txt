@@ -1,0 +1,19 @@
+# Ajmal Akhtar Azad — Mayor of Bhokraha Narsingh Municipality
+
+> Official website of Mayor Ajmal Akhtar Azad of Bhokraha Narsingh Municipality, Sunsari, Nepal. News, vision, development projects, podcasts, gallery, and the KPL3 sports portal.
+
+## Pages
+
+- [Home](/): Mayor's official homepage with featured updates and live KPL3 match strip.
+- [About](/about): Biography, background, and public service history of Mayor Ajmal Akhtar Azad.
+- [Vision](/vision): Development priorities — infrastructure, healthcare, education, agriculture, digital governance.
+- [News](/news): Latest news, press releases, and municipal updates with categories and search.
+- [Podcasts](/podcasts): Audio and video podcasts from the Mayor's office.
+- [Gallery](/gallery): Photo gallery of events, projects, and public engagements.
+- [Sports / KPL3](/sports): Karbala Premier League 3 portal with fixtures, live scores, teams, and standings.
+- [Contact](/contact): Contact information and message form for the Mayor's office.
+
+## Optional
+
+- [RSS Feed](/rss.xml): News syndication feed.
+- [Sitemap](/sitemap.xml): Full XML sitemap.
