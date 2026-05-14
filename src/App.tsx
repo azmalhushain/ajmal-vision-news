@@ -119,6 +119,7 @@ const AppContent = () => {
   return (
     <AnimatePresence mode="wait">
       {isLoading ? <PageLoader key="loader" /> : <AnimatedRoutes key="routes" />}
+      {!isLoading && <LiveScoreTicker />}
     </AnimatePresence>
   );
 };
