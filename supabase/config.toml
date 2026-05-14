@@ -44,3 +44,9 @@ verify_jwt = false
 
 [functions.fb-sync-kpl]
 verify_jwt = false
+
+[functions.sports-ai]
+verify_jwt = false
+
+[functions.kpl-import]
+verify_jwt = false

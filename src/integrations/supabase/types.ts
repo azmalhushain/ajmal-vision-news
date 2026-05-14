@@ -464,6 +464,54 @@ export type Database = {
         }
         Relationships: []
       }
+      match_events: {
+        Row: {
+          ball_no: number
+          batter: string | null
+          bowler: string | null
+          created_at: string
+          extra_runs: number
+          extra_type: string | null
+          id: string
+          innings_no: number
+          is_wicket: boolean
+          match_id: string
+          note: string | null
+          over_no: number
+          runs: number
+        }
+        Insert: {
+          ball_no?: number
+          batter?: string | null
+          bowler?: string | null
+          created_at?: string
+          extra_runs?: number
+          extra_type?: string | null
+          id?: string
+          innings_no?: number
+          is_wicket?: boolean
+          match_id: string
+          note?: string | null
+          over_no?: number
+          runs?: number
+        }
+        Update: {
+          ball_no?: number
+          batter?: string | null
+          bowler?: string | null
+          created_at?: string
+          extra_runs?: number
+          extra_type?: string | null
+          id?: string
+          innings_no?: number
+          is_wicket?: boolean
+          match_id?: string
+          note?: string | null
+          over_no?: number
+          runs?: number
+        }
+        Relationships: []
+      }
       match_innings: {
         Row: {
           batting_team_id: string | null

@@ -17,6 +17,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Trophy, Users, Calendar, Radio, Newspaper, Image as ImageIcon, Plus, Pencil, Trash2, Upload, RefreshCw } from "lucide-react";
 import { uploadSportsLogo } from "@/lib/sportsHelpers";
+import { BallByBallPad } from "@/components/sports/BallByBallPad";
 
 // Avoid type-gen lag: use the client untyped for the new tables.
 const db: any = supabase;
@@ -483,6 +484,11 @@ const LiveScoreTab = ({ tournamentId }: { tournamentId: string }) => {
             </div>
             <div><Label>Commentary note</Label><Textarea rows={2} value={match.commentary_note || ""} onChange={e => setMatch({ ...match, commentary_note: e.target.value })} onBlur={e => updateMatch({ commentary_note: e.target.value })} /></div>
             <div><Label>YouTube live URL</Label><Input value={match.youtube_url || ""} placeholder="Paste a YouTube live link to broadcast on /sports" onChange={e => setMatch({ ...match, youtube_url: e.target.value })} onBlur={e => updateMatch({ youtube_url: e.target.value })} /></div>
+
+            <div className="border-t pt-4">
+              <p className="font-semibold mb-2 flex items-center gap-2">⚾ Ball-by-ball entry (AI auto-calculates score)</p>
+              <BallByBallPad matchId={selectedId} onChange={() => loadOne(selectedId)} />
+            </div>
           </div>
         )}
       </CardContent>
@@ -607,6 +613,12 @@ const SportsManager = () => {
           <p className="text-sm text-muted-foreground">{current?.name} · {current?.season}</p>
         </div>
         <div className="flex gap-2 flex-wrap">
+          <Button size="sm" variant="outline" onClick={async () => {
+            if (!confirm("Import teams & fixtures from kplt20.org? This may take ~30s.")) return;
+            const { data, error } = await supabase.functions.invoke("kpl-import");
+            if (error) return alert("Import failed: " + error.message);
+            alert(`KPL import: +${data?.teamsCreated || 0} teams, +${data?.matchesCreated || 0} matches.${data?.errors?.length ? "\nWarnings:\n" + data.errors.join("\n") : ""}`);
+          }}><Upload className="h-4 w-4 mr-1" /> Import from kplt20.org</Button>
           <Button size="sm" variant="outline" onClick={async () => {
             const { data, error } = await supabase.functions.invoke("fb-sync-kpl");
             if (error) return alert("Sync failed: " + error.message);
