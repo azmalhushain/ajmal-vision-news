@@ -1,72 +1,47 @@
+This is a large multi-feature batch. I'll ship it in 5 sequential commits inside this response so the preview keeps working between steps.
 
-# Phase 4 Execution Plan — News Upgrades + KPL3 Sports Portal
+## 1. OG / Social tags everywhere
+Wire `<SEOHead>` (already exists) into every public page that's missing it: `Sports`, `MatchCenter` (done), `UserProfile`, `SubscriberPreferences`, plus per-section `image` overrides on Home, About, Vision, News, Podcasts, Gallery, Contact. Add a generated default OG fallback for sports.
 
-The combined ask is very large. To stay shippable and keep each turn reviewable, I'll split it into **three sub-phases (4A, 4B, 4C)**. Each ends in a working deploy.
+## 2. Sports portal redesign (IPL-inspired) + pinned live ticker
+- Rebuild `SportsLanding` with a hero scoreboard, gradient team-color cards, sticky tab strip, modern fixture rail, points-table stripes, animated number tickers (Framer Motion).
+- New `LiveScoreTicker` component: a fixed-bottom pill on mobile (and top strip on desktop) that follows the user across **every** page when a match is `live`. Tap → `/sports/match/:id`. Auto-hides when no live match. Realtime via Supabase channel.
+- Mount in `App.tsx` so it persists across routes.
 
----
+## 3. YouTube live embed flow
+Already have `youtube_url` + `is_live_stream` columns. Surface them prominently:
+- Banner CTA "🔴 Watch Live on YouTube" on Home + Sports + MatchCenter
+- Admin: validate URL (accept watch?v=, youtu.be/, live/) and preview the embed inline.
 
-## Sub-phase 4A — News upgrades (ship first, ~1 turn)
+## 4. AI features (Lovable AI Gateway, no extra keys)
+New edge function `sports-ai` with three actions:
+- `caption` → suggest 3 captions for an uploaded image (used in Gallery/Posts/Sports admin)
+- `match-summary` → generate post-match recap from match + innings rows
+- `recompute-score` → given ball-by-ball events, compute totals, overs, RR, result, and write back to `matches` + `match_innings`
+Add a `match_events` table (ball-by-ball: runs, wicket, extras, over, ball, batter, bowler) so admin enters one event per ball and AI/SQL aggregates. Add admin UI: ball-entry pad with quick buttons (0,1,2,3,4,6,W,WD,NB) → calls `recompute-score` after each ball. Realtime pushes update to public viewers instantly.
 
-Scope is small and high-impact, unblocks everything else.
+## 5. KPL data import via Firecrawl
+Use Firecrawl connector to scrape `https://kplt20.org` (teams page, fixtures page). New edge function `kpl-import`:
+- scrape pages
+- AI-extract structured JSON (team name, short name, logo url, primary color; match no, date, teams, venue, status, scores)
+- upsert into `tournaments` / `teams` / `matches`
+Admin button "Import from kplt20.org" with progress + summary.
 
-1. **Category chips + search bar** on `/news`
-   - Chips: All, Development, Education, Health, Environment, Infrastructure, Events, Announcements (derived dynamically from existing post categories + a default set).
-   - Debounced search input filters by `title`, `excerpt`, `content` (Postgres `ilike`).
-   - URL-synced (`?cat=Health&q=road`) so filters survive refresh / share.
+## Technical details
+- New tables: `match_events (id, match_id, innings_no, over, ball, runs, is_wicket, extra_type, batter, bowler, note, created_at)` with RLS (admins write, public read).
+- New edge functions: `sports-ai`, `kpl-import`.
+- New components: `LiveScoreTicker`, `BallByBallPad`, `MatchSummaryPanel`, `AICaptionButton`.
+- Connector: link Firecrawl via `standard_connectors--connect`.
+- All AI calls via `LOVABLE_API_KEY` → `google/gemini-2.5-flash` (cheap/fast) for scoring & captions, `google/gemini-2.5-pro` for match summary.
+- Animations: Framer Motion for ticker pulse, score count-up, tab transitions. Keep semantic tokens; no hardcoded colors.
 
-2. **RSS feed** at `/rss.xml`
-   - New edge function `rss-feed` returns `application/rss+xml` of latest 50 published posts (title, link, description, pubDate, category, enclosure for image).
-   - Add `<link rel="alternate" type="application/rss+xml">` to News page head.
-   - Add a small "RSS" button on the News hero linking to `/rss.xml`.
-   - Netlify redirect `/rss.xml → /functions/v1/rss-feed`.
+## Order of execution (this turn)
+1. Migration: `match_events` table + RLS.
+2. Edge function `sports-ai` (3 actions).
+3. Edge function `kpl-import` (after Firecrawl link).
+4. `LiveScoreTicker` + mount in `App.tsx`.
+5. Redesign `SportsLanding` (hero, animations, modern cards).
+6. Admin `BallByBallPad` + `AICaptionButton` + import button.
+7. OG tags pass on remaining pages.
 
-3. **Auto OG/Twitter/FB share image per article**
-   - `og-image` edge function already exists — extend it to render a branded card (title, category badge, mayor logo, gradient bg) using `@vercel/og`-style SVG.
-   - `NewsModal`/article SEO already passes `image` prop. Update `SEOHead` so when an article has no `image_url`, it falls back to `https://…/functions/v1/og-image?postId={id}`.
-   - Admin `PostEditor` already supports a featured image upload — add a small "Use auto-generated share image" toggle that simply leaves `image_url` blank.
-
-4. **Infinite scroll on News** — already implemented in `NewsSection.tsx` (verified: IntersectionObserver + `ITEMS_PER_PAGE = 6`). I'll bump page size to 9 and add a graceful "Load more" button fallback for users without IO support.
-
-5. **Admin News CMS** — `PostEditor.tsx` + `/admin/posts` already exist (create/edit/publish/category/featured image/scheduled publish). I'll audit and add: drag-to-reorder via `display_order` column (new migration), bulk publish/unpublish, and a category dropdown with the same canonical list as the public chips.
-
-**Deliverables:** Updated `News.tsx`, `NewsSection.tsx`, new `NewsFilters.tsx`, new `rss-feed` edge function, `netlify.toml` redirect, OG fallback, migration adding `posts.display_order int default 0`.
-
----
-
-## Sub-phase 4B — KPL3 backend + admin CMS (~1–2 turns)
-
-1. **DB migration** for all KPL3 tables (`tournaments`, `teams`, `players`, `matches`, `match_innings`, `sports_news`, `sports_media`, `social_posts_cache`) with full RLS (public SELECT on published, admin ALL via `has_role`).
-2. **Seed** `KPL3` tournament + the 7 announced teams (Birtamode Heats, Everest Thunders, Gorkha Avengers, BN Koshi Arnas, Namuna Blasters, Itahari Adarsh Giants, Purbeli Super Kings).
-3. **Storage buckets** `sports-media` (public) and `sports-logos` (public).
-4. **Admin sidebar group "Sports / KPL3"** with editors:
-   - Tournaments • Teams (logo upload, colors) • Players (photo, role, jersey) • Fixtures (schedule a match) • **Live Score Console** (per-match form: runs, wickets, overs, status, result, commentary note) • Sports News (reuse rich-text editor pattern from `PostEditor`) • Media (bulk upload, no auto-crop, manual crop optional — reuses `GalleryBulkUploader` + `CropDialog`) • Facebook Sync placeholder (UI only in 4B).
-5. Realtime enabled on `matches` and `match_innings`.
-
-**Deliverables:** 1 large migration, ~10 new admin pages under `src/pages/admin/sports/`, sidebar update, route additions in `App.tsx`.
-
----
-
-## Sub-phase 4C — KPL3 public portal + Home integration + Facebook sync (~1–2 turns)
-
-1. Public routes under `/sports/*` (landing, fixtures, standings, teams, team detail, players, match center, sports news).
-2. ESPN/Cricbuzz-style dark glass UI components: `LiveMatchBanner`, `MatchCard`, `ScorecardTable`, `StandingsTable`, `PlayerCard`, `TeamCard`, `CountdownToNextMatch`, `SponsorMarquee`.
-3. Home page integration strip (live banner + next match countdown + featured sports news + sponsors).
-4. Sitemap extension: `/sports`, `/sports/fixtures`, dynamic team/player/match URLs.
-5. `SportsEvent` JSON-LD on each match page; `BreadcrumbList` on inner pages.
-6. **Facebook auto-sync** via `fb-sync-kpl` edge function (Graph API + `pg_cron` every 30 min). Requires you to provide: **Facebook App ID, App Secret, KPL Page ID, long-lived Page Access Token** (I'll request via secrets at 4C start). Fallback: official Facebook Page Plugin embed.
-
-**Deliverables:** ~12 public pages/components, edge function `fb-sync-kpl`, sitemap update, secrets request.
-
----
-
-## Why split this way
-
-Phase 4 alone touches 10+ database tables, 20+ new files, realtime, an external Graph API integration, and a fresh public section. Doing it plus the News work in one turn would be unreliable to review and almost certain to mix unrelated regressions. Splitting lets each turn build cleanly on a green deploy.
-
-## Suggested order
-
-1. Approve → I ship **4A** now (News chips + search + RSS + OG fallback + admin polish).
-2. Then **4B** (KPL3 schema + admin CMS).
-3. Then **4C** (KPL3 public + Facebook sync — needs your FB credentials).
-
-Reply "go" to start with **4A**, or tell me to reorder/trim.
+Approve and I'll ship.
