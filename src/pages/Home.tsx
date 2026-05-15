@@ -7,6 +7,7 @@ import { Newsletter } from "@/components/Newsletter";
 import { Footer } from "@/components/Footer";
 import { PageTransition } from "@/components/PageTransition";
 import { SEOHead } from "@/components/SEOHead";
+import ogHome from "@/assets/og-home.jpg";
 
 const Home = () => {
   return (
@@ -15,6 +16,8 @@ const Home = () => {
         title="Ajmal Akhtar Azad — Mayor of Bhokraha Narsingh"
         description="Official site of Mayor Ajmal Akhtar Azad. Together for development, dignity and democracy in Bhokraha Narsingh Municipality, Sunsari, Nepal."
         url="/"
+        image={ogHome}
+        imageAlt="Sunrise over the Himalayas — official site of Mayor Ajmal Akhtar Azad"
         keywords="Ajmal Akhtar Azad, Mayor, Bhokraha Narsingh, Sunsari, Nepal, Municipality, Development"
       />
       <div className="min-h-screen">
