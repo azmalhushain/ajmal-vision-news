@@ -4,6 +4,7 @@ import { Footer } from "@/components/Footer";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { PageTransition } from "@/components/PageTransition";
 import { SEOHead } from "@/components/SEOHead";
+import ogVision from "@/assets/og-vision.jpg";
 import { motion } from "framer-motion";
 
 const Vision = () => {
@@ -119,6 +120,8 @@ const Vision = () => {
         title="Vision & Priorities — Mayor Ajmal Akhtar Azad"
         description="People-first development for Bhokraha Narsingh: infrastructure, healthcare, education, agriculture and digital governance led by Mayor Ajmal Akhtar Azad."
         url="/vision"
+        image={ogVision}
+        imageAlt="Aerial blueprint of municipal development — Vision"
         keywords="Vision, Bhokraha Narsingh development, infrastructure, healthcare, education, Mayor Ajmal Akhtar Azad"
       />
       <div className="min-h-screen pt-24">

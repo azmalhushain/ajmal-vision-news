@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import { Footer } from "@/components/Footer";
 import { PageTransition } from "@/components/PageTransition";
 import { SEOHead } from "@/components/SEOHead";
+import ogSports from "@/assets/og-sports.jpg";
 import { LiveMatchBanner } from "@/components/sports/LiveMatchBanner";
 import { NextMatchCountdown } from "@/components/sports/NextMatchCountdown";
 import { MatchCard } from "@/components/sports/MatchCard";

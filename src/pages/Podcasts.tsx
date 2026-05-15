@@ -5,6 +5,7 @@ import { Play, Pause, Clock, Pin, Heart, MessageCircle, ChevronDown, ChevronUp, 
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ShareButtons } from "@/components/ShareButtons";
 import { SEOHead } from "@/components/SEOHead";
+import ogPodcasts from "@/assets/og-podcasts.jpg";
 import { PodcastCardSkeleton } from "@/components/LoadingSkeleton";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
@@ -176,6 +177,8 @@ const Podcasts = () => {
         title="Media Gallery - Ajmal Akhtar Azad"
         description="Watch videos and listen to podcasts from Mayor Ajmal Akhtar Azad about development initiatives."
         url="/podcasts"
+        image={ogPodcasts}
+        imageAlt="Glowing studio microphone — Podcasts & Videos"
         keywords="Podcasts, Videos, Ajmal Akhtar Azad, Mayor, Bhokraha Narsingh, Media"
       />
       

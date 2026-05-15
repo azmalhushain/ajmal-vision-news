@@ -5,6 +5,7 @@ import { NewsFilters, type NewsCategory } from "@/components/NewsFilters";
 import { Footer } from "@/components/Footer";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { SEOHead } from "@/components/SEOHead";
+import ogNews from "@/assets/og-news.jpg";
 import { PageTransition } from "@/components/PageTransition";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
@@ -39,6 +40,8 @@ const News = () => {
           title="News & Updates — Mayor Ajmal Akhtar Azad"
           description="Latest news, announcements, and updates from Mayor Ajmal Akhtar Azad and Bhokraha Narsingh Municipality, Sunsari, Nepal."
           url="/news"
+          image={ogNews}
+          imageAlt="Stack of newspapers — News & Updates"
           keywords="Bhokraha Narsingh news, Mayor Ajmal Akhtar Azad updates, Sunsari news, municipal announcements, Nepal local government"
           type="website"
         />

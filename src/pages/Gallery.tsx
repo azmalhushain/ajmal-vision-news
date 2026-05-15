@@ -10,6 +10,7 @@ import { GallerySkeleton } from "@/components/LoadingSkeleton";
 import { motion } from "framer-motion";
 import { GalleryBentoGrid } from "@/components/GalleryBentoGrid";
 import { SEOHead } from "@/components/SEOHead";
+import ogGallery from "@/assets/og-gallery.jpg";
 
 interface GalleryImage {
   id: string;
@@ -65,6 +66,8 @@ const Gallery = () => {
         title="Photo Gallery - Ajmal Akhtar Azad | Bhokraha Narsingh"
         description="View photos of Mayor Ajmal Akhtar Azad's development projects, community events, and initiatives in Bhokraha Narsingh Municipality."
         url="/gallery"
+        image={ogGallery}
+        imageAlt="Mosaic of community photographs — Photo Gallery"
       />
       <div className="min-h-screen pt-24">
         {/* Hero Section */}

@@ -6,6 +6,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { PageTransition } from "@/components/PageTransition";
 import { PageLoadingSkeleton } from "@/components/LoadingSkeleton";
 import { SEOHead } from "@/components/SEOHead";
+import ogAbout from "@/assets/og-about.jpg";
 
 const iconMap: Record<string, LucideIcon> = {
   Handshake,
@@ -81,6 +82,8 @@ const About = () => {
         title="About Mayor Ajmal Akhtar Azad — Bhokraha Narsingh"
         description="Learn about Mayor Ajmal Akhtar Azad — his journey, values, and achievements serving Bhokraha Narsingh Municipality with transparency and inclusivity."
         url="/about"
+        image={ogAbout}
+        imageAlt="Portrait silhouette — About Mayor Ajmal Akhtar Azad"
         keywords="About Ajmal Akhtar Azad, Mayor biography, Bhokraha Narsingh, Sunsari, public service"
       />
       <div className="min-h-screen pt-24">
