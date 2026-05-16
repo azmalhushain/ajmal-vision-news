@@ -5,8 +5,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Trophy, Calendar, Users, Newspaper, Radio, Play, MapPin, Sparkles, ArrowRight,
-  Clock, Tv, BarChart3, Award, Flame, ChevronRight,
+  Trophy, Calendar, Users, Newspaper, Radio, Play, MapPin, ArrowRight,
+  Clock, Tv, BarChart3, Award, Flame,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Footer } from "@/components/Footer";
