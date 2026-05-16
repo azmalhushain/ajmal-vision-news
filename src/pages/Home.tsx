@@ -2,7 +2,6 @@ import { Hero } from "@/components/Hero";
 import { VisionStatement } from "@/components/VisionStatement";
 import { DevelopmentAreas } from "@/components/DevelopmentAreas";
 import { NewsSection } from "@/components/NewsSection";
-import { SportsHomeStrip } from "@/components/sports/SportsHomeStrip";
 import { Newsletter } from "@/components/Newsletter";
 import { Footer } from "@/components/Footer";
 import { PageTransition } from "@/components/PageTransition";
@@ -24,7 +23,6 @@ const Home = () => {
         <Hero />
         <VisionStatement />
         <DevelopmentAreas />
-        <SportsHomeStrip />
         <NewsSection />
         <Newsletter />
         <Footer />
