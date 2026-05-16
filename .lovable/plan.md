@@ -1,47 +1,88 @@
-This is a large multi-feature batch. I'll ship it in 5 sequential commits inside this response so the preview keeps working between steps.
+# Sports Portal Redesign + Feature Expansion
 
-## 1. OG / Social tags everywhere
-Wire `<SEOHead>` (already exists) into every public page that's missing it: `Sports`, `MatchCenter` (done), `UserProfile`, `SubscriberPreferences`, plus per-section `image` overrides on Home, About, Vision, News, Podcasts, Gallery, Contact. Add a generated default OG fallback for sports.
+Inspired by the attached **Cricket League 2025** mockup (dark stadium background, neon-lime accents, glassmorphism cards, team logo battles, animated stat counters, side leaderboard rail).
 
-## 2. Sports portal redesign (IPL-inspired) + pinned live ticker
-- Rebuild `SportsLanding` with a hero scoreboard, gradient team-color cards, sticky tab strip, modern fixture rail, points-table stripes, animated number tickers (Framer Motion).
-- New `LiveScoreTicker` component: a fixed-bottom pill on mobile (and top strip on desktop) that follows the user across **every** page when a match is `live`. Tap → `/sports/match/:id`. Auto-hides when no live match. Realtime via Supabase channel.
-- Mount in `App.tsx` so it persists across routes.
+You've listed ~80 features. Many already exist (live ticker, ball-by-ball, match center, AI summary, fixtures, teams, news, gallery, push, dark mode, admin CMS, KPL scraping, social feeds). The plan focuses on **redesign + filling visible gaps** in phases so each phase ships working.
 
-## 3. YouTube live embed flow
-Already have `youtube_url` + `is_live_stream` columns. Surface them prominently:
-- Banner CTA "🔴 Watch Live on YouTube" on Home + Sports + MatchCenter
-- Admin: validate URL (accept watch?v=, youtu.be/, live/) and preview the embed inline.
+## Phase 1 — Home + Sports landing redesign (this turn)
 
-## 4. AI features (Lovable AI Gateway, no extra keys)
-New edge function `sports-ai` with three actions:
-- `caption` → suggest 3 captions for an uploaded image (used in Gallery/Posts/Sports admin)
-- `match-summary` → generate post-match recap from match + innings rows
-- `recompute-score` → given ball-by-ball events, compute totals, overs, RR, result, and write back to `matches` + `match_innings`
-Add a `match_events` table (ball-by-ball: runs, wicket, extras, over, ball, batter, bowler) so admin enters one event per ball and AI/SQL aggregates. Add admin UI: ball-entry pad with quick buttons (0,1,2,3,4,6,W,WD,NB) → calls `recompute-score` after each ball. Realtime pushes update to public viewers instantly.
+**Home page**
+- Remove the existing "KPL banner / SportsHomeStrip" from `Home.tsx` (per request).
+- Keep hero, news, podcasts, vision — untouched in scope.
 
-## 5. KPL data import via Firecrawl
-Use Firecrawl connector to scrape `https://kplt20.org` (teams page, fixtures page). New edge function `kpl-import`:
-- scrape pages
-- AI-extract structured JSON (team name, short name, logo url, primary color; match no, date, teams, venue, status, scores)
-- upsert into `tournaments` / `teams` / `matches`
-Admin button "Import from kplt20.org" with progress + summary.
+**Sports landing (`/sports`) — full redesign** inspired by mockup:
+- **Stadium hero**: dark gradient + animated stadium-light radial glow, neon-lime accent (`--sports-accent`), "KPL 2025" wordmark with scripted year, dual CTA (Join League / Explore Teams).
+- **Stat strip** (glass card): Teams • Matches • Days to Final • Prize Pool — animated count-up via `framer-motion` `useMotionValue`.
+- **Next Big Battles**: 3 upcoming-fixture glass cards with team-vs-team logos, date/venue, Watch Live pill. Swipeable on mobile (horizontal snap scroll).
+- **Two-column lower band** (desktop) / stacked (mobile):
+  - Left: "Feel the Excitement" feature list (Live Streaming, Real-Time Stats, Exclusive Rewards) with trophy video poster.
+  - Right rail (desktop only, ≥lg): **Featured Teams grid** (2-col mini cards w/ logos) + **Points Table** (compact, M/W/L/Pts, animated row highlight on rank change).
+- **"Ready for the Challenge?" CTA card** with trophy image + Join Now / View Schedule.
+- Sticky in-page tab strip (Fixtures · Teams · Results · Stats · News) — keep existing tabs but restyle as neon pills.
+- All cards: glassmorphism (`bg-white/[0.03] backdrop-blur border border-white/10`), hover neon glow (`shadow-[0_0_40px_-10px_hsl(var(--sports-accent)/0.6)]`).
 
-## Technical details
-- New tables: `match_events (id, match_id, innings_no, over, ball, runs, is_wicket, extra_type, batter, bowler, note, created_at)` with RLS (admins write, public read).
-- New edge functions: `sports-ai`, `kpl-import`.
-- New components: `LiveScoreTicker`, `BallByBallPad`, `MatchSummaryPanel`, `AICaptionButton`.
-- Connector: link Firecrawl via `standard_connectors--connect`.
-- All AI calls via `LOVABLE_API_KEY` → `google/gemini-2.5-flash` (cheap/fast) for scoring & captions, `google/gemini-2.5-pro` for match summary.
-- Animations: Framer Motion for ticker pulse, score count-up, tab transitions. Keep semantic tokens; no hardcoded colors.
+**Design tokens** added to `index.css` under a `.sports-theme` scope (won't affect rest of site):
+- `--sports-bg: 140 30% 4%`
+- `--sports-accent: 80 95% 60%` (neon lime)
+- `--sports-card: 0 0% 100% / 0.04`
 
-## Order of execution (this turn)
-1. Migration: `match_events` table + RLS.
-2. Edge function `sports-ai` (3 actions).
-3. Edge function `kpl-import` (after Firecrawl link).
-4. `LiveScoreTicker` + mount in `App.tsx`.
-5. Redesign `SportsLanding` (hero, animations, modern cards).
-6. Admin `BallByBallPad` + `AICaptionButton` + import button.
-7. OG tags pass on remaining pages.
+## Phase 2 — Feature gaps (follow-up turn after Phase 1 approved)
 
-Approve and I'll ship.
+Implement the highest-impact missing features:
+1. **Points table** with NRR (compute from `match_innings`) + admin edit.
+2. **Orange/Purple cap leaderboards** — new `player_stats` table, admin entry, top-N cards on landing.
+3. **Player profiles** — new `players` table linked to teams, profile pages `/sports/player/:id`, AI-generated bio from stats.
+4. **Win-probability strip** on live match center — simple AI call (`sports-ai` action `win-prob`) using current score/overs.
+5. **Run-rate graph** on match center — Recharts area chart from `match_events`.
+6. **Breaking news ticker** — horizontal marquee at top of `/sports` pulling `news` tagged `sports`.
+7. **Fan poll** per match (vote which team wins) — `match_polls` + `match_poll_votes` tables.
+8. **Stadium info** on each fixture — add `venue_info` jsonb to `matches`.
+
+## Phase 3 — Polish + nice-to-haves
+
+- Fantasy-style "pick your XI" (local-storage only, no backend complexity).
+- Ticket booking link field per match (admin URL, external redirect).
+- Sponsor showcase strip (already has `sponsors` table? if not, add).
+- Match-result archive page with season + team filters.
+- Animated chart counters, scroll-triggered reveals (Intersection Observer + framer-motion `whileInView`).
+
+## Admin panel
+
+All Phase 2 entities get CRUD inside `SportsManager.tsx` as new tabs (Players, Stats, Polls, Sponsors). Existing match/team/fixture admin untouched.
+
+## AI integrations (reuse `sports-ai` edge function)
+
+Add actions:
+- `win-prob` — current score → win % per team (Gemini 2.5 Flash, JSON out).
+- `player-bio` — career stats → 100-word bio.
+- `news-headline` — match result → 3 punchy headlines.
+
+Image-caption + post-match summary already exist.
+
+## Data seeding
+
+After redesign, run `kpl-import` to refresh from kplt20.org and **insert dummy fallback** rows (4 teams, 6 fixtures, 1 live match, points-table seed) via migration so the page never looks empty when KPL data is missing.
+
+## Out of scope (this plan)
+
+- Real third-party live-score API (we already have admin ball-by-ball + AI recompute; pulling from a paid feed needs a paid key).
+- Real fantasy backend (just local pick XI).
+- Real ticket payments (link only).
+- Real-time push for every wicket (existing push infra handles it once admin wires triggers).
+
+## Files (Phase 1)
+
+- edit `src/pages/Home.tsx` — remove SportsHomeStrip mount
+- edit `src/pages/Sports.tsx` — full rewrite to mockup-inspired layout
+- edit `src/index.css` — add `.sports-theme` tokens + utility classes
+- new `src/components/sports/StadiumHero.tsx`
+- new `src/components/sports/StatCountStrip.tsx`
+- new `src/components/sports/FeaturedTeamsRail.tsx`
+- new `src/components/sports/PointsTableCompact.tsx`
+- new `src/components/sports/NextBattles.tsx`
+- new `src/components/sports/ExcitementBand.tsx`
+- reuse existing `LiveScoreTicker`, `MatchCard`, social feed.
+
+---
+
+**Confirm to proceed with Phase 1**, or tell me to reorder/expand a phase.
