@@ -687,6 +687,132 @@ const SportsNewsTab = ({ tournamentId }: { tournamentId: string }) => {
   );
 };
 
+// ============ MEDIA (Images + Videos) ============
+const MediaTab = ({ tournamentId }: { tournamentId: string }) => {
+  const { toast } = useToast();
+  const [rows, setRows] = useState<Row[]>([]);
+  const [teams, setTeams] = useState<Row[]>([]);
+  const [filter, setFilter] = useState<"all" | "image" | "video">("all");
+  const [uploading, setUploading] = useState(false);
+  const [edit, setEdit] = useState<Row | null>(null);
+
+  const load = async () => {
+    const { data: t } = await db.from("teams").select("id,name,short_name").eq("tournament_id", tournamentId).order("display_order");
+    setTeams(t || []);
+    const { data } = await db.from("sports_media").select("*").eq("tournament_id", tournamentId).order("display_order").order("created_at", { ascending: false });
+    setRows(data || []);
+  };
+  useEffect(() => { if (tournamentId) load(); }, [tournamentId]);
+
+  const handleFiles = async (files: FileList | null) => {
+    if (!files?.length) return;
+    setUploading(true);
+    try {
+      for (const f of Array.from(files)) {
+        const isVideo = f.type.startsWith("video/");
+        const url = await uploadSportsMedia(f, isVideo ? "videos" : "images");
+        await db.from("sports_media").insert({
+          tournament_id: tournamentId,
+          kind: isVideo ? "video" : "image",
+          source: "upload",
+          url,
+          caption: f.name.replace(/\.[^.]+$/, ""),
+          is_active: true,
+          is_pinned: false,
+          display_order: 0,
+        });
+      }
+      toast({ title: "Uploaded", description: `${files.length} file${files.length === 1 ? "" : "s"} added` });
+      load();
+    } catch (e: any) {
+      toast({ title: "Upload failed", description: e.message, variant: "destructive" });
+    } finally { setUploading(false); }
+  };
+
+  const addYoutube = async () => {
+    const url = prompt("Paste YouTube URL");
+    if (!url) return;
+    await db.from("sports_media").insert({
+      tournament_id: tournamentId, kind: "video", source: "youtube", url, is_active: true,
+    });
+    toast({ title: "Video added" });
+    load();
+  };
+
+  const update = async (id: string, patch: Row) => {
+    await db.from("sports_media").update(patch).eq("id", id);
+    load();
+  };
+  const remove = async (id: string) => {
+    if (!confirm("Delete this media item?")) return;
+    await db.from("sports_media").delete().eq("id", id);
+    load();
+  };
+
+  const filtered = rows.filter(r => filter === "all" || r.kind === filter);
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-2">
+        <CardTitle className="flex items-center gap-2"><Film className="h-5 w-5" /> Media & Videos ({rows.length})</CardTitle>
+        <div className="flex gap-2 flex-wrap">
+          <Select value={filter} onValueChange={(v: any) => setFilter(v)}>
+            <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="image">Images</SelectItem>
+              <SelectItem value="video">Videos</SelectItem>
+            </SelectContent>
+          </Select>
+          <label className="cursor-pointer">
+            <input type="file" multiple accept="image/*,video/*" className="hidden" onChange={e => handleFiles(e.target.files)} />
+            <Button size="sm" asChild disabled={uploading}><span><Upload className="h-4 w-4 mr-1" />{uploading ? "Uploading…" : "Upload"}</span></Button>
+          </label>
+          <Button size="sm" variant="outline" onClick={addYoutube}><Video className="h-4 w-4 mr-1" /> Add YouTube</Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {!filtered.length && <p className="text-sm text-muted-foreground text-center py-10">No media yet — drag-drop or upload above. Original aspect ratio is preserved.</p>}
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {filtered.map(r => (
+            <div key={r.id} className="border rounded-xl overflow-hidden bg-muted/30 flex flex-col">
+              <div className="bg-black/80 flex items-center justify-center" style={{ minHeight: 140 }}>
+                {r.kind === "video" ? (
+                  r.source === "youtube"
+                    ? <div className="aspect-video w-full"><iframe src={r.url.replace("watch?v=", "embed/")} className="w-full h-full" allowFullScreen /></div>
+                    : <video src={r.url} controls className="w-full max-h-60 object-contain" />
+                ) : (
+                  <img src={r.url} alt={r.caption || ""} className="w-full max-h-60 object-contain" loading="lazy" />
+                )}
+              </div>
+              <div className="p-3 space-y-2 flex-1 flex flex-col">
+                <Input value={r.caption || ""} placeholder="Caption" onBlur={e => update(r.id, { caption: e.target.value })} onChange={e => setRows(prev => prev.map(x => x.id === r.id ? { ...x, caption: e.target.value } : x))} />
+                <div className="flex items-center justify-between gap-2 text-xs">
+                  <Select value={r.team_id || ""} onValueChange={v => update(r.id, { team_id: v || null })}>
+                    <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Tag team" /></SelectTrigger>
+                    <SelectContent>{teams.map(t => <SelectItem key={t.id} value={t.id}>{t.short_name || t.name}</SelectItem>)}</SelectContent>
+                  </Select>
+                  <Badge variant="outline" className="capitalize shrink-0">{r.kind}</Badge>
+                </div>
+                <div className="flex items-center justify-between gap-2 mt-auto">
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => update(r.id, { is_pinned: !r.is_pinned })} title="Pin" className={r.is_pinned ? "text-amber-500" : "text-muted-foreground"}>
+                      <Star className={`h-4 w-4 ${r.is_pinned ? "fill-amber-400" : ""}`} />
+                    </button>
+                    <Switch checked={r.is_active} onCheckedChange={v => update(r.id, { is_active: v })} />
+                    <span className="text-[10px] text-muted-foreground">Active</span>
+                  </div>
+                  <Button size="icon" variant="ghost" onClick={() => remove(r.id)}><Trash className="h-4 w-4 text-destructive" /></Button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
 // ============ MAIN PAGE ============
 const SportsManager = () => {
   const [tournaments, setTournaments] = useState<Row[]>([]);
