@@ -66,24 +66,11 @@ export default function TeamPage() {
   const toggleFollow = async () => {
     if (!team) return;
     const { data: { user } } = await supabase.auth.getUser();
-    const client = user
-      ? supabase
-      : (supabase as any).rest ? supabase : supabase;
     if (following) {
-      const headers = user ? {} : { "x-session-id": sessionId };
-      const q = (db.from("team_followers") as any);
-      const del = user
-        ? await q.delete().eq("team_id", team.id).eq("user_id", user.id)
-        : await db.rpc; // fallback handled below
-      if (!user) {
-        // delete via headers for session match
-        await (supabase as any).from("team_followers")
-          .delete({ headers })
-          .eq("team_id", team.id)
-          .eq("session_id", sessionId);
-      } else if (del?.error) {
-        return toast({ title: "Error", description: del.error.message, variant: "destructive" });
-      }
+      let q = db.from("team_followers").delete().eq("team_id", team.id);
+      q = user ? q.eq("user_id", user.id) : q.eq("session_id", sessionId);
+      const { error } = await q;
+      if (error) return toast({ title: "Error", description: error.message, variant: "destructive" });
       setFollowing(false); setFollowers(f => Math.max(0, f - 1));
     } else {
       const row = user
