@@ -16,8 +16,9 @@ import {
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Trophy, Users, Calendar, Radio, Newspaper, Image as ImageIcon, Plus, Pencil, Trash2, Upload, RefreshCw, Crown } from "lucide-react";
-import { uploadSportsLogo } from "@/lib/sportsHelpers";
+import { uploadSportsLogo, uploadSportsMedia } from "@/lib/sportsHelpers";
 import { BallByBallPad } from "@/components/sports/BallByBallPad";
+import { Video, Film, Star, Trash } from "lucide-react";
 
 // Avoid type-gen lag: use the client untyped for the new tables.
 const db: any = supabase;
