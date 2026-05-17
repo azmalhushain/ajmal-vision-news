@@ -299,7 +299,7 @@ All colors MUST be HSL.
   }
   .sports-theme .sports-accent-bg {
     background: hsl(var(--sports-accent));
-    color: hsl(140 40% 8%);
+    color: hsl(0 0% 100%);
   }
   .sports-theme .sports-stadium-bg {
     background-image:
