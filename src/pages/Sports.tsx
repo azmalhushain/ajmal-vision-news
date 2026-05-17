@@ -367,6 +367,8 @@ const Sports = () => {
           </div>
         </section>
 
+        <StatsLeaderboards players={players} teams={teams} />
+        <VideosShowcase videos={videos} />
         <SocialPosts />
         <Footer />
       </div>
