@@ -69,6 +69,7 @@ const Sports = () => {
   const live = matches.filter(m => m.status === "live");
   const upcoming = matches.filter(m => m.status === "scheduled");
   const completed = matches.filter(m => m.status === "completed");
+  const noResult = matches.filter(m => m.status === "abandoned" || m.status === "postponed");
   const tournament = tournaments.find(t => t.id === tid);
   const heroMatch = live[0] || upcoming[0] || completed[0];
 
@@ -79,19 +80,49 @@ const Sports = () => {
     return Math.max(0, Math.ceil(diff / 86400000));
   }, [tournament, upcoming]);
 
-  // Compute points table from completed matches
+  // Compute points table from completed matches: NRR (IPL style) + recent form
   const pointsTable = useMemo(() => {
-    const rows: Record<string, { team: any; m: number; w: number; l: number; pts: number; nrr: number }> = {};
-    teams.forEach(t => { rows[t.id] = { team: t, m: 0, w: 0, l: 0, pts: 0, nrr: 0 }; });
-    completed.forEach(c => {
-      if (rows[c.team_a_id]) rows[c.team_a_id].m++;
-      if (rows[c.team_b_id]) rows[c.team_b_id].m++;
-      if (c.winner_id && rows[c.winner_id]) { rows[c.winner_id].w++; rows[c.winner_id].pts += 2; }
-      const loser = c.winner_id === c.team_a_id ? c.team_b_id : c.winner_id === c.team_b_id ? c.team_a_id : null;
-      if (loser && rows[loser]) rows[loser].l++;
+    type Row = {
+      team: any; m: number; w: number; l: number; nr: number; pts: number;
+      runsFor: number; oversFor: number; runsAgst: number; oversAgst: number;
+      form: ("W" | "L" | "N")[];
+    };
+    const rows: Record<string, Row> = {};
+    teams.forEach(t => { rows[t.id] = { team: t, m: 0, w: 0, l: 0, nr: 0, pts: 0, runsFor: 0, oversFor: 0, runsAgst: 0, oversAgst: 0, form: [] }; });
+
+    // Sort by date so "form" reflects chronology
+    const ordered = [...matches].sort((a, b) => new Date(a.scheduled_at || 0).getTime() - new Date(b.scheduled_at || 0).getTime());
+
+    for (const c of ordered) {
+      const a = rows[c.team_a_id], b = rows[c.team_b_id];
+      if (c.status === "completed") {
+        if (a) a.m++; if (b) b.m++;
+        if (c.winner_id && rows[c.winner_id]) { rows[c.winner_id].w++; rows[c.winner_id].pts += 2; rows[c.winner_id].form.push("W"); }
+        const loser = c.winner_id === c.team_a_id ? c.team_b_id : c.winner_id === c.team_b_id ? c.team_a_id : null;
+        if (loser && rows[loser]) { rows[loser].l++; rows[loser].form.push("L"); }
+        // NRR contribution from innings
+        const inns = innByMatch[c.id] || [];
+        for (const inn of inns) {
+          const bat = rows[inn.batting_team_id];
+          const bowl = rows[inn.bowling_team_id];
+          const ovs = Number(inn.overs) || 0;
+          if (bat) { bat.runsFor += inn.runs || 0; bat.oversFor += ovs; }
+          if (bowl) { bowl.runsAgst += inn.runs || 0; bowl.oversAgst += ovs; }
+        }
+      } else if (c.status === "abandoned" || c.status === "postponed") {
+        // No-result: 1 point each, marks form as 'N'
+        if (a) { a.m++; a.nr++; a.pts += 1; a.form.push("N"); }
+        if (b) { b.m++; b.nr++; b.pts += 1; b.form.push("N"); }
+      }
+    }
+
+    const out = Object.values(rows).map(r => {
+      const rrFor = r.oversFor > 0 ? r.runsFor / r.oversFor : 0;
+      const rrAgst = r.oversAgst > 0 ? r.runsAgst / r.oversAgst : 0;
+      return { ...r, nrr: +(rrFor - rrAgst).toFixed(3), form: r.form.slice(-5) };
     });
-    return Object.values(rows).sort((a, b) => b.pts - a.pts || b.w - a.w);
-  }, [teams, completed]);
+    return out.sort((x, y) => y.pts - x.pts || y.nrr - x.nrr || y.w - x.w);
+  }, [teams, matches, innByMatch]);
 
   return (
     <PageTransition>
