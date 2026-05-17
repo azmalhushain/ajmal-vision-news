@@ -48,6 +48,8 @@ import SubscriberPreferences from "./pages/SubscriberPreferences";
 import SportsManager from "./pages/admin/SportsManager";
 import Sports from "./pages/Sports";
 import MatchCenter from "./pages/sports/MatchCenter";
+import PlayerProfile from "./pages/sports/PlayerProfile";
+import TeamPage from "./pages/sports/TeamPage";
 import { LiveScoreTicker } from "./components/sports/LiveScoreTicker";
 
 const queryClient = new QueryClient();
@@ -68,6 +70,8 @@ const AnimatedRoutes = () => {
         <Route path="/contact" element={<><Navigation /><Contact /></>} />
         <Route path="/sports" element={<><Navigation /><Sports /></>} />
         <Route path="/sports/match/:id" element={<><Navigation /><MatchCenter /></>} />
+        <Route path="/sports/team/:slug" element={<><Navigation /><TeamPage /></>} />
+        <Route path="/sports/player/:slug" element={<><Navigation /><PlayerProfile /></>} />
         <Route path="/preferences" element={<><Navigation /><SubscriberPreferences /></>} />
         
         {/* Auth route */}
