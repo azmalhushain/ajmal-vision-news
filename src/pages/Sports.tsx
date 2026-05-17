@@ -811,4 +811,155 @@ const SocialPosts = () => {
   );
 };
 
+/* ---------- Stats Leaderboards ---------- */
+const StatsLeaderboards = ({ players, teams }: { players: any[]; teams: any[] }) => {
+  const teamMap = useMemo(() => Object.fromEntries(teams.map(t => [t.id, t])), [teams]);
+  if (!players?.length) return null;
+
+  const numeric = (v: any) => (typeof v === "number" ? v : parseFloat(v) || 0);
+  const enrich = (p: any) => ({ ...p, _s: p.stats || {} });
+
+  const topRuns = [...players].map(enrich).filter(p => numeric(p._s.runs) > 0).sort((a, b) => numeric(b._s.runs) - numeric(a._s.runs)).slice(0, 5);
+  const topWickets = [...players].map(enrich).filter(p => numeric(p._s.wickets) > 0).sort((a, b) => numeric(b._s.wickets) - numeric(a._s.wickets)).slice(0, 5);
+  const topSixes = [...players].map(enrich).filter(p => numeric(p._s.sixes) > 0).sort((a, b) => numeric(b._s.sixes) - numeric(a._s.sixes)).slice(0, 5);
+  const topCatches = [...players].map(enrich).filter(p => numeric(p._s.catches) > 0).sort((a, b) => numeric(b._s.catches) - numeric(a._s.catches)).slice(0, 5);
+
+  const boards = [
+    { key: "runs", title: "Top Run Scorers", icon: "🏏", stat: "runs", suffix: "", rows: topRuns, sub: (s: any) => `SR ${s.sr ?? "—"} · Avg ${s.avg ?? "—"}` },
+    { key: "wickets", title: "Top Wicket Takers", icon: "🎯", stat: "wickets", suffix: "", rows: topWickets, sub: (s: any) => `Econ ${s.economy ?? "—"} · BBF ${s.bbf ?? "—"}` },
+    { key: "sixes", title: "Six Hitters", icon: "💥", stat: "sixes", suffix: "", rows: topSixes, sub: (s: any) => `4s ${s.fours ?? 0}` },
+    { key: "catches", title: "Top Fielders", icon: "🧤", stat: "catches", suffix: "", rows: topCatches, sub: (s: any) => `RO ${s.run_outs ?? 0}${s.stumpings ? ` · St ${s.stumpings}` : ""}` },
+  ];
+
+  if (!boards.some(b => b.rows.length)) return null;
+
+  return (
+    <section className="container mx-auto px-4 py-10 sm:py-14">
+      <SectionLabel kicker="Performance">Tournament Leaderboards</SectionLabel>
+      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+        {boards.filter(b => b.rows.length).map((b, bi) => (
+          <motion.div
+            key={b.key}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: bi * 0.08 }}
+            className="sports-glass sports-glow-hover rounded-2xl p-5"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-[10px] font-bold tracking-[0.3em] uppercase sports-accent-text">{b.icon} {b.stat}</p>
+                <h3 className="text-base font-black text-[hsl(var(--sports-text))] mt-0.5">{b.title}</h3>
+              </div>
+            </div>
+            <ol className="space-y-2.5">
+              {b.rows.map((p, i) => {
+                const team = teamMap[p.team_id];
+                const color = team?.color_primary || "#1e88ff";
+                return (
+                  <motion.li
+                    key={p.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.05 }}
+                  >
+                    <Link to={`/sports/player/${p.slug}`} className="flex items-center gap-3 group">
+                      <span className={`w-5 text-center text-xs font-black ${i === 0 ? "sports-accent-text" : "text-[hsl(var(--sports-muted))]"}`}>{i + 1}</span>
+                      <div className="w-9 h-9 rounded-lg overflow-hidden flex items-center justify-center text-white text-[10px] font-bold shrink-0 bg-black/40 border border-white/10" style={{ borderColor: color }}>
+                        {p.photo_url ? <img src={p.photo_url} alt={p.name} className="w-full h-full object-contain bg-black/30" /> : (p.jersey_number ?? p.name?.[0])}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-[hsl(var(--sports-text))] truncate group-hover:sports-accent-text transition">{p.name}</p>
+                        <p className="text-[10px] text-[hsl(var(--sports-muted))] truncate">{team?.short_name || "—"} · {b.sub(p._s)}</p>
+                      </div>
+                      <CountUp value={Number(p._s[b.stat]) || 0} className="text-xl font-black tabular-nums sports-accent-text" />
+                    </Link>
+                  </motion.li>
+                );
+              })}
+            </ol>
+          </motion.div>
+        ))}
+      </div>
+    </section>
+  );
+};
+
+const CountUp = ({ value, className }: { value: number; className?: string }) => {
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true });
+  const mv = useMotionValue(0);
+  const display = useTransform(mv, v => Math.round(v).toString());
+  useEffect(() => { if (inView) animate(mv, value, { duration: 1.2, ease: "easeOut" }); }, [inView, value]);
+  return <motion.span ref={ref} className={className}>{display}</motion.span>;
+};
+
+/* ---------- Videos Showcase ---------- */
+const VideosShowcase = ({ videos }: { videos: any[] }) => {
+  const [active, setActive] = useState<any | null>(null);
+  if (!videos?.length) return null;
+
+  const ytEmbed = (url: string) => {
+    try {
+      const u = new URL(url);
+      if (u.hostname.includes("youtu.be")) return `https://www.youtube.com/embed/${u.pathname.slice(1)}`;
+      if (u.searchParams.get("v")) return `https://www.youtube.com/embed/${u.searchParams.get("v")}`;
+      return url.replace("watch?v=", "embed/");
+    } catch { return url; }
+  };
+
+  return (
+    <section className="container mx-auto px-4 py-10 sm:py-14">
+      <SectionLabel kicker="Watch">Videos & Highlights</SectionLabel>
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {videos.map((v, i) => (
+          <motion.div
+            key={v.id}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: i * 0.05 }}
+            whileHover={{ y: -4 }}
+            className="sports-glass sports-glow-hover rounded-2xl overflow-hidden cursor-pointer group"
+            onClick={() => setActive(v)}
+          >
+            <div className="relative bg-black flex items-center justify-center" style={{ minHeight: 180 }}>
+              {v.thumbnail_url ? (
+                <img src={v.thumbnail_url} alt={v.caption || ""} className="w-full max-h-60 object-contain" loading="lazy" />
+              ) : v.source === "upload" ? (
+                <video src={v.url} className="w-full max-h-60 object-contain" preload="metadata" muted />
+              ) : (
+                <div className="w-full aspect-video bg-gradient-to-br from-[hsl(var(--sports-accent)/0.3)] to-black" />
+              )}
+              <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/10 transition">
+                <motion.span whileHover={{ scale: 1.1 }} className="w-14 h-14 rounded-full sports-accent-bg flex items-center justify-center shadow-[0_0_40px_-5px_hsl(var(--sports-accent)/0.8)]">
+                  <Play className="h-5 w-5 fill-current ml-0.5" />
+                </motion.span>
+              </div>
+            </div>
+            <div className="p-4">
+              <p className="font-bold text-sm text-[hsl(var(--sports-text))] line-clamp-1">{v.caption || "Untitled clip"}</p>
+              <p className="text-[10px] text-[hsl(var(--sports-muted))] mt-1 uppercase tracking-wider">{v.source === "youtube" ? "YouTube" : "Tournament video"}</p>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {active && (
+        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setActive(null)}>
+          <div className="w-full max-w-5xl" onClick={e => e.stopPropagation()}>
+            <div className="aspect-video bg-black rounded-2xl overflow-hidden">
+              {active.source === "youtube"
+                ? <iframe src={`${ytEmbed(active.url)}?autoplay=1`} className="w-full h-full" allowFullScreen allow="autoplay; encrypted-media" />
+                : <video src={active.url} className="w-full h-full object-contain" controls autoPlay />}
+            </div>
+            {active.caption && <p className="text-center text-white mt-3 font-medium">{active.caption}</p>}
+          </div>
+        </div>
+      )}
+    </section>
+  );
+};
+
 export default Sports;
