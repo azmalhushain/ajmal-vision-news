@@ -16,8 +16,9 @@ import {
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Trophy, Users, Calendar, Radio, Newspaper, Image as ImageIcon, Plus, Pencil, Trash2, Upload, RefreshCw, Crown } from "lucide-react";
-import { uploadSportsLogo } from "@/lib/sportsHelpers";
+import { uploadSportsLogo, uploadSportsMedia } from "@/lib/sportsHelpers";
 import { BallByBallPad } from "@/components/sports/BallByBallPad";
+import { Video, Film, Star, Trash } from "lucide-react";
 
 // Avoid type-gen lag: use the client untyped for the new tables.
 const db: any = supabase;
@@ -285,8 +286,56 @@ const PlayersTab = ({ tournamentId }: { tournamentId: string }) => {
               <div><Label>Batting style</Label><Input value={form.batting_style || ""} placeholder="Right-hand bat" onChange={e => setForm({ ...form, batting_style: e.target.value })} /></div>
               <div><Label>Bowling style</Label><Input value={form.bowling_style || ""} placeholder="Right-arm fast" onChange={e => setForm({ ...form, bowling_style: e.target.value })} /></div>
             </div>
-            <div><Label>Photo URL</Label><Input value={form.photo_url || ""} onChange={e => setForm({ ...form, photo_url: e.target.value })} /></div>
+            <div>
+              <Label>Player photo</Label>
+              <div className="flex items-center gap-3">
+                {form.photo_url && <img src={form.photo_url} alt="" className="w-14 h-14 rounded-lg object-contain bg-muted border" />}
+                <Input value={form.photo_url || ""} placeholder="https://… or upload →" onChange={e => setForm({ ...form, photo_url: e.target.value })} />
+                <label className="cursor-pointer">
+                  <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                    const f = e.target.files?.[0]; if (!f) return;
+                    try { const url = await uploadSportsLogo(f, "player"); setForm({ ...form, photo_url: url }); toast({ title: "Uploaded" }); }
+                    catch (err: any) { toast({ title: "Upload failed", description: err.message, variant: "destructive" }); }
+                  }} />
+                  <Button type="button" size="icon" variant="outline" asChild><span><Upload className="h-4 w-4" /></span></Button>
+                </label>
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1">Original aspect ratio is preserved everywhere (no cropping).</p>
+            </div>
             <div><Label>Bio</Label><Textarea rows={3} value={form.bio || ""} onChange={e => setForm({ ...form, bio: e.target.value })} /></div>
+
+            {/* ====== STATS ====== */}
+            <div className="border rounded-lg p-3 space-y-3 bg-muted/30">
+              <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Performance Stats</p>
+              {[
+                { label: "Batting", fields: [["matches","Matches"],["runs","Runs"],["hs","Highest"],["sr","Strike Rate"],["avg","Average"],["fours","4s"],["sixes","6s"]] },
+                { label: "Bowling", fields: [["wickets","Wickets"],["economy","Economy"],["bbf","Best Figures (5/23)"]] },
+                { label: "Fielding & Awards", fields: [["catches","Catches"],["run_outs","Run Outs"],["stumpings","Stumpings"],["pom","Player of Match"]] },
+              ].map(group => (
+                <div key={group.label}>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">{group.label}</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {group.fields.map(([k, l]) => (
+                      <div key={k}>
+                        <Label className="text-[10px]">{l}</Label>
+                        <Input
+                          value={form.stats?.[k] ?? ""}
+                          onChange={e => setForm({ ...form, stats: { ...(form.stats || {}), [k]: e.target.value === "" ? null : (isNaN(Number(e.target.value)) ? e.target.value : Number(e.target.value)) } })}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              <div>
+                <Label className="text-[10px]">Last 5 form (e.g. W,W,L,N,W)</Label>
+                <Input
+                  value={(form.stats?.last5 || []).join(",")}
+                  onChange={e => setForm({ ...form, stats: { ...(form.stats || {}), last5: e.target.value.split(",").map((s: string) => s.trim().toUpperCase()).filter(Boolean).slice(0, 5) } })}
+                />
+              </div>
+            </div>
+
             <div className="flex gap-4">
               <div className="flex items-center gap-2"><Switch checked={form.is_captain || false} onCheckedChange={v => setForm({ ...form, is_captain: v })} /><Label>Captain</Label></div>
               <div className="flex items-center gap-2"><Switch checked={form.is_overseas || false} onCheckedChange={v => setForm({ ...form, is_overseas: v })} /><Label>Overseas</Label></div>
@@ -638,6 +687,132 @@ const SportsNewsTab = ({ tournamentId }: { tournamentId: string }) => {
   );
 };
 
+// ============ MEDIA (Images + Videos) ============
+const MediaTab = ({ tournamentId }: { tournamentId: string }) => {
+  const { toast } = useToast();
+  const [rows, setRows] = useState<Row[]>([]);
+  const [teams, setTeams] = useState<Row[]>([]);
+  const [filter, setFilter] = useState<"all" | "image" | "video">("all");
+  const [uploading, setUploading] = useState(false);
+  const [edit, setEdit] = useState<Row | null>(null);
+
+  const load = async () => {
+    const { data: t } = await db.from("teams").select("id,name,short_name").eq("tournament_id", tournamentId).order("display_order");
+    setTeams(t || []);
+    const { data } = await db.from("sports_media").select("*").eq("tournament_id", tournamentId).order("display_order").order("created_at", { ascending: false });
+    setRows(data || []);
+  };
+  useEffect(() => { if (tournamentId) load(); }, [tournamentId]);
+
+  const handleFiles = async (files: FileList | null) => {
+    if (!files?.length) return;
+    setUploading(true);
+    try {
+      for (const f of Array.from(files)) {
+        const isVideo = f.type.startsWith("video/");
+        const url = await uploadSportsMedia(f, isVideo ? "videos" : "images");
+        await db.from("sports_media").insert({
+          tournament_id: tournamentId,
+          kind: isVideo ? "video" : "image",
+          source: "upload",
+          url,
+          caption: f.name.replace(/\.[^.]+$/, ""),
+          is_active: true,
+          is_pinned: false,
+          display_order: 0,
+        });
+      }
+      toast({ title: "Uploaded", description: `${files.length} file${files.length === 1 ? "" : "s"} added` });
+      load();
+    } catch (e: any) {
+      toast({ title: "Upload failed", description: e.message, variant: "destructive" });
+    } finally { setUploading(false); }
+  };
+
+  const addYoutube = async () => {
+    const url = prompt("Paste YouTube URL");
+    if (!url) return;
+    await db.from("sports_media").insert({
+      tournament_id: tournamentId, kind: "video", source: "youtube", url, is_active: true,
+    });
+    toast({ title: "Video added" });
+    load();
+  };
+
+  const update = async (id: string, patch: Row) => {
+    await db.from("sports_media").update(patch).eq("id", id);
+    load();
+  };
+  const remove = async (id: string) => {
+    if (!confirm("Delete this media item?")) return;
+    await db.from("sports_media").delete().eq("id", id);
+    load();
+  };
+
+  const filtered = rows.filter(r => filter === "all" || r.kind === filter);
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-2">
+        <CardTitle className="flex items-center gap-2"><Film className="h-5 w-5" /> Media & Videos ({rows.length})</CardTitle>
+        <div className="flex gap-2 flex-wrap">
+          <Select value={filter} onValueChange={(v: any) => setFilter(v)}>
+            <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="image">Images</SelectItem>
+              <SelectItem value="video">Videos</SelectItem>
+            </SelectContent>
+          </Select>
+          <label className="cursor-pointer">
+            <input type="file" multiple accept="image/*,video/*" className="hidden" onChange={e => handleFiles(e.target.files)} />
+            <Button size="sm" asChild disabled={uploading}><span><Upload className="h-4 w-4 mr-1" />{uploading ? "Uploading…" : "Upload"}</span></Button>
+          </label>
+          <Button size="sm" variant="outline" onClick={addYoutube}><Video className="h-4 w-4 mr-1" /> Add YouTube</Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {!filtered.length && <p className="text-sm text-muted-foreground text-center py-10">No media yet — drag-drop or upload above. Original aspect ratio is preserved.</p>}
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {filtered.map(r => (
+            <div key={r.id} className="border rounded-xl overflow-hidden bg-muted/30 flex flex-col">
+              <div className="bg-black/80 flex items-center justify-center" style={{ minHeight: 140 }}>
+                {r.kind === "video" ? (
+                  r.source === "youtube"
+                    ? <div className="aspect-video w-full"><iframe src={r.url.replace("watch?v=", "embed/")} className="w-full h-full" allowFullScreen /></div>
+                    : <video src={r.url} controls className="w-full max-h-60 object-contain" />
+                ) : (
+                  <img src={r.url} alt={r.caption || ""} className="w-full max-h-60 object-contain" loading="lazy" />
+                )}
+              </div>
+              <div className="p-3 space-y-2 flex-1 flex flex-col">
+                <Input value={r.caption || ""} placeholder="Caption" onBlur={e => update(r.id, { caption: e.target.value })} onChange={e => setRows(prev => prev.map(x => x.id === r.id ? { ...x, caption: e.target.value } : x))} />
+                <div className="flex items-center justify-between gap-2 text-xs">
+                  <Select value={r.team_id || ""} onValueChange={v => update(r.id, { team_id: v || null })}>
+                    <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Tag team" /></SelectTrigger>
+                    <SelectContent>{teams.map(t => <SelectItem key={t.id} value={t.id}>{t.short_name || t.name}</SelectItem>)}</SelectContent>
+                  </Select>
+                  <Badge variant="outline" className="capitalize shrink-0">{r.kind}</Badge>
+                </div>
+                <div className="flex items-center justify-between gap-2 mt-auto">
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => update(r.id, { is_pinned: !r.is_pinned })} title="Pin" className={r.is_pinned ? "text-amber-500" : "text-muted-foreground"}>
+                      <Star className={`h-4 w-4 ${r.is_pinned ? "fill-amber-400" : ""}`} />
+                    </button>
+                    <Switch checked={r.is_active} onCheckedChange={v => update(r.id, { is_active: v })} />
+                    <span className="text-[10px] text-muted-foreground">Active</span>
+                  </div>
+                  <Button size="icon" variant="ghost" onClick={() => remove(r.id)}><Trash className="h-4 w-4 text-destructive" /></Button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
 // ============ MAIN PAGE ============
 const SportsManager = () => {
   const [tournaments, setTournaments] = useState<Row[]>([]);
@@ -693,11 +868,7 @@ const SportsManager = () => {
           <TabsContent value="fixtures"><FixturesTab tournamentId={tournamentId} /></TabsContent>
           <TabsContent value="live"><LiveScoreTab tournamentId={tournamentId} /></TabsContent>
           <TabsContent value="news"><SportsNewsTab tournamentId={tournamentId} /></TabsContent>
-          <TabsContent value="media">
-            <Card><CardHeader><CardTitle>Media</CardTitle></CardHeader>
-              <CardContent><p className="text-sm text-muted-foreground">Bulk media upload (reuses Gallery uploader) ships in 4C with the public sports portal. Use the Gallery editor for now and tag images with &ldquo;KPL3&rdquo;.</p></CardContent>
-            </Card>
-          </TabsContent>
+          <TabsContent value="media"><MediaTab tournamentId={tournamentId} /></TabsContent>
         </Tabs>
       )}
     </div>
