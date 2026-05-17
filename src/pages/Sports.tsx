@@ -27,6 +27,8 @@ const Sports = () => {
   const [matches, setMatches] = useState<any[]>([]);
   const [innings, setInnings] = useState<any[]>([]);
   const [news, setNews] = useState<any[]>([]);
+  const [players, setPlayers] = useState<any[]>([]);
+  const [videos, setVideos] = useState<any[]>([]);
 
   useEffect(() => {
     (async () => {
