@@ -621,26 +621,38 @@ const FeaturedTeamsRail = ({ teams }: { teams: any[] }) => {
   );
 };
 
+const FormPip = ({ r }: { r: "W" | "L" | "N" }) => {
+  const cls = r === "W"
+    ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
+    : r === "L"
+      ? "bg-rose-500/20 text-rose-400 border-rose-500/40"
+      : "bg-white/10 text-[hsl(var(--sports-muted))] border-white/15";
+  return <span className={`inline-flex items-center justify-center w-4 h-4 rounded-full border text-[8px] font-black ${cls}`}>{r}</span>;
+};
+
 const PointsTableCompact = ({ rows }: { rows: any[] }) => (
   <div className="sports-glass rounded-2xl p-5">
     <p className="text-[10px] font-bold tracking-[0.3em] uppercase sports-accent-text flex items-center gap-1.5">
       <BarChart3 className="h-3 w-3" /> Live Leaderboard
     </p>
     <h3 className="text-lg font-black text-[hsl(var(--sports-text))] mt-1 mb-3">Points Table</h3>
-    <div className="overflow-hidden rounded-lg border border-white/5">
-      <table className="w-full text-xs">
+    <div className="overflow-x-auto rounded-lg border border-white/5">
+      <table className="w-full text-xs min-w-[420px]">
         <thead>
-          <tr className="text-[10px] uppercase tracking-wider text-[hsl(var(--sports-muted))] bg-white/5">
-            <th className="text-left px-2.5 py-2 font-bold">Team</th>
-            <th className="px-1 py-2 font-bold">M</th>
+          <tr className="text-[9px] uppercase tracking-wider text-[hsl(var(--sports-muted))] bg-white/5">
+            <th className="text-left px-2 py-2 font-bold">Team</th>
+            <th className="px-1 py-2 font-bold">P</th>
             <th className="px-1 py-2 font-bold">W</th>
             <th className="px-1 py-2 font-bold">L</th>
-            <th className="px-2.5 py-2 font-bold text-right">Pts</th>
+            <th className="px-1 py-2 font-bold">NR</th>
+            <th className="px-1 py-2 font-bold">NRR</th>
+            <th className="px-2 py-2 font-bold text-right">Pts</th>
+            <th className="px-2 py-2 font-bold text-right">Form</th>
           </tr>
         </thead>
         <tbody>
           <AnimatePresence>
-            {rows.slice(0, 8).map((r, i) => (
+            {rows.slice(0, 10).map((r, i) => (
               <motion.tr
                 key={r.team.id}
                 layout
@@ -648,7 +660,7 @@ const PointsTableCompact = ({ rows }: { rows: any[] }) => (
                 animate={{ opacity: 1 }}
                 className="border-t border-white/5 hover:bg-white/[0.03]"
               >
-                <td className="px-2.5 py-2.5">
+                <td className="px-2 py-2.5">
                   <div className="flex items-center gap-2 min-w-0">
                     <span className="text-[10px] font-bold text-[hsl(var(--sports-muted))] w-3">{i + 1}</span>
                     <span className="w-5 h-5 rounded overflow-hidden flex items-center justify-center text-[8px] text-white font-bold shrink-0" style={{ background: r.team.color_primary || "#1e88ff" }}>
@@ -660,16 +672,29 @@ const PointsTableCompact = ({ rows }: { rows: any[] }) => (
                 <td className="px-1 py-2.5 text-center tabular-nums text-[hsl(var(--sports-muted))]">{r.m}</td>
                 <td className="px-1 py-2.5 text-center tabular-nums text-[hsl(var(--sports-muted))]">{r.w}</td>
                 <td className="px-1 py-2.5 text-center tabular-nums text-[hsl(var(--sports-muted))]">{r.l}</td>
-                <td className="px-2.5 py-2.5 text-right font-black tabular-nums sports-accent-text">{r.pts}</td>
+                <td className="px-1 py-2.5 text-center tabular-nums text-[hsl(var(--sports-muted))]">{r.nr || 0}</td>
+                <td className={`px-1 py-2.5 text-center tabular-nums font-semibold ${r.nrr > 0 ? "text-emerald-400" : r.nrr < 0 ? "text-rose-400" : "text-[hsl(var(--sports-muted))]"}`}>
+                  {r.nrr > 0 ? "+" : ""}{(r.nrr ?? 0).toFixed(2)}
+                </td>
+                <td className="px-2 py-2.5 text-right font-black tabular-nums sports-accent-text">{r.pts}</td>
+                <td className="px-2 py-2.5">
+                  <div className="flex items-center gap-0.5 justify-end">
+                    {(r.form || []).map((f: any, idx: number) => <FormPip key={idx} r={f} />)}
+                    {!r.form?.length && <span className="text-[hsl(var(--sports-muted))] text-[10px]">—</span>}
+                  </div>
+                </td>
               </motion.tr>
             ))}
           </AnimatePresence>
           {!rows.length && (
-            <tr><td colSpan={5} className="text-center text-[hsl(var(--sports-muted))] py-6 text-xs">Standings update after matches.</td></tr>
+            <tr><td colSpan={8} className="text-center text-[hsl(var(--sports-muted))] py-6 text-xs">Standings update after matches.</td></tr>
           )}
         </tbody>
       </table>
     </div>
+    <p className="text-[10px] text-[hsl(var(--sports-muted))] mt-3 leading-relaxed">
+      NRR auto-calculated from innings totals. Abandoned/postponed matches award 1 point to each team.
+    </p>
   </div>
 );
 
