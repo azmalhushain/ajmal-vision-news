@@ -58,12 +58,12 @@ export default function PlayerProfile() {
   };
 
   if (loading) return (
-    <div className="sports-theme min-h-screen bg-[hsl(140_30%_4%)] pt-24 px-4">
+    <div className="sports-theme min-h-screen bg-[hsl(var(--sports-bg))] pt-24 px-4">
       <Skeleton className="h-64 w-full max-w-4xl mx-auto" />
     </div>
   );
   if (!player) return (
-    <div className="sports-theme min-h-screen bg-[hsl(140_30%_4%)] flex items-center justify-center text-white">
+    <div className="sports-theme min-h-screen bg-[hsl(var(--sports-bg))] flex items-center justify-center text-white">
       <div className="text-center">
         <p className="text-2xl font-bold mb-3">Player not found</p>
         <Link to="/sports"><Button variant="outline">Back to Sports</Button></Link>
@@ -81,7 +81,7 @@ export default function PlayerProfile() {
         description={player.bio?.slice(0, 150) || `${player.name}, ${player.role}${team ? ` for ${team.name}` : ""}`}
         image={player.photo_url || team?.logo_url}
       />
-      <div className="sports-theme min-h-screen bg-[hsl(140_30%_4%)] text-white">
+      <div className="sports-theme min-h-screen bg-[hsl(var(--sports-bg))] text-white">
         {/* Hero */}
         <div
           className="relative pt-24 pb-12 px-4 overflow-hidden"

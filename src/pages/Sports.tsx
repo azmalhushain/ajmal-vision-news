@@ -257,7 +257,7 @@ const Sports = () => {
                       <TabsTrigger
                         key={v}
                         value={v}
-                        className="rounded-full px-4 sm:px-5 h-9 font-semibold text-xs sm:text-sm whitespace-nowrap data-[state=active]:sports-accent-bg data-[state=active]:shadow-[0_0_25px_-5px_hsl(var(--sports-accent)/0.7)] text-[hsl(var(--sports-muted))] data-[state=active]:text-[hsl(140_40%_8%)]"
+                        className="rounded-full px-4 sm:px-5 h-9 font-semibold text-xs sm:text-sm whitespace-nowrap data-[state=active]:sports-accent-bg data-[state=active]:shadow-[0_0_25px_-5px_hsl(var(--sports-accent)/0.7)] text-[hsl(var(--sports-muted))] data-[state=active]:text-white"
                       >
                         <I className="h-3.5 w-3.5 mr-1.5" /> {l}
                       </TabsTrigger>
@@ -383,7 +383,7 @@ const HeroScoreboard = ({ match, teamA, teamB, innings }: any) => {
   const isDone = match.status === "completed";
   const aInn = innings.find((i: any) => i.batting_team_id === teamA?.id);
   const bInn = innings.find((i: any) => i.batting_team_id === teamB?.id);
-  const aColor = teamA?.color_primary || "#22c55e";
+  const aColor = teamA?.color_primary || "#1e88ff";
   const bColor = teamB?.color_primary || "#3b82f6";
 
   return (
@@ -478,7 +478,7 @@ const CountdownPill = ({ target }: { target: Date }) => {
 
 const NeonMatchCard = ({ match, teamA, teamB, innings = [], index }: any) => {
   const isLive = match.status === "live";
-  const aColor = teamA?.color_primary || "#22c55e";
+  const aColor = teamA?.color_primary || "#1e88ff";
   const bColor = teamB?.color_primary || "#3b82f6";
   return (
     <motion.div
@@ -525,7 +525,7 @@ const TeamBadge = ({ team, color }: any) => (
 );
 
 const NeonTeamCard = ({ team, index }: { team: any; index: number }) => {
-  const color = team.color_primary || "#22c55e";
+  const color = team.color_primary || "#1e88ff";
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -577,7 +577,7 @@ const FeaturedTeamsRail = ({ teams }: { teams: any[] }) => {
               to={`/sports/team/${t.slug}`}
               className="sports-glass rounded-xl p-3 flex flex-col items-center text-center group cursor-pointer hover:border-white/20 transition block"
             >
-              <div className="w-12 h-12 rounded-xl overflow-hidden flex items-center justify-center text-white font-black text-sm border border-white/10" style={{ background: t.color_primary || "#22c55e" }}>
+              <div className="w-12 h-12 rounded-xl overflow-hidden flex items-center justify-center text-white font-black text-sm border border-white/10" style={{ background: t.color_primary || "#1e88ff" }}>
                 {t.logo_url ? <img src={t.logo_url} alt={t.name} className="w-full h-full object-cover" /> : (t.short_name || t.name?.[0])}
               </div>
               <p className="text-xs font-bold text-[hsl(var(--sports-text))] mt-2 truncate w-full">{t.short_name || t.name}</p>
@@ -620,7 +620,7 @@ const PointsTableCompact = ({ rows }: { rows: any[] }) => (
                 <td className="px-2.5 py-2.5">
                   <div className="flex items-center gap-2 min-w-0">
                     <span className="text-[10px] font-bold text-[hsl(var(--sports-muted))] w-3">{i + 1}</span>
-                    <span className="w-5 h-5 rounded overflow-hidden flex items-center justify-center text-[8px] text-white font-bold shrink-0" style={{ background: r.team.color_primary || "#22c55e" }}>
+                    <span className="w-5 h-5 rounded overflow-hidden flex items-center justify-center text-[8px] text-white font-bold shrink-0" style={{ background: r.team.color_primary || "#1e88ff" }}>
                       {r.team.logo_url ? <img src={r.team.logo_url} alt="" className="w-full h-full object-cover" /> : (r.team.short_name?.[0] || r.team.name[0])}
                     </span>
                     <span className="font-semibold text-[hsl(var(--sports-text))] truncate text-[11px]">{r.team.short_name || r.team.name}</span>
