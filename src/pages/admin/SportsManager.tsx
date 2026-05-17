@@ -868,11 +868,7 @@ const SportsManager = () => {
           <TabsContent value="fixtures"><FixturesTab tournamentId={tournamentId} /></TabsContent>
           <TabsContent value="live"><LiveScoreTab tournamentId={tournamentId} /></TabsContent>
           <TabsContent value="news"><SportsNewsTab tournamentId={tournamentId} /></TabsContent>
-          <TabsContent value="media">
-            <Card><CardHeader><CardTitle>Media</CardTitle></CardHeader>
-              <CardContent><p className="text-sm text-muted-foreground">Bulk media upload (reuses Gallery uploader) ships in 4C with the public sports portal. Use the Gallery editor for now and tag images with &ldquo;KPL3&rdquo;.</p></CardContent>
-            </Card>
-          </TabsContent>
+          <TabsContent value="media"><MediaTab tournamentId={tournamentId} /></TabsContent>
         </Tabs>
       )}
     </div>
