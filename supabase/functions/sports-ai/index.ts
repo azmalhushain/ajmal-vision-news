@@ -67,6 +67,27 @@ Deno.serve(async (req) => {
       return Response.json({ summary: out }, { headers: corsHeaders });
     }
 
+    if (action === "player-bio") {
+      const { playerId } = payload || {};
+      const { data: player } = await sb.from("players").select("*").eq("id", playerId).maybeSingle();
+      if (!player) throw new Error("Player not found");
+      const { data: team } = player.team_id
+        ? await sb.from("teams").select("name, short_name, home_ground").eq("id", player.team_id).maybeSingle()
+        : { data: null };
+      const ctx = {
+        name: player.name, role: player.role, jersey: player.jersey_number,
+        batting_style: player.batting_style, bowling_style: player.bowling_style,
+        is_captain: player.is_captain, is_overseas: player.is_overseas,
+        stats: player.stats, team: team?.name, ground: team?.home_ground,
+      };
+      const out = await callAI("google/gemini-2.5-flash", [
+        { role: "system", content: "You write engaging 80-110 word cricket player bios in third person. Mention role, playing style, team, and a notable trait. Avoid making up specific stats; describe in general terms." },
+        { role: "user", content: `Write the bio for this player:\n${JSON.stringify(ctx, null, 2)}` },
+      ]);
+      await sb.from("players").update({ bio: out, updated_at: new Date().toISOString() }).eq("id", playerId);
+      return Response.json({ bio: out }, { headers: corsHeaders });
+    }
+
     if (action === "recompute-score") {
       const { matchId } = payload;
       const { data: events } = await sb.from("match_events").select("*").eq("match_id", matchId).order("innings_no").order("over_no").order("ball_no");

@@ -200,6 +200,13 @@ const PlayersTab = ({ tournamentId }: { tournamentId: string }) => {
                   <p className="font-semibold truncate">{r.name} {r.is_captain && <Badge variant="secondary" className="ml-1 text-xs">C</Badge>}</p>
                   <p className="text-xs text-muted-foreground truncate">{team?.name} · {r.role}</p>
                 </div>
+                <Button size="icon" variant="ghost" title="Generate AI bio" onClick={async () => {
+                  toast({ title: "Generating bio…" });
+                  const { data, error } = await supabase.functions.invoke("sports-ai", { body: { action: "player-bio", payload: { playerId: r.id } } });
+                  if (error) return toast({ title: "Error", description: error.message, variant: "destructive" });
+                  toast({ title: "Bio generated", description: (data?.bio || "").slice(0, 80) + "…" });
+                  load();
+                }}>✨</Button>
                 <Button size="icon" variant="ghost" onClick={() => openEdit(r)}><Pencil className="h-4 w-4" /></Button>
                 <Button size="icon" variant="ghost" onClick={() => remove(r.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
               </div>

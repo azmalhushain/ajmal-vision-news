@@ -533,21 +533,23 @@ const NeonTeamCard = ({ team, index }: { team: any; index: number }) => {
       viewport={{ once: true }}
       transition={{ duration: 0.4, delay: index * 0.05 }}
       whileHover={{ y: -6 }}
-      className="relative rounded-2xl overflow-hidden sports-glass sports-glow-hover group cursor-pointer"
+      className="relative rounded-2xl overflow-hidden sports-glass sports-glow-hover group"
     >
-      <div className="absolute inset-x-0 top-0 h-24 opacity-50 group-hover:opacity-80 transition" style={{ background: `linear-gradient(180deg, ${color} 0%, transparent 100%)` }} />
-      <div className="relative p-5 text-center">
-        <motion.div
-          whileHover={{ rotate: 6, scale: 1.05 }}
-          className="w-20 h-20 mx-auto rounded-2xl overflow-hidden flex items-center justify-center text-white font-black border-4 border-[hsl(var(--sports-bg))] shadow-2xl"
-          style={{ background: color }}
-        >
-          {team.logo_url ? <img src={team.logo_url} alt={team.name} className="w-full h-full object-cover" /> : (team.short_name || team.name?.[0])}
-        </motion.div>
-        <h3 className="font-bold mt-4 text-[hsl(var(--sports-text))]">{team.name}</h3>
-        {team.short_name && <p className="text-[10px] uppercase tracking-widest text-[hsl(var(--sports-muted))] mt-0.5">{team.short_name}</p>}
-        {team.home_ground && <p className="text-xs text-[hsl(var(--sports-muted))] mt-2 flex items-center justify-center gap-1"><MapPin className="h-3 w-3" /> {team.home_ground}</p>}
-      </div>
+      <Link to={`/sports/team/${team.slug}`} className="block">
+        <div className="absolute inset-x-0 top-0 h-24 opacity-50 group-hover:opacity-80 transition" style={{ background: `linear-gradient(180deg, ${color} 0%, transparent 100%)` }} />
+        <div className="relative p-5 text-center">
+          <motion.div
+            whileHover={{ rotate: 6, scale: 1.05 }}
+            className="w-20 h-20 mx-auto rounded-2xl overflow-hidden flex items-center justify-center text-white font-black border-4 border-[hsl(var(--sports-bg))] shadow-2xl"
+            style={{ background: color }}
+          >
+            {team.logo_url ? <img src={team.logo_url} alt={team.name} className="w-full h-full object-cover" /> : (team.short_name || team.name?.[0])}
+          </motion.div>
+          <h3 className="font-bold mt-4 text-[hsl(var(--sports-text))]">{team.name}</h3>
+          {team.short_name && <p className="text-[10px] uppercase tracking-widest text-[hsl(var(--sports-muted))] mt-0.5">{team.short_name}</p>}
+          {team.home_ground && <p className="text-xs text-[hsl(var(--sports-muted))] mt-2 flex items-center justify-center gap-1"><MapPin className="h-3 w-3" /> {team.home_ground}</p>}
+        </div>
+      </Link>
     </motion.div>
   );
 };
@@ -570,13 +572,17 @@ const FeaturedTeamsRail = ({ teams }: { teams: any[] }) => {
             viewport={{ once: true }}
             transition={{ delay: i * 0.06 }}
             whileHover={{ y: -2 }}
-            className="sports-glass rounded-xl p-3 flex flex-col items-center text-center group cursor-pointer hover:border-white/20 transition"
           >
-            <div className="w-12 h-12 rounded-xl overflow-hidden flex items-center justify-center text-white font-black text-sm border border-white/10" style={{ background: t.color_primary || "#22c55e" }}>
-              {t.logo_url ? <img src={t.logo_url} alt={t.name} className="w-full h-full object-cover" /> : (t.short_name || t.name?.[0])}
-            </div>
-            <p className="text-xs font-bold text-[hsl(var(--sports-text))] mt-2 truncate w-full">{t.short_name || t.name}</p>
-            <p className="text-[9px] text-[hsl(var(--sports-muted))] uppercase tracking-wider">{t.description?.slice(0, 18) || "Contender"}</p>
+            <Link
+              to={`/sports/team/${t.slug}`}
+              className="sports-glass rounded-xl p-3 flex flex-col items-center text-center group cursor-pointer hover:border-white/20 transition block"
+            >
+              <div className="w-12 h-12 rounded-xl overflow-hidden flex items-center justify-center text-white font-black text-sm border border-white/10" style={{ background: t.color_primary || "#22c55e" }}>
+                {t.logo_url ? <img src={t.logo_url} alt={t.name} className="w-full h-full object-cover" /> : (t.short_name || t.name?.[0])}
+              </div>
+              <p className="text-xs font-bold text-[hsl(var(--sports-text))] mt-2 truncate w-full">{t.short_name || t.name}</p>
+              <p className="text-[9px] text-[hsl(var(--sports-muted))] uppercase tracking-wider">{t.description?.slice(0, 18) || "Contender"}</p>
+            </Link>
           </motion.div>
         ))}
       </div>
