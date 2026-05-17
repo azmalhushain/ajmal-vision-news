@@ -286,8 +286,56 @@ const PlayersTab = ({ tournamentId }: { tournamentId: string }) => {
               <div><Label>Batting style</Label><Input value={form.batting_style || ""} placeholder="Right-hand bat" onChange={e => setForm({ ...form, batting_style: e.target.value })} /></div>
               <div><Label>Bowling style</Label><Input value={form.bowling_style || ""} placeholder="Right-arm fast" onChange={e => setForm({ ...form, bowling_style: e.target.value })} /></div>
             </div>
-            <div><Label>Photo URL</Label><Input value={form.photo_url || ""} onChange={e => setForm({ ...form, photo_url: e.target.value })} /></div>
+            <div>
+              <Label>Player photo</Label>
+              <div className="flex items-center gap-3">
+                {form.photo_url && <img src={form.photo_url} alt="" className="w-14 h-14 rounded-lg object-contain bg-muted border" />}
+                <Input value={form.photo_url || ""} placeholder="https://… or upload →" onChange={e => setForm({ ...form, photo_url: e.target.value })} />
+                <label className="cursor-pointer">
+                  <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                    const f = e.target.files?.[0]; if (!f) return;
+                    try { const url = await uploadSportsLogo(f, "player"); setForm({ ...form, photo_url: url }); toast({ title: "Uploaded" }); }
+                    catch (err: any) { toast({ title: "Upload failed", description: err.message, variant: "destructive" }); }
+                  }} />
+                  <Button type="button" size="icon" variant="outline" asChild><span><Upload className="h-4 w-4" /></span></Button>
+                </label>
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1">Original aspect ratio is preserved everywhere (no cropping).</p>
+            </div>
             <div><Label>Bio</Label><Textarea rows={3} value={form.bio || ""} onChange={e => setForm({ ...form, bio: e.target.value })} /></div>
+
+            {/* ====== STATS ====== */}
+            <div className="border rounded-lg p-3 space-y-3 bg-muted/30">
+              <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Performance Stats</p>
+              {[
+                { label: "Batting", fields: [["matches","Matches"],["runs","Runs"],["hs","Highest"],["sr","Strike Rate"],["avg","Average"],["fours","4s"],["sixes","6s"]] },
+                { label: "Bowling", fields: [["wickets","Wickets"],["economy","Economy"],["bbf","Best Figures (5/23)"]] },
+                { label: "Fielding & Awards", fields: [["catches","Catches"],["run_outs","Run Outs"],["stumpings","Stumpings"],["pom","Player of Match"]] },
+              ].map(group => (
+                <div key={group.label}>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">{group.label}</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {group.fields.map(([k, l]) => (
+                      <div key={k}>
+                        <Label className="text-[10px]">{l}</Label>
+                        <Input
+                          value={form.stats?.[k] ?? ""}
+                          onChange={e => setForm({ ...form, stats: { ...(form.stats || {}), [k]: e.target.value === "" ? null : (isNaN(Number(e.target.value)) ? e.target.value : Number(e.target.value)) } })}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              <div>
+                <Label className="text-[10px]">Last 5 form (e.g. W,W,L,N,W)</Label>
+                <Input
+                  value={(form.stats?.last5 || []).join(",")}
+                  onChange={e => setForm({ ...form, stats: { ...(form.stats || {}), last5: e.target.value.split(",").map((s: string) => s.trim().toUpperCase()).filter(Boolean).slice(0, 5) } })}
+                />
+              </div>
+            </div>
+
             <div className="flex gap-4">
               <div className="flex items-center gap-2"><Switch checked={form.is_captain || false} onCheckedChange={v => setForm({ ...form, is_captain: v })} /><Label>Captain</Label></div>
               <div className="flex items-center gap-2"><Switch checked={form.is_overseas || false} onCheckedChange={v => setForm({ ...form, is_overseas: v })} /><Label>Overseas</Label></div>
