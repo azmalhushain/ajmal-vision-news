@@ -260,18 +260,18 @@ All colors MUST be HSL.
   }
 
   /* ============================================================
-     Sports portal theme — neon-lime + dark stadium aesthetic.
-     Scoped to .sports-theme so the rest of the site is untouched.
+     Sports portal theme — electric blue + dark stadium aesthetic.
+     Aligned with the site's primary blue. Scoped to .sports-theme.
      ============================================================ */
   .sports-theme {
-    --sports-bg: 140 30% 4%;
-    --sports-surface: 140 25% 7%;
-    --sports-accent: 78 95% 58%;          /* neon lime */
-    --sports-accent-glow: 78 100% 70%;
-    --sports-text: 80 8% 96%;
-    --sports-muted: 100 5% 65%;
-    --sports-border: 80 20% 18% / 0.6;
-    background: radial-gradient(ellipse at top, hsl(140 35% 8%) 0%, hsl(var(--sports-bg)) 60%);
+    --sports-bg: 215 40% 5%;
+    --sports-surface: 215 35% 8%;
+    --sports-accent: 210 100% 56%;        /* primary blue */
+    --sports-accent-glow: 200 100% 65%;   /* cyan-leaning glow */
+    --sports-text: 210 20% 97%;
+    --sports-muted: 215 15% 65%;
+    --sports-border: 215 30% 22% / 0.6;
+    background: radial-gradient(ellipse at top, hsl(215 45% 10%) 0%, hsl(var(--sports-bg)) 60%);
     color: hsl(var(--sports-text));
   }
   .sports-theme .sports-glass {
@@ -299,7 +299,7 @@ All colors MUST be HSL.
   }
   .sports-theme .sports-accent-bg {
     background: hsl(var(--sports-accent));
-    color: hsl(140 40% 8%);
+    color: hsl(0 0% 100%);
   }
   .sports-theme .sports-stadium-bg {
     background-image:

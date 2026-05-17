@@ -69,6 +69,7 @@ const Sports = () => {
   const live = matches.filter(m => m.status === "live");
   const upcoming = matches.filter(m => m.status === "scheduled");
   const completed = matches.filter(m => m.status === "completed");
+  const noResult = matches.filter(m => m.status === "abandoned" || m.status === "postponed");
   const tournament = tournaments.find(t => t.id === tid);
   const heroMatch = live[0] || upcoming[0] || completed[0];
 
@@ -79,19 +80,49 @@ const Sports = () => {
     return Math.max(0, Math.ceil(diff / 86400000));
   }, [tournament, upcoming]);
 
-  // Compute points table from completed matches
+  // Compute points table from completed matches: NRR (IPL style) + recent form
   const pointsTable = useMemo(() => {
-    const rows: Record<string, { team: any; m: number; w: number; l: number; pts: number; nrr: number }> = {};
-    teams.forEach(t => { rows[t.id] = { team: t, m: 0, w: 0, l: 0, pts: 0, nrr: 0 }; });
-    completed.forEach(c => {
-      if (rows[c.team_a_id]) rows[c.team_a_id].m++;
-      if (rows[c.team_b_id]) rows[c.team_b_id].m++;
-      if (c.winner_id && rows[c.winner_id]) { rows[c.winner_id].w++; rows[c.winner_id].pts += 2; }
-      const loser = c.winner_id === c.team_a_id ? c.team_b_id : c.winner_id === c.team_b_id ? c.team_a_id : null;
-      if (loser && rows[loser]) rows[loser].l++;
+    type Row = {
+      team: any; m: number; w: number; l: number; nr: number; pts: number;
+      runsFor: number; oversFor: number; runsAgst: number; oversAgst: number;
+      form: ("W" | "L" | "N")[];
+    };
+    const rows: Record<string, Row> = {};
+    teams.forEach(t => { rows[t.id] = { team: t, m: 0, w: 0, l: 0, nr: 0, pts: 0, runsFor: 0, oversFor: 0, runsAgst: 0, oversAgst: 0, form: [] }; });
+
+    // Sort by date so "form" reflects chronology
+    const ordered = [...matches].sort((a, b) => new Date(a.scheduled_at || 0).getTime() - new Date(b.scheduled_at || 0).getTime());
+
+    for (const c of ordered) {
+      const a = rows[c.team_a_id], b = rows[c.team_b_id];
+      if (c.status === "completed") {
+        if (a) a.m++; if (b) b.m++;
+        if (c.winner_id && rows[c.winner_id]) { rows[c.winner_id].w++; rows[c.winner_id].pts += 2; rows[c.winner_id].form.push("W"); }
+        const loser = c.winner_id === c.team_a_id ? c.team_b_id : c.winner_id === c.team_b_id ? c.team_a_id : null;
+        if (loser && rows[loser]) { rows[loser].l++; rows[loser].form.push("L"); }
+        // NRR contribution from innings
+        const inns = innByMatch[c.id] || [];
+        for (const inn of inns) {
+          const bat = rows[inn.batting_team_id];
+          const bowl = rows[inn.bowling_team_id];
+          const ovs = Number(inn.overs) || 0;
+          if (bat) { bat.runsFor += inn.runs || 0; bat.oversFor += ovs; }
+          if (bowl) { bowl.runsAgst += inn.runs || 0; bowl.oversAgst += ovs; }
+        }
+      } else if (c.status === "abandoned" || c.status === "postponed") {
+        // No-result: 1 point each, marks form as 'N'
+        if (a) { a.m++; a.nr++; a.pts += 1; a.form.push("N"); }
+        if (b) { b.m++; b.nr++; b.pts += 1; b.form.push("N"); }
+      }
+    }
+
+    const out = Object.values(rows).map(r => {
+      const rrFor = r.oversFor > 0 ? r.runsFor / r.oversFor : 0;
+      const rrAgst = r.oversAgst > 0 ? r.runsAgst / r.oversAgst : 0;
+      return { ...r, nrr: +(rrFor - rrAgst).toFixed(3), form: r.form.slice(-5) };
     });
-    return Object.values(rows).sort((a, b) => b.pts - a.pts || b.w - a.w);
-  }, [teams, completed]);
+    return out.sort((x, y) => y.pts - x.pts || y.nrr - x.nrr || y.w - x.w);
+  }, [teams, matches, innByMatch]);
 
   return (
     <PageTransition>
@@ -257,7 +288,7 @@ const Sports = () => {
                       <TabsTrigger
                         key={v}
                         value={v}
-                        className="rounded-full px-4 sm:px-5 h-9 font-semibold text-xs sm:text-sm whitespace-nowrap data-[state=active]:sports-accent-bg data-[state=active]:shadow-[0_0_25px_-5px_hsl(var(--sports-accent)/0.7)] text-[hsl(var(--sports-muted))] data-[state=active]:text-[hsl(140_40%_8%)]"
+                        className="rounded-full px-4 sm:px-5 h-9 font-semibold text-xs sm:text-sm whitespace-nowrap data-[state=active]:sports-accent-bg data-[state=active]:shadow-[0_0_25px_-5px_hsl(var(--sports-accent)/0.7)] text-[hsl(var(--sports-muted))] data-[state=active]:text-white"
                       >
                         <I className="h-3.5 w-3.5 mr-1.5" /> {l}
                       </TabsTrigger>
@@ -383,7 +414,7 @@ const HeroScoreboard = ({ match, teamA, teamB, innings }: any) => {
   const isDone = match.status === "completed";
   const aInn = innings.find((i: any) => i.batting_team_id === teamA?.id);
   const bInn = innings.find((i: any) => i.batting_team_id === teamB?.id);
-  const aColor = teamA?.color_primary || "#22c55e";
+  const aColor = teamA?.color_primary || "#1e88ff";
   const bColor = teamB?.color_primary || "#3b82f6";
 
   return (
@@ -478,7 +509,7 @@ const CountdownPill = ({ target }: { target: Date }) => {
 
 const NeonMatchCard = ({ match, teamA, teamB, innings = [], index }: any) => {
   const isLive = match.status === "live";
-  const aColor = teamA?.color_primary || "#22c55e";
+  const aColor = teamA?.color_primary || "#1e88ff";
   const bColor = teamB?.color_primary || "#3b82f6";
   return (
     <motion.div
@@ -525,7 +556,7 @@ const TeamBadge = ({ team, color }: any) => (
 );
 
 const NeonTeamCard = ({ team, index }: { team: any; index: number }) => {
-  const color = team.color_primary || "#22c55e";
+  const color = team.color_primary || "#1e88ff";
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -577,7 +608,7 @@ const FeaturedTeamsRail = ({ teams }: { teams: any[] }) => {
               to={`/sports/team/${t.slug}`}
               className="sports-glass rounded-xl p-3 flex flex-col items-center text-center group cursor-pointer hover:border-white/20 transition block"
             >
-              <div className="w-12 h-12 rounded-xl overflow-hidden flex items-center justify-center text-white font-black text-sm border border-white/10" style={{ background: t.color_primary || "#22c55e" }}>
+              <div className="w-12 h-12 rounded-xl overflow-hidden flex items-center justify-center text-white font-black text-sm border border-white/10" style={{ background: t.color_primary || "#1e88ff" }}>
                 {t.logo_url ? <img src={t.logo_url} alt={t.name} className="w-full h-full object-cover" /> : (t.short_name || t.name?.[0])}
               </div>
               <p className="text-xs font-bold text-[hsl(var(--sports-text))] mt-2 truncate w-full">{t.short_name || t.name}</p>
@@ -590,26 +621,38 @@ const FeaturedTeamsRail = ({ teams }: { teams: any[] }) => {
   );
 };
 
+const FormPip = ({ r }: { r: "W" | "L" | "N" }) => {
+  const cls = r === "W"
+    ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
+    : r === "L"
+      ? "bg-rose-500/20 text-rose-400 border-rose-500/40"
+      : "bg-white/10 text-[hsl(var(--sports-muted))] border-white/15";
+  return <span className={`inline-flex items-center justify-center w-4 h-4 rounded-full border text-[8px] font-black ${cls}`}>{r}</span>;
+};
+
 const PointsTableCompact = ({ rows }: { rows: any[] }) => (
   <div className="sports-glass rounded-2xl p-5">
     <p className="text-[10px] font-bold tracking-[0.3em] uppercase sports-accent-text flex items-center gap-1.5">
       <BarChart3 className="h-3 w-3" /> Live Leaderboard
     </p>
     <h3 className="text-lg font-black text-[hsl(var(--sports-text))] mt-1 mb-3">Points Table</h3>
-    <div className="overflow-hidden rounded-lg border border-white/5">
-      <table className="w-full text-xs">
+    <div className="overflow-x-auto rounded-lg border border-white/5">
+      <table className="w-full text-xs min-w-[420px]">
         <thead>
-          <tr className="text-[10px] uppercase tracking-wider text-[hsl(var(--sports-muted))] bg-white/5">
-            <th className="text-left px-2.5 py-2 font-bold">Team</th>
-            <th className="px-1 py-2 font-bold">M</th>
+          <tr className="text-[9px] uppercase tracking-wider text-[hsl(var(--sports-muted))] bg-white/5">
+            <th className="text-left px-2 py-2 font-bold">Team</th>
+            <th className="px-1 py-2 font-bold">P</th>
             <th className="px-1 py-2 font-bold">W</th>
             <th className="px-1 py-2 font-bold">L</th>
-            <th className="px-2.5 py-2 font-bold text-right">Pts</th>
+            <th className="px-1 py-2 font-bold">NR</th>
+            <th className="px-1 py-2 font-bold">NRR</th>
+            <th className="px-2 py-2 font-bold text-right">Pts</th>
+            <th className="px-2 py-2 font-bold text-right">Form</th>
           </tr>
         </thead>
         <tbody>
           <AnimatePresence>
-            {rows.slice(0, 8).map((r, i) => (
+            {rows.slice(0, 10).map((r, i) => (
               <motion.tr
                 key={r.team.id}
                 layout
@@ -617,10 +660,10 @@ const PointsTableCompact = ({ rows }: { rows: any[] }) => (
                 animate={{ opacity: 1 }}
                 className="border-t border-white/5 hover:bg-white/[0.03]"
               >
-                <td className="px-2.5 py-2.5">
+                <td className="px-2 py-2.5">
                   <div className="flex items-center gap-2 min-w-0">
                     <span className="text-[10px] font-bold text-[hsl(var(--sports-muted))] w-3">{i + 1}</span>
-                    <span className="w-5 h-5 rounded overflow-hidden flex items-center justify-center text-[8px] text-white font-bold shrink-0" style={{ background: r.team.color_primary || "#22c55e" }}>
+                    <span className="w-5 h-5 rounded overflow-hidden flex items-center justify-center text-[8px] text-white font-bold shrink-0" style={{ background: r.team.color_primary || "#1e88ff" }}>
                       {r.team.logo_url ? <img src={r.team.logo_url} alt="" className="w-full h-full object-cover" /> : (r.team.short_name?.[0] || r.team.name[0])}
                     </span>
                     <span className="font-semibold text-[hsl(var(--sports-text))] truncate text-[11px]">{r.team.short_name || r.team.name}</span>
@@ -629,16 +672,29 @@ const PointsTableCompact = ({ rows }: { rows: any[] }) => (
                 <td className="px-1 py-2.5 text-center tabular-nums text-[hsl(var(--sports-muted))]">{r.m}</td>
                 <td className="px-1 py-2.5 text-center tabular-nums text-[hsl(var(--sports-muted))]">{r.w}</td>
                 <td className="px-1 py-2.5 text-center tabular-nums text-[hsl(var(--sports-muted))]">{r.l}</td>
-                <td className="px-2.5 py-2.5 text-right font-black tabular-nums sports-accent-text">{r.pts}</td>
+                <td className="px-1 py-2.5 text-center tabular-nums text-[hsl(var(--sports-muted))]">{r.nr || 0}</td>
+                <td className={`px-1 py-2.5 text-center tabular-nums font-semibold ${r.nrr > 0 ? "text-emerald-400" : r.nrr < 0 ? "text-rose-400" : "text-[hsl(var(--sports-muted))]"}`}>
+                  {r.nrr > 0 ? "+" : ""}{(r.nrr ?? 0).toFixed(2)}
+                </td>
+                <td className="px-2 py-2.5 text-right font-black tabular-nums sports-accent-text">{r.pts}</td>
+                <td className="px-2 py-2.5">
+                  <div className="flex items-center gap-0.5 justify-end">
+                    {(r.form || []).map((f: any, idx: number) => <FormPip key={idx} r={f} />)}
+                    {!r.form?.length && <span className="text-[hsl(var(--sports-muted))] text-[10px]">—</span>}
+                  </div>
+                </td>
               </motion.tr>
             ))}
           </AnimatePresence>
           {!rows.length && (
-            <tr><td colSpan={5} className="text-center text-[hsl(var(--sports-muted))] py-6 text-xs">Standings update after matches.</td></tr>
+            <tr><td colSpan={8} className="text-center text-[hsl(var(--sports-muted))] py-6 text-xs">Standings update after matches.</td></tr>
           )}
         </tbody>
       </table>
     </div>
+    <p className="text-[10px] text-[hsl(var(--sports-muted))] mt-3 leading-relaxed">
+      NRR auto-calculated from innings totals. Abandoned/postponed matches award 1 point to each team.
+    </p>
   </div>
 );
 

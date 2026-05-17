@@ -15,7 +15,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { Trophy, Users, Calendar, Radio, Newspaper, Image as ImageIcon, Plus, Pencil, Trash2, Upload, RefreshCw } from "lucide-react";
+import { Trophy, Users, Calendar, Radio, Newspaper, Image as ImageIcon, Plus, Pencil, Trash2, Upload, RefreshCw, Crown } from "lucide-react";
 import { uploadSportsLogo } from "@/lib/sportsHelpers";
 import { BallByBallPad } from "@/components/sports/BallByBallPad";
 
@@ -172,10 +172,24 @@ const PlayersTab = ({ tournamentId }: { tournamentId: string }) => {
     load();
   };
 
+  const setCaptain = async (r: Row) => {
+    // Trigger enforces single-captain per team; just flip this one true.
+    const { error } = await db.from("players").update({ is_captain: true }).eq("id", r.id);
+    if (error) return toast({ title: "Error", description: error.message, variant: "destructive" });
+    toast({ title: `${r.name} is now the captain` });
+    load();
+  };
+
+  // Group players by team for richer squad management
+  const grouped = teams
+    .filter(t => filterTeam === "all" || t.id === filterTeam)
+    .map(t => ({ team: t, squad: rows.filter(r => r.team_id === t.id) }))
+    .filter(g => g.squad.length || filterTeam !== "all");
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-2">
-        <CardTitle className="flex items-center gap-2"><Users className="h-5 w-5" /> Players ({rows.length})</CardTitle>
+        <CardTitle className="flex items-center gap-2"><Users className="h-5 w-5" /> Squad Management ({rows.length})</CardTitle>
         <div className="flex gap-2">
           <Select value={filterTeam} onValueChange={setFilterTeam}>
             <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
@@ -187,33 +201,59 @@ const PlayersTab = ({ tournamentId }: { tournamentId: string }) => {
           <Button size="sm" onClick={openNew} disabled={!teams.length}><Plus className="h-4 w-4 mr-1" /> Add Player</Button>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {rows.map(r => {
-            const team = teams.find(t => t.id === r.team_id);
-            return (
-              <div key={r.id} className="border rounded-lg p-3 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-xs shrink-0" style={{ background: team?.color_primary || "#666" }}>
-                  {r.jersey_number ?? "?"}
+      <CardContent className="space-y-6">
+        {grouped.map(({ team, squad }) => {
+          const captain = squad.find(p => p.is_captain);
+          const sorted = [...squad].sort((a, b) => Number(b.is_captain) - Number(a.is_captain) || (a.jersey_number ?? 99) - (b.jersey_number ?? 99));
+          return (
+            <div key={team.id} className="border rounded-xl overflow-hidden">
+              <div className="flex items-center justify-between gap-3 p-3 border-b bg-muted/40">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-lg flex items-center justify-center text-white font-bold text-xs shrink-0" style={{ background: team.color_primary || "#1e88ff" }}>
+                    {team.logo_url ? <img src={team.logo_url} alt="" className="w-full h-full object-cover rounded-lg" /> : (team.short_name || team.name?.[0])}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-semibold truncate">{team.name}</p>
+                    <p className="text-xs text-muted-foreground">{squad.length} player{squad.length === 1 ? "" : "s"} · Captain: {captain?.name || <span className="italic">not set</span>}</p>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold truncate">{r.name} {r.is_captain && <Badge variant="secondary" className="ml-1 text-xs">C</Badge>}</p>
-                  <p className="text-xs text-muted-foreground truncate">{team?.name} · {r.role}</p>
-                </div>
-                <Button size="icon" variant="ghost" title="Generate AI bio" onClick={async () => {
-                  toast({ title: "Generating bio…" });
-                  const { data, error } = await supabase.functions.invoke("sports-ai", { body: { action: "player-bio", payload: { playerId: r.id } } });
-                  if (error) return toast({ title: "Error", description: error.message, variant: "destructive" });
-                  toast({ title: "Bio generated", description: (data?.bio || "").slice(0, 80) + "…" });
-                  load();
-                }}>✨</Button>
-                <Button size="icon" variant="ghost" onClick={() => openEdit(r)}><Pencil className="h-4 w-4" /></Button>
-                <Button size="icon" variant="ghost" onClick={() => remove(r.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                <Button size="sm" variant="outline" onClick={() => { setFilterTeam(team.id); setEditing(null); setForm({ team_id: team.id, role: "batter", is_active: true }); setOpen(true); }}>
+                  <Plus className="h-3.5 w-3.5 mr-1" /> Add
+                </Button>
               </div>
-            );
-          })}
-          {!rows.length && <p className="text-sm text-muted-foreground col-span-full text-center py-8">No players yet.</p>}
-        </div>
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 p-3">
+                {sorted.map(r => (
+                  <div key={r.id} className={`border rounded-lg p-3 flex items-center gap-3 ${r.is_captain ? "border-amber-400/60 bg-amber-50/40 dark:bg-amber-500/5" : ""}`}>
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-xs shrink-0 relative" style={{ background: team.color_primary || "#1e88ff" }}>
+                      {r.photo_url ? <img src={r.photo_url} alt="" className="w-full h-full object-cover rounded-full" /> : (r.jersey_number ?? r.name?.[0])}
+                      {r.is_captain && <Crown className="absolute -top-1.5 -right-1.5 h-3.5 w-3.5 text-amber-500 fill-amber-400" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold truncate text-sm">{r.name} {r.is_overseas && <Badge variant="outline" className="ml-1 text-[9px]">OS</Badge>}</p>
+                      <p className="text-xs text-muted-foreground truncate capitalize">{r.role || "—"}{r.jersey_number ? ` · #${r.jersey_number}` : ""}</p>
+                    </div>
+                    {!r.is_captain && (
+                      <Button size="icon" variant="ghost" title="Set as captain" onClick={() => setCaptain(r)}>
+                        <Crown className="h-4 w-4 text-amber-500" />
+                      </Button>
+                    )}
+                    <Button size="icon" variant="ghost" title="AI bio" onClick={async () => {
+                      toast({ title: "Generating bio…" });
+                      const { data, error } = await supabase.functions.invoke("sports-ai", { body: { action: "player-bio", payload: { playerId: r.id } } });
+                      if (error) return toast({ title: "Error", description: error.message, variant: "destructive" });
+                      toast({ title: "Bio generated", description: (data?.bio || "").slice(0, 80) + "…" });
+                      load();
+                    }}>✨</Button>
+                    <Button size="icon" variant="ghost" onClick={() => openEdit(r)}><Pencil className="h-4 w-4" /></Button>
+                    <Button size="icon" variant="ghost" onClick={() => remove(r.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                  </div>
+                ))}
+                {!sorted.length && <p className="text-xs text-muted-foreground col-span-full text-center py-4">No players in this squad. Click <b>Add</b> to recruit.</p>}
+              </div>
+            </div>
+          );
+        })}
+        {!grouped.length && <p className="text-sm text-muted-foreground text-center py-8">No teams yet — create teams first.</p>}
       </CardContent>
 
       <Dialog open={open} onOpenChange={setOpen}>

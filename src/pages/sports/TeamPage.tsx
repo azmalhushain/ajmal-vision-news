@@ -84,12 +84,12 @@ export default function TeamPage() {
   };
 
   if (loading) return (
-    <div className="sports-theme min-h-screen bg-[hsl(140_30%_4%)] pt-24 px-4">
+    <div className="sports-theme min-h-screen bg-[hsl(var(--sports-bg))] pt-24 px-4">
       <Skeleton className="h-72 w-full max-w-5xl mx-auto" />
     </div>
   );
   if (!team) return (
-    <div className="sports-theme min-h-screen bg-[hsl(140_30%_4%)] flex items-center justify-center text-white">
+    <div className="sports-theme min-h-screen bg-[hsl(var(--sports-bg))] flex items-center justify-center text-white">
       <div className="text-center">
         <p className="text-2xl font-bold mb-3">Team not found</p>
         <Link to="/sports"><Button variant="outline">Back to Sports</Button></Link>
@@ -109,7 +109,7 @@ export default function TeamPage() {
         description={team.description?.slice(0, 150) || `Follow ${team.name}: full squad, upcoming fixtures and recent results.`}
         image={team.logo_url}
       />
-      <div className="sports-theme min-h-screen bg-[hsl(140_30%_4%)] text-white">
+      <div className="sports-theme min-h-screen bg-[hsl(var(--sports-bg))] text-white">
         {/* Hero */}
         <div
           className="relative pt-24 pb-10 px-4 overflow-hidden"
