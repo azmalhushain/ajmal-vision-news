@@ -370,6 +370,7 @@ const Sports = () => {
         </section>
 
         <StatsLeaderboards players={players} teams={teams} />
+        <GalleryShowcase images={gallery} />
         <VideosShowcase videos={videos} />
         <SocialPosts />
         <Footer />
