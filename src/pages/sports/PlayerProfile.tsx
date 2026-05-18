@@ -169,8 +169,49 @@ export default function PlayerProfile() {
           </div>
         </div>
 
-        {/* Bio */}
+        {/* Body */}
         <div className="max-w-5xl mx-auto px-4 pb-16 space-y-8">
+          {/* Performance graph */}
+          <Card className="bg-white/[0.03] border-white/10 p-5 sm:p-6 text-white">
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+              <h2 className="text-xl font-bold flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" style={{ color: primary }} /> Recent Form
+              </h2>
+              <p className="text-xs text-white/50">Last {perf.length || 0} matches</p>
+            </div>
+            {perf.length ? (
+              <div className="w-full" style={{ height: 280 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <ComposedChart data={perf} margin={{ top: 10, right: 12, left: -8, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="runsFill" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={primary} stopOpacity={0.55} />
+                        <stop offset="100%" stopColor={primary} stopOpacity={0.05} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
+                    <XAxis dataKey="label" stroke="rgba(255,255,255,0.5)" tick={{ fontSize: 11 }} />
+                    <YAxis yAxisId="left" stroke="rgba(255,255,255,0.5)" tick={{ fontSize: 11 }} />
+                    <YAxis yAxisId="right" orientation="right" stroke="rgba(255,255,255,0.5)" tick={{ fontSize: 11 }} allowDecimals={false} />
+                    <Tooltip
+                      contentStyle={{ background: "rgba(10,14,22,0.95)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 12, color: "white", fontSize: 12 }}
+                      cursor={{ fill: "rgba(255,255,255,0.04)" }}
+                      formatter={(value: any, name: any) => [value, name === "runs" ? "Runs" : "Wickets"]}
+                    />
+                    <Legend wrapperStyle={{ fontSize: 11, paddingTop: 6 }} />
+                    <Area yAxisId="left" type="monotone" dataKey="runs" stroke={primary} strokeWidth={2.5} fill="url(#runsFill)" name="Runs" />
+                    <Bar yAxisId="right" dataKey="wickets" fill="hsl(var(--sports-accent))" radius={[6, 6, 0, 0]} name="Wickets" barSize={18} />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="text-center py-10 text-sm text-white/50">
+                No ball-by-ball data yet. Performance graph will appear once match events are recorded.
+              </div>
+            )}
+          </Card>
+
+          {/* Bio */}
           <Card className="bg-white/[0.03] border-white/10 p-6 text-white">
             <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
               <h2 className="text-xl font-bold">About</h2>
