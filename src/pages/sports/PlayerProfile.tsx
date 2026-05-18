@@ -10,8 +10,11 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ShareButtons } from "@/components/ShareButtons";
 import { motion } from "framer-motion";
-import { ArrowLeft, Sparkles, Trophy, Globe2 } from "lucide-react";
+import { ArrowLeft, Sparkles, Trophy, Globe2, TrendingUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import {
+  ResponsiveContainer, ComposedChart, Area, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend,
+} from "recharts";
 
 const db: any = supabase;
 
@@ -29,6 +32,7 @@ export default function PlayerProfile() {
   const [team, setTeam] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [perf, setPerf] = useState<{ label: string; runs: number; wickets: number; date: string }[]>([]);
 
   const load = async () => {
     setLoading(true);
@@ -37,6 +41,35 @@ export default function PlayerProfile() {
     if (p?.team_id) {
       const { data: t } = await db.from("teams").select("*").eq("id", p.team_id).maybeSingle();
       setTeam(t);
+    }
+    // Build performance series from match_events (last ~10 matches)
+    if (p?.name) {
+      const { data: events } = await db.from("match_events")
+        .select("match_id, runs, is_wicket, batter, bowler")
+        .or(`batter.eq.${p.name},bowler.eq.${p.name}`);
+      if (events?.length) {
+        const ids = Array.from(new Set(events.map((e: any) => e.match_id)));
+        const { data: ms } = await db.from("matches").select("id, match_no, scheduled_at").in("id", ids);
+        const mmap = Object.fromEntries((ms || []).map((m: any) => [m.id, m]));
+        const agg: Record<string, { runs: number; wickets: number; date: string; label: string }> = {};
+        events.forEach((e: any) => {
+          const m = mmap[e.match_id];
+          if (!m) return;
+          const key = e.match_id;
+          agg[key] ||= {
+            runs: 0,
+            wickets: 0,
+            date: m.scheduled_at,
+            label: m.match_no ? `M${m.match_no}` : new Date(m.scheduled_at || Date.now()).toLocaleDateString(undefined, { month: "short", day: "numeric" }),
+          };
+          if (e.batter === p.name) agg[key].runs += e.runs || 0;
+          if (e.bowler === p.name && e.is_wicket) agg[key].wickets += 1;
+        });
+        const series = Object.values(agg)
+          .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+          .slice(-10);
+        setPerf(series);
+      }
     }
     setLoading(false);
   };
@@ -136,8 +169,49 @@ export default function PlayerProfile() {
           </div>
         </div>
 
-        {/* Bio */}
+        {/* Body */}
         <div className="max-w-5xl mx-auto px-4 pb-16 space-y-8">
+          {/* Performance graph */}
+          <Card className="bg-white/[0.03] border-white/10 p-5 sm:p-6 text-white">
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+              <h2 className="text-xl font-bold flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" style={{ color: primary }} /> Recent Form
+              </h2>
+              <p className="text-xs text-white/50">Last {perf.length || 0} matches</p>
+            </div>
+            {perf.length ? (
+              <div className="w-full" style={{ height: 280 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <ComposedChart data={perf} margin={{ top: 10, right: 12, left: -8, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="runsFill" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={primary} stopOpacity={0.55} />
+                        <stop offset="100%" stopColor={primary} stopOpacity={0.05} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
+                    <XAxis dataKey="label" stroke="rgba(255,255,255,0.5)" tick={{ fontSize: 11 }} />
+                    <YAxis yAxisId="left" stroke="rgba(255,255,255,0.5)" tick={{ fontSize: 11 }} />
+                    <YAxis yAxisId="right" orientation="right" stroke="rgba(255,255,255,0.5)" tick={{ fontSize: 11 }} allowDecimals={false} />
+                    <Tooltip
+                      contentStyle={{ background: "rgba(10,14,22,0.95)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 12, color: "white", fontSize: 12 }}
+                      cursor={{ fill: "rgba(255,255,255,0.04)" }}
+                      formatter={(value: any, name: any) => [value, name === "runs" ? "Runs" : "Wickets"]}
+                    />
+                    <Legend wrapperStyle={{ fontSize: 11, paddingTop: 6 }} />
+                    <Area yAxisId="left" type="monotone" dataKey="runs" stroke={primary} strokeWidth={2.5} fill="url(#runsFill)" name="Runs" />
+                    <Bar yAxisId="right" dataKey="wickets" fill="hsl(var(--sports-accent))" radius={[6, 6, 0, 0]} name="Wickets" barSize={18} />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="text-center py-10 text-sm text-white/50">
+                No ball-by-ball data yet. Performance graph will appear once match events are recorded.
+              </div>
+            )}
+          </Card>
+
+          {/* Bio */}
           <Card className="bg-white/[0.03] border-white/10 p-6 text-white">
             <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
               <h2 className="text-xl font-bold">About</h2>
