@@ -898,7 +898,7 @@ const CountUp = ({ value, className }: { value: number; className?: string }) =>
   return <motion.span ref={ref} className={className}>{display}</motion.span>;
 };
 
-/* ---------- Videos Showcase ---------- */
+/* ---------- Videos Showcase (modernized) ---------- */
 const VideosShowcase = ({ videos }: { videos: any[] }) => {
   const [active, setActive] = useState<any | null>(null);
   if (!videos?.length) return null;
@@ -912,41 +912,71 @@ const VideosShowcase = ({ videos }: { videos: any[] }) => {
     } catch { return url; }
   };
 
+  const [hero, ...rest] = videos;
+
   return (
     <section className="container mx-auto px-4 py-10 sm:py-14">
       <SectionLabel kicker="Watch">Videos & Highlights</SectionLabel>
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {videos.map((v, i) => (
-          <motion.div
-            key={v.id}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: i * 0.05 }}
-            whileHover={{ y: -4 }}
-            className="sports-glass sports-glow-hover rounded-2xl overflow-hidden cursor-pointer group"
-            onClick={() => setActive(v)}
-          >
-            <div className="relative bg-black flex items-center justify-center" style={{ minHeight: 180 }}>
-              {v.thumbnail_url ? (
-                <img src={v.thumbnail_url} alt={v.caption || ""} className="w-full max-h-60 object-contain" loading="lazy" />
-              ) : v.source === "upload" ? (
-                <video src={v.url} className="w-full max-h-60 object-contain" preload="metadata" muted />
-              ) : (
-                <div className="w-full aspect-video bg-gradient-to-br from-[hsl(var(--sports-accent)/0.3)] to-black" />
-              )}
-              <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/10 transition">
-                <motion.span whileHover={{ scale: 1.1 }} className="w-14 h-14 rounded-full sports-accent-bg flex items-center justify-center shadow-[0_0_40px_-5px_hsl(var(--sports-accent)/0.8)]">
-                  <Play className="h-5 w-5 fill-current ml-0.5" />
-                </motion.span>
+      <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
+        {/* Hero video */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="sports-glass sports-glow-hover rounded-2xl overflow-hidden cursor-pointer group"
+          onClick={() => setActive(hero)}
+        >
+          <div className="relative bg-black flex items-center justify-center">
+            {hero.thumbnail_url ? (
+              <img src={hero.thumbnail_url} alt={hero.caption || ""} className="w-full h-auto max-h-[420px] object-contain" loading="lazy" />
+            ) : hero.source === "upload" ? (
+              <video src={hero.url} className="w-full h-auto max-h-[420px] object-contain" preload="metadata" muted />
+            ) : (
+              <div className="w-full aspect-video bg-gradient-to-br from-[hsl(var(--sports-accent)/0.3)] to-black" />
+            )}
+            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/60 via-transparent to-transparent group-hover:from-black/40 transition">
+              <motion.span whileHover={{ scale: 1.1 }} className="w-16 h-16 sm:w-20 sm:h-20 rounded-full sports-accent-bg flex items-center justify-center shadow-[0_0_60px_-5px_hsl(var(--sports-accent)/0.9)]">
+                <Play className="h-6 w-6 sm:h-7 sm:w-7 fill-current ml-1" />
+              </motion.span>
+            </div>
+            <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
+              <Badge className="sports-accent-bg mb-2 text-[10px]">FEATURED</Badge>
+              <p className="font-black text-lg sm:text-2xl text-white line-clamp-2 drop-shadow-lg">{hero.caption || "Featured clip"}</p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Sidebar list */}
+        <div className="grid grid-cols-2 lg:grid-cols-1 gap-3 lg:max-h-[420px] lg:overflow-y-auto pr-1">
+          {rest.slice(0, 6).map((v, i) => (
+            <motion.div
+              key={v.id}
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.05 }}
+              className="sports-glass sports-glow-hover rounded-xl overflow-hidden cursor-pointer group flex flex-col lg:flex-row gap-2 lg:gap-3 p-2"
+              onClick={() => setActive(v)}
+            >
+              <div className="relative bg-black rounded-lg overflow-hidden flex items-center justify-center lg:w-32 lg:shrink-0 aspect-video lg:aspect-video">
+                {v.thumbnail_url ? (
+                  <img src={v.thumbnail_url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                ) : v.source === "upload" ? (
+                  <video src={v.url} className="w-full h-full object-cover" preload="metadata" muted />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-[hsl(var(--sports-accent)/0.3)] to-black" />
+                )}
+                <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/10 transition">
+                  <Play className="h-5 w-5 fill-white text-white" />
+                </div>
               </div>
-            </div>
-            <div className="p-4">
-              <p className="font-bold text-sm text-[hsl(var(--sports-text))] line-clamp-1">{v.caption || "Untitled clip"}</p>
-              <p className="text-[10px] text-[hsl(var(--sports-muted))] mt-1 uppercase tracking-wider">{v.source === "youtube" ? "YouTube" : "Tournament video"}</p>
-            </div>
-          </motion.div>
-        ))}
+              <div className="flex-1 min-w-0 px-1 py-1">
+                <p className="font-bold text-xs sm:text-sm text-[hsl(var(--sports-text))] line-clamp-2">{v.caption || "Clip"}</p>
+                <p className="text-[10px] text-[hsl(var(--sports-muted))] mt-1 uppercase tracking-wider">{v.source === "youtube" ? "YouTube" : "Video"}</p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
       </div>
 
       {active && (
@@ -959,6 +989,71 @@ const VideosShowcase = ({ videos }: { videos: any[] }) => {
             </div>
             {active.caption && <p className="text-center text-white mt-3 font-medium">{active.caption}</p>}
           </div>
+        </div>
+      )}
+    </section>
+  );
+};
+
+/* ---------- Gallery Showcase (masonry, original ratios) ---------- */
+const GalleryShowcase = ({ images }: { images: any[] }) => {
+  const [active, setActive] = useState<any | null>(null);
+  if (!images?.length) return null;
+
+  return (
+    <section className="container mx-auto px-4 py-10 sm:py-14">
+      <SectionLabel kicker="Capture">Match Gallery</SectionLabel>
+      <div
+        className="grid gap-3 sm:gap-4"
+        style={{ gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gridAutoFlow: "dense" }}
+      >
+        {images.map((img, i) => {
+          const ratio = img.width && img.height ? img.width / img.height : undefined;
+          const isWide = ratio && ratio > 1.4;
+          const isTall = ratio && ratio < 0.75;
+          return (
+            <motion.button
+              key={img.id}
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: Math.min(i * 0.03, 0.4) }}
+              whileHover={{ y: -3 }}
+              onClick={() => setActive(img)}
+              className={`relative group sports-glass sports-glow-hover rounded-2xl overflow-hidden block ${isWide ? "sm:col-span-2" : ""} ${isTall ? "sm:row-span-2" : ""}`}
+              style={{ aspectRatio: ratio ? String(ratio) : "1 / 1" }}
+            >
+              <img
+                src={img.url}
+                alt={img.alt_text || img.caption || "Match photo"}
+                loading="lazy"
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition" />
+              {img.caption && (
+                <div className="absolute bottom-0 left-0 right-0 p-3 text-left translate-y-2 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition">
+                  <p className="text-xs sm:text-sm font-bold text-white line-clamp-2 drop-shadow">{img.caption}</p>
+                </div>
+              )}
+              {img.is_pinned && (
+                <span className="absolute top-2 left-2 sports-accent-bg text-[9px] font-black uppercase tracking-widest rounded-full px-2 py-0.5">★</span>
+              )}
+            </motion.button>
+          );
+        })}
+      </div>
+
+      {active && (
+        <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setActive(null)}>
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="max-w-6xl w-full max-h-[90vh] flex flex-col items-center"
+            onClick={e => e.stopPropagation()}
+          >
+            <img src={active.url} alt={active.caption || ""} className="max-w-full max-h-[80vh] w-auto h-auto object-contain rounded-xl" />
+            {active.caption && <p className="text-center text-white mt-3 font-medium">{active.caption}</p>}
+          </motion.div>
         </div>
       )}
     </section>
