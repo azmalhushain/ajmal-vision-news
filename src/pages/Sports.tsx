@@ -42,13 +42,14 @@ const Sports = () => {
   useEffect(() => {
     if (!tid) return;
     const load = async () => {
-      const [{ data: t }, { data: m }, { data: n }, { data: v }] = await Promise.all([
+      const [{ data: t }, { data: m }, { data: n }, { data: v }, { data: g }] = await Promise.all([
         db.from("teams").select("*").eq("tournament_id", tid).eq("is_active", true).order("display_order"),
         db.from("matches").select("*").eq("tournament_id", tid).order("scheduled_at", { ascending: true }),
         db.from("sports_news").select("*").eq("tournament_id", tid).eq("status", "published").order("published_at", { ascending: false }).limit(8),
         db.from("sports_media").select("*").eq("tournament_id", tid).eq("kind", "video").eq("is_active", true).order("is_pinned", { ascending: false }).order("display_order").limit(12),
+        db.from("sports_media").select("*").eq("tournament_id", tid).eq("kind", "image").eq("is_active", true).order("is_pinned", { ascending: false }).order("display_order").limit(24),
       ]);
-      setTeams(t || []); setMatches(m || []); setNews(n || []); setVideos(v || []);
+      setTeams(t || []); setMatches(m || []); setNews(n || []); setVideos(v || []); setGallery(g || []);
       const teamIds = (t || []).map((x: any) => x.id);
       if (teamIds.length) {
         const { data: pls } = await db.from("players").select("*").in("team_id", teamIds).eq("is_active", true);
