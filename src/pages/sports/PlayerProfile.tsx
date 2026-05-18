@@ -32,6 +32,7 @@ export default function PlayerProfile() {
   const [team, setTeam] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [perf, setPerf] = useState<{ label: string; runs: number; wickets: number; date: string }[]>([]);
 
   const load = async () => {
     setLoading(true);
@@ -40,6 +41,35 @@ export default function PlayerProfile() {
     if (p?.team_id) {
       const { data: t } = await db.from("teams").select("*").eq("id", p.team_id).maybeSingle();
       setTeam(t);
+    }
+    // Build performance series from match_events (last ~10 matches)
+    if (p?.name) {
+      const { data: events } = await db.from("match_events")
+        .select("match_id, runs, is_wicket, batter, bowler")
+        .or(`batter.eq.${p.name},bowler.eq.${p.name}`);
+      if (events?.length) {
+        const ids = Array.from(new Set(events.map((e: any) => e.match_id)));
+        const { data: ms } = await db.from("matches").select("id, match_no, scheduled_at").in("id", ids);
+        const mmap = Object.fromEntries((ms || []).map((m: any) => [m.id, m]));
+        const agg: Record<string, { runs: number; wickets: number; date: string; label: string }> = {};
+        events.forEach((e: any) => {
+          const m = mmap[e.match_id];
+          if (!m) return;
+          const key = e.match_id;
+          agg[key] ||= {
+            runs: 0,
+            wickets: 0,
+            date: m.scheduled_at,
+            label: m.match_no ? `M${m.match_no}` : new Date(m.scheduled_at || Date.now()).toLocaleDateString(undefined, { month: "short", day: "numeric" }),
+          };
+          if (e.batter === p.name) agg[key].runs += e.runs || 0;
+          if (e.bowler === p.name && e.is_wicket) agg[key].wickets += 1;
+        });
+        const series = Object.values(agg)
+          .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+          .slice(-10);
+        setPerf(series);
+      }
     }
     setLoading(false);
   };
