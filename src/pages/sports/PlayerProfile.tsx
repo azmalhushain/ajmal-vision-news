@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Footer } from "@/components/Footer";
@@ -10,8 +10,11 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ShareButtons } from "@/components/ShareButtons";
 import { motion } from "framer-motion";
-import { ArrowLeft, Sparkles, Trophy, Globe2 } from "lucide-react";
+import { ArrowLeft, Sparkles, Trophy, Globe2, TrendingUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import {
+  ResponsiveContainer, ComposedChart, Area, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend,
+} from "recharts";
 
 const db: any = supabase;
 
