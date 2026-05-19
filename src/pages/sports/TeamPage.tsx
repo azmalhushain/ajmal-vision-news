@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
 import { ArrowLeft, Heart, MapPin, Calendar, Users, Trophy, Crown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { PlayerCard } from "@/components/sports/PlayerCard";
 
 const db: any = supabase;
 
@@ -161,34 +162,23 @@ export default function TeamPage() {
 
             <TabsContent value="squad" className="mt-6">
               {captain && (
-                <Card className="bg-white/[0.03] border-white/10 p-5 mb-5 flex items-center gap-4">
-                  <Crown className="h-6 w-6 text-amber-400" />
-                  <div className="flex-1">
-                    <p className="text-xs uppercase tracking-wider text-white/60">Captain</p>
-                    <Link to={`/sports/player/${captain.slug}`} className="text-xl font-bold hover:underline">{captain.name}</Link>
+                <Card className="bg-gradient-to-r from-amber-500/10 via-white/[0.03] to-white/[0.03] border-amber-400/30 p-5 mb-6 flex items-center gap-4">
+                  <Crown className="h-6 w-6 text-amber-400 fill-amber-400" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs uppercase tracking-widest text-amber-300/80 font-bold">Captain</p>
+                    <Link to={`/sports/player/${captain.slug}`} className="text-xl font-bold hover:underline truncate block">{captain.name}</Link>
                   </div>
-                  {captain.photo_url && <img src={captain.photo_url} alt="" className="w-14 h-14 rounded-full object-cover border-2" style={{ borderColor: primary }} />}
+                  {captain.photo_url && <img src={captain.photo_url} alt="" className="w-14 h-14 rounded-full object-cover border-2 border-amber-400/50" />}
                 </Card>
               )}
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {players.map(p => (
-                  <Link
-                    key={p.id} to={`/sports/player/${p.slug}`}
-                    className="group rounded-xl border border-white/10 bg-white/[0.03] p-4 flex items-center gap-3 hover:border-[hsl(var(--sports-accent,80_95%_60%))]/60 hover:bg-white/[0.06] transition"
-                  >
-                    {p.photo_url
-                      ? <img src={p.photo_url} alt={p.name} className="w-14 h-14 rounded-full object-cover border-2" style={{ borderColor: primary }} />
-                      : <div className="w-14 h-14 rounded-full flex items-center justify-center font-black text-lg" style={{ background: primary }}>{p.jersey_number ?? p.name?.[0]}</div>}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold truncate group-hover:text-[hsl(var(--sports-accent,80_95%_60%))]">{p.name}</p>
-                      <p className="text-xs text-white/60 capitalize truncate">{p.role}{p.is_overseas ? " · Overseas" : ""}</p>
-                    </div>
-                    {p.is_captain && <Badge className="bg-amber-500 text-black text-[10px]">C</Badge>}
-                  </Link>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
+                {players.map((p, i) => (
+                  <PlayerCard key={p.id} player={p} accent={primary} index={i} />
                 ))}
                 {!players.length && <p className="text-white/60 text-center py-12 col-span-full">No squad players yet.</p>}
               </div>
             </TabsContent>
+
 
             <TabsContent value="fixtures" className="mt-6 space-y-3">
               {upcoming.map(m => (
