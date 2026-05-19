@@ -66,10 +66,9 @@ export const PlayerCard = ({ player: p, accent, index = 0, linkable = true }: Pl
 
   const body = (
     <motion.div
-      initial={{ opacity: 0, y: 18 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.45, delay: Math.min(index * 0.04, 0.4) }}
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: Math.min(index * 0.03, 0.3) }}
       className="group relative flex flex-col aspect-[2/3] overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl transition-all duration-500 hover:-translate-y-2 hover:border-white/30 hover:shadow-[0_20px_60px_-15px_rgba(30,144,255,0.45)] active:scale-[0.98]"
     >
       {/* Top accent line on hover */}
