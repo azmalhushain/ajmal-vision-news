@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
 import { ArrowLeft, Heart, MapPin, Calendar, Users, Trophy, Crown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { PlayerCard } from "@/components/sports/PlayerCard";
 
 const db: any = supabase;
 
