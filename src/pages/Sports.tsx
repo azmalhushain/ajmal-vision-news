@@ -389,6 +389,14 @@ const Sports = () => {
         <VideosShowcase videos={videos} />
         <SocialPosts />
         <Footer />
+        {tournament?.intro_video_url && (
+          <VideoPlayerModal
+            isOpen={introVideoOpen}
+            onClose={() => setIntroVideoOpen(false)}
+            videoUrl={tournament.intro_video_url}
+            title={`${tournament.name || "Tournament"} — Intro`}
+          />
+        )}
       </div>
     </PageTransition>
   );
