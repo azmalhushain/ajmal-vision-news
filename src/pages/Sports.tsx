@@ -15,6 +15,7 @@ import { SEOHead } from "@/components/SEOHead";
 import ogSports from "@/assets/og-sports.jpg";
 import stadiumHero from "@/assets/sports-stadium-hero.jpg";
 import { MatchCard } from "@/components/sports/MatchCard";
+import { VideoPlayerModal } from "@/components/VideoPlayerModal";
 import { motion, AnimatePresence, useInView, useMotionValue, useTransform, animate } from "framer-motion";
 import { formatOvers } from "@/lib/sportsHelpers";
 
@@ -23,6 +24,7 @@ const db: any = supabase;
 const Sports = () => {
   const [tournaments, setTournaments] = useState<any[]>([]);
   const [tid, setTid] = useState<string>("");
+  const [introVideoOpen, setIntroVideoOpen] = useState(false);
   const [teams, setTeams] = useState<any[]>([]);
   const [matches, setMatches] = useState<any[]>([]);
   const [innings, setInnings] = useState<any[]>([]);
@@ -223,7 +225,20 @@ const Sports = () => {
                   >
                     <a href="#teams">Explore Teams</a>
                   </Button>
+                  {tournament?.intro_video_url && (
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      onClick={() => setIntroVideoOpen(true)}
+                      className="rounded-full border-white/20 bg-white/5 hover:bg-white/10 text-[hsl(var(--sports-text))] h-12 px-7 font-bold"
+                    >
+                      <Play className="h-4 w-4 mr-2 fill-current" /> Play Intro
+                    </Button>
+                  )}
                 </div>
+                {tournament?.tagline && (
+                  <p className="mt-4 text-sm sports-accent-text font-semibold tracking-wide uppercase">{tournament.tagline}</p>
+                )}
 
                 {/* Stat strip */}
                 <div className="mt-8 sm:mt-10 sports-glass rounded-2xl p-4 sm:p-5 grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -374,6 +389,14 @@ const Sports = () => {
         <VideosShowcase videos={videos} />
         <SocialPosts />
         <Footer />
+        {tournament?.intro_video_url && (
+          <VideoPlayerModal
+            isOpen={introVideoOpen}
+            onClose={() => setIntroVideoOpen(false)}
+            videoUrl={tournament.intro_video_url}
+            title={`${tournament.name || "Tournament"} — Intro`}
+          />
+        )}
       </div>
     </PageTransition>
   );

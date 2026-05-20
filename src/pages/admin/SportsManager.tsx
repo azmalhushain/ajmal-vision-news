@@ -813,6 +813,100 @@ const MediaTab = ({ tournamentId }: { tournamentId: string }) => {
   );
 };
 
+// ============ TOURNAMENT SETTINGS ============
+const TournamentSettingsTab = ({ tournamentId, onSaved }: { tournamentId: string; onSaved: () => void }) => {
+  const { toast } = useToast();
+  const [form, setForm] = useState<Row>({});
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const load = async () => {
+    setLoading(true);
+    const { data } = await db.from("tournaments").select("*").eq("id", tournamentId).maybeSingle();
+    setForm(data || {});
+    setLoading(false);
+  };
+
+  useEffect(() => { if (tournamentId) load(); }, [tournamentId]);
+
+  const update = (k: string, v: any) => setForm((f) => ({ ...f, [k]: v }));
+
+  const save = async () => {
+    setSaving(true);
+    const payload = {
+      name: form.name,
+      season: form.season,
+      slug: form.slug || slugify(form.name || ""),
+      tagline: form.tagline || null,
+      description: form.description || null,
+      venue: form.venue || null,
+      status: form.status || "upcoming",
+      start_date: form.start_date || null,
+      end_date: form.end_date || null,
+      banner_url: form.banner_url || null,
+      intro_video_url: form.intro_video_url || null,
+      youtube_channel_url: form.youtube_channel_url || null,
+      facebook_page_url: form.facebook_page_url || null,
+      is_active: form.is_active ?? true,
+      display_order: form.display_order ?? 0,
+    };
+    const { error } = await db.from("tournaments").update(payload).eq("id", tournamentId);
+    setSaving(false);
+    if (error) return toast({ title: "Save failed", description: error.message, variant: "destructive" });
+    toast({ title: "Tournament saved" });
+    onSaved();
+    load();
+  };
+
+  if (loading) return <Card><CardContent className="p-6 text-sm text-muted-foreground">Loading…</CardContent></Card>;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2"><Trophy className="h-5 w-5 text-primary" /> Tournament Settings</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div><Label>Name</Label><Input value={form.name || ""} onChange={(e) => update("name", e.target.value)} /></div>
+          <div><Label>Season</Label><Input value={form.season || ""} onChange={(e) => update("season", e.target.value)} placeholder="e.g. 2025" /></div>
+          <div><Label>Slug</Label><Input value={form.slug || ""} onChange={(e) => update("slug", e.target.value)} placeholder="auto from name" /></div>
+          <div>
+            <Label>Status</Label>
+            <Select value={form.status || "upcoming"} onValueChange={(v) => update("status", v)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="upcoming">Upcoming</SelectItem>
+                <SelectItem value="ongoing">Ongoing</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div><Label>Start date</Label><Input type="date" value={form.start_date || ""} onChange={(e) => update("start_date", e.target.value)} /></div>
+          <div><Label>End date</Label><Input type="date" value={form.end_date || ""} onChange={(e) => update("end_date", e.target.value)} /></div>
+          <div className="sm:col-span-2"><Label>Venue</Label><Input value={form.venue || ""} onChange={(e) => update("venue", e.target.value)} /></div>
+          <div className="sm:col-span-2"><Label>Tagline (short hero subtitle)</Label><Input value={form.tagline || ""} onChange={(e) => update("tagline", e.target.value)} placeholder="The ultimate cricket showdown." /></div>
+          <div className="sm:col-span-2"><Label>Description</Label><Textarea rows={3} value={form.description || ""} onChange={(e) => update("description", e.target.value)} /></div>
+          <div className="sm:col-span-2"><Label>Banner image URL</Label><Input value={form.banner_url || ""} onChange={(e) => update("banner_url", e.target.value)} placeholder="https://…" /></div>
+          <div className="sm:col-span-2">
+            <Label className="flex items-center gap-1"><Video className="h-4 w-4" /> Intro Video URL (YouTube / MP4)</Label>
+            <Input value={form.intro_video_url || ""} onChange={(e) => update("intro_video_url", e.target.value)} placeholder="https://youtube.com/watch?v=..." />
+            <p className="text-xs text-muted-foreground mt-1">Shown as a play button in the Sports hero & inside the Videos section.</p>
+          </div>
+          <div><Label>YouTube Channel URL</Label><Input value={form.youtube_channel_url || ""} onChange={(e) => update("youtube_channel_url", e.target.value)} /></div>
+          <div><Label>Facebook Page URL</Label><Input value={form.facebook_page_url || ""} onChange={(e) => update("facebook_page_url", e.target.value)} /></div>
+          <div className="flex items-center gap-3 sm:col-span-2">
+            <Switch checked={!!form.is_active} onCheckedChange={(v) => update("is_active", v)} />
+            <span className="text-sm">Active (visible to public)</span>
+          </div>
+        </div>
+        <div className="flex justify-end">
+          <Button onClick={save} disabled={saving}>{saving ? "Saving…" : "Save changes"}</Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
 // ============ MAIN PAGE ============
 const SportsManager = () => {
   const [tournaments, setTournaments] = useState<Row[]>([]);
@@ -854,8 +948,9 @@ const SportsManager = () => {
       </div>
 
       {tournamentId && (
-        <Tabs defaultValue="teams" className="space-y-4">
+        <Tabs defaultValue="settings" className="space-y-4">
           <TabsList className="flex-wrap h-auto">
+            <TabsTrigger value="settings"><Trophy className="h-4 w-4 mr-1" /> Settings</TabsTrigger>
             <TabsTrigger value="teams"><Users className="h-4 w-4 mr-1" /> Teams</TabsTrigger>
             <TabsTrigger value="players"><Users className="h-4 w-4 mr-1" /> Players</TabsTrigger>
             <TabsTrigger value="fixtures"><Calendar className="h-4 w-4 mr-1" /> Fixtures</TabsTrigger>
@@ -863,6 +958,12 @@ const SportsManager = () => {
             <TabsTrigger value="news"><Newspaper className="h-4 w-4 mr-1" /> News</TabsTrigger>
             <TabsTrigger value="media"><ImageIcon className="h-4 w-4 mr-1" /> Media</TabsTrigger>
           </TabsList>
+          <TabsContent value="settings">
+            <TournamentSettingsTab
+              tournamentId={tournamentId}
+              onSaved={() => db.from("tournaments").select("*").order("display_order").then(({ data }: any) => setTournaments(data || []))}
+            />
+          </TabsContent>
           <TabsContent value="teams"><TeamsTab tournamentId={tournamentId} /></TabsContent>
           <TabsContent value="players"><PlayersTab tournamentId={tournamentId} /></TabsContent>
           <TabsContent value="fixtures"><FixturesTab tournamentId={tournamentId} /></TabsContent>

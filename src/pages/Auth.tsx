@@ -77,82 +77,51 @@ const Auth = () => {
     return data;
   };
 
+  // Email signup uses Supabase's native auth flow which sends confirmation emails
+  // through Lovable's managed email infrastructure (no custom OTP, no Resend dependency).
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // First send OTP for email verification
-      await sendEmailOtp(email);
-      
-      // Store signup data for after verification
-      setPendingSignupData({ email, password, fullName });
-      
-      toast({
-        title: "Verification code sent!",
-        description: "Please check your email for the 6-digit verification code.",
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: { full_name: fullName },
+        },
       });
-      
-      setStep("verify-email-otp");
+
+      if (error) throw error;
+
+      // If email confirmation is disabled, the user is signed in immediately.
+      if (data.session) {
+        toast({ title: "Account created!", description: "You're all set." });
+        navigate("/");
+        return;
+      }
+
+      // Otherwise prompt user to confirm via the email link.
+      setPendingSignupData({ email, password, fullName });
+      toast({
+        title: "Check your inbox",
+        description: "We sent a confirmation link to your email. Click it to activate your account.",
+      });
+      setStep("reset-sent");
     } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: "Sign-up failed", description: error.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
 
+  // Kept for the (now unused) 6-digit email verification UI — falls back to resend confirmation link.
   const handleVerifyEmailOtp = async () => {
-    if (otpCode.length !== 6) {
-      toast({ title: "Invalid OTP", description: "Please enter the 6-digit code.", variant: "destructive" });
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      // Verify the OTP
-      const result = await verifyEmailOtp(pendingSignupData?.email || email, otpCode);
-      
-      if (!result.success) {
-        throw new Error(result.error || "OTP verification failed");
-      }
-
-      // If we have pending signup data, complete the registration
-      if (pendingSignupData) {
-        const { data, error } = await supabase.auth.signUp({
-          email: pendingSignupData.email,
-          password: pendingSignupData.password,
-          options: {
-            data: { full_name: pendingSignupData.fullName },
-          },
-        });
-
-        if (error) throw error;
-
-        if (data.session) {
-          toast({
-            title: "Account created!",
-            description: "Welcome! Your account has been verified and created successfully.",
-          });
-          navigate("/");
-        } else {
-          // Auto-confirm should handle this, but fallback to login
-          toast({
-            title: "Account created!",
-            description: "Please sign in with your credentials.",
-          });
-          setStep("login");
-        }
-        
-        setPendingSignupData(null);
-      }
-      
-      setOtpCode("");
-    } catch (error: any) {
-      toast({ title: "Verification failed", description: error.message, variant: "destructive" });
-    } finally {
-      setLoading(false);
-    }
+    toast({
+      title: "Use the email link",
+      description: "Open the confirmation link we just sent to your inbox.",
+    });
   };
 
   const handleLogin = async (e: React.FormEvent) => {
