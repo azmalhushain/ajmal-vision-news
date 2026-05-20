@@ -225,7 +225,20 @@ const Sports = () => {
                   >
                     <a href="#teams">Explore Teams</a>
                   </Button>
+                  {tournament?.intro_video_url && (
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      onClick={() => setIntroVideoOpen(true)}
+                      className="rounded-full border-white/20 bg-white/5 hover:bg-white/10 text-[hsl(var(--sports-text))] h-12 px-7 font-bold"
+                    >
+                      <Play className="h-4 w-4 mr-2 fill-current" /> Play Intro
+                    </Button>
+                  )}
                 </div>
+                {tournament?.tagline && (
+                  <p className="mt-4 text-sm sports-accent-text font-semibold tracking-wide uppercase">{tournament.tagline}</p>
+                )}
 
                 {/* Stat strip */}
                 <div className="mt-8 sm:mt-10 sports-glass rounded-2xl p-4 sm:p-5 grid grid-cols-2 sm:grid-cols-4 gap-4">
