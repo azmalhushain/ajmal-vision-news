@@ -269,9 +269,12 @@ const Sports = () => {
           </div>
         </section>
 
-        {/* MAIN CONTENT — two columns on desktop, stacked on mobile */}
+        {/* Sticky in-page navigation */}
+        <SportsSubNav hasLive={live.length > 0} />
+
+        {/* MAIN CONTENT — two columns on tablet+, stacked on mobile */}
         <section className="container mx-auto px-4 py-10 sm:py-14">
-          <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
+          <div className="grid gap-8 md:grid-cols-[1fr_320px] lg:grid-cols-[1fr_360px]">
             {/* LEFT MAIN */}
             <div className="space-y-10 min-w-0">
               {/* Next Big Battles */}
@@ -377,16 +380,16 @@ const Sports = () => {
             </div>
 
             {/* RIGHT RAIL */}
-            <aside className="space-y-6 lg:sticky lg:top-24 self-start">
+            <aside className="space-y-6 md:sticky md:top-36 self-start">
               <FeaturedTeamsRail teams={teams} />
               <PointsTableCompact rows={pointsTable} />
             </aside>
           </div>
         </section>
 
-        <StatsLeaderboards players={players} teams={teams} />
-        <GalleryShowcase images={gallery} />
-        <VideosShowcase videos={videos} />
+        <div id="stats"><StatsLeaderboards players={players} teams={teams} /></div>
+        <div id="videos"><VideosShowcase videos={videos} /></div>
+        <div id="gallery"><GalleryShowcase images={gallery} /></div>
         <SocialPosts />
         <Footer />
         {tournament?.intro_video_url && (
@@ -403,6 +406,69 @@ const Sports = () => {
 };
 
 /* ---------- Components ---------- */
+
+const SUB_NAV_ITEMS = [
+  { id: "fixtures", label: "Fixtures", I: Calendar },
+  { id: "teams", label: "Teams", I: Users },
+  { id: "stats", label: "Stats", I: BarChart3 },
+  { id: "videos", label: "Videos", I: Play },
+  { id: "gallery", label: "Gallery", I: Award },
+];
+
+const SportsSubNav = ({ hasLive }: { hasLive: boolean }) => {
+  const [active, setActive] = useState<string>("fixtures");
+  useEffect(() => {
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => { if (e.isIntersecting) setActive(e.target.id); });
+      },
+      { rootMargin: "-40% 0px -55% 0px", threshold: 0 }
+    );
+    SUB_NAV_ITEMS.forEach(({ id }) => {
+      const el = document.getElementById(id);
+      if (el) obs.observe(el);
+    });
+    return () => obs.disconnect();
+  }, []);
+  const go = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      const y = el.getBoundingClientRect().top + window.scrollY - 120;
+      window.scrollTo({ top: y, behavior: "smooth" });
+    }
+  };
+  return (
+    <div className="sticky top-16 sm:top-20 z-30 bg-[hsl(var(--sports-bg))]/85 backdrop-blur-xl border-y border-white/10">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-thin py-2.5">
+          {hasLive && (
+            <button
+              onClick={() => go("fixtures")}
+              className="shrink-0 inline-flex items-center gap-1.5 px-3 h-9 rounded-full bg-destructive/15 border border-destructive/40 text-destructive text-xs font-bold uppercase tracking-wider"
+            >
+              <Radio className="h-3 w-3 animate-pulse" /> Live
+            </button>
+          )}
+          {SUB_NAV_ITEMS.map(({ id, label, I }) => (
+            <button
+              key={id}
+              onClick={() => go(id)}
+              className={`shrink-0 inline-flex items-center gap-1.5 px-3.5 h-9 rounded-full text-xs font-bold whitespace-nowrap transition border ${
+                active === id
+                  ? "sports-accent-bg border-transparent text-white shadow-[0_0_25px_-5px_hsl(var(--sports-accent)/0.7)]"
+                  : "bg-white/[0.04] border-white/10 text-[hsl(var(--sports-muted))] hover:text-[hsl(var(--sports-text))] hover:border-white/20"
+              }`}
+            >
+              <I className="h-3.5 w-3.5" /> {label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
 
 const Stat = ({ icon: Icon, value, label, prefix, suffix }: any) => {
   const ref = useRef<HTMLDivElement>(null);
