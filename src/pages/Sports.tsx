@@ -269,9 +269,12 @@ const Sports = () => {
           </div>
         </section>
 
-        {/* MAIN CONTENT — two columns on desktop, stacked on mobile */}
+        {/* Sticky in-page navigation */}
+        <SportsSubNav hasLive={live.length > 0} />
+
+        {/* MAIN CONTENT — two columns on tablet+, stacked on mobile */}
         <section className="container mx-auto px-4 py-10 sm:py-14">
-          <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
+          <div className="grid gap-8 md:grid-cols-[1fr_320px] lg:grid-cols-[1fr_360px]">
             {/* LEFT MAIN */}
             <div className="space-y-10 min-w-0">
               {/* Next Big Battles */}
