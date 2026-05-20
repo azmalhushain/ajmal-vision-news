@@ -15,6 +15,7 @@ import { SEOHead } from "@/components/SEOHead";
 import ogSports from "@/assets/og-sports.jpg";
 import stadiumHero from "@/assets/sports-stadium-hero.jpg";
 import { MatchCard } from "@/components/sports/MatchCard";
+import { VideoPlayerModal } from "@/components/VideoPlayerModal";
 import { motion, AnimatePresence, useInView, useMotionValue, useTransform, animate } from "framer-motion";
 import { formatOvers } from "@/lib/sportsHelpers";
 
