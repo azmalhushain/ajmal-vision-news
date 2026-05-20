@@ -1582,6 +1582,7 @@ export type Database = {
           end_date: string | null
           facebook_page_url: string | null
           id: string
+          intro_video_url: string | null
           is_active: boolean
           name: string
           season: string | null
@@ -1589,6 +1590,7 @@ export type Database = {
           sponsor_logos: Json
           start_date: string | null
           status: string
+          tagline: string | null
           updated_at: string
           venue: string | null
           youtube_channel_url: string | null
@@ -1601,6 +1603,7 @@ export type Database = {
           end_date?: string | null
           facebook_page_url?: string | null
           id?: string
+          intro_video_url?: string | null
           is_active?: boolean
           name: string
           season?: string | null
@@ -1608,6 +1611,7 @@ export type Database = {
           sponsor_logos?: Json
           start_date?: string | null
           status?: string
+          tagline?: string | null
           updated_at?: string
           venue?: string | null
           youtube_channel_url?: string | null
@@ -1620,6 +1624,7 @@ export type Database = {
           end_date?: string | null
           facebook_page_url?: string | null
           id?: string
+          intro_video_url?: string | null
           is_active?: boolean
           name?: string
           season?: string | null
@@ -1627,6 +1632,7 @@ export type Database = {
           sponsor_logos?: Json
           start_date?: string | null
           status?: string
+          tagline?: string | null
           updated_at?: string
           venue?: string | null
           youtube_channel_url?: string | null
