@@ -384,9 +384,9 @@ const Sports = () => {
           </div>
         </section>
 
-        <StatsLeaderboards players={players} teams={teams} />
-        <GalleryShowcase images={gallery} />
-        <VideosShowcase videos={videos} />
+        <div id="stats"><StatsLeaderboards players={players} teams={teams} /></div>
+        <div id="videos"><VideosShowcase videos={videos} /></div>
+        <div id="gallery"><GalleryShowcase images={gallery} /></div>
         <SocialPosts />
         <Footer />
         {tournament?.intro_video_url && (
