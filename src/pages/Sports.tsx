@@ -380,7 +380,7 @@ const Sports = () => {
             </div>
 
             {/* RIGHT RAIL */}
-            <aside className="space-y-6 lg:sticky lg:top-24 self-start">
+            <aside className="space-y-6 md:sticky md:top-36 self-start">
               <FeaturedTeamsRail teams={teams} />
               <PointsTableCompact rows={pointsTable} />
             </aside>
