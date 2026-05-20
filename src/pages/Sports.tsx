@@ -407,6 +407,69 @@ const Sports = () => {
 
 /* ---------- Components ---------- */
 
+const SUB_NAV_ITEMS = [
+  { id: "fixtures", label: "Fixtures", I: Calendar },
+  { id: "teams", label: "Teams", I: Users },
+  { id: "stats", label: "Stats", I: BarChart3 },
+  { id: "videos", label: "Videos", I: Play },
+  { id: "gallery", label: "Gallery", I: Award },
+];
+
+const SportsSubNav = ({ hasLive }: { hasLive: boolean }) => {
+  const [active, setActive] = useState<string>("fixtures");
+  useEffect(() => {
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => { if (e.isIntersecting) setActive(e.target.id); });
+      },
+      { rootMargin: "-40% 0px -55% 0px", threshold: 0 }
+    );
+    SUB_NAV_ITEMS.forEach(({ id }) => {
+      const el = document.getElementById(id);
+      if (el) obs.observe(el);
+    });
+    return () => obs.disconnect();
+  }, []);
+  const go = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      const y = el.getBoundingClientRect().top + window.scrollY - 120;
+      window.scrollTo({ top: y, behavior: "smooth" });
+    }
+  };
+  return (
+    <div className="sticky top-16 sm:top-20 z-30 bg-[hsl(var(--sports-bg))]/85 backdrop-blur-xl border-y border-white/10">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-thin py-2.5">
+          {hasLive && (
+            <button
+              onClick={() => go("fixtures")}
+              className="shrink-0 inline-flex items-center gap-1.5 px-3 h-9 rounded-full bg-destructive/15 border border-destructive/40 text-destructive text-xs font-bold uppercase tracking-wider"
+            >
+              <Radio className="h-3 w-3 animate-pulse" /> Live
+            </button>
+          )}
+          {SUB_NAV_ITEMS.map(({ id, label, I }) => (
+            <button
+              key={id}
+              onClick={() => go(id)}
+              className={`shrink-0 inline-flex items-center gap-1.5 px-3.5 h-9 rounded-full text-xs font-bold whitespace-nowrap transition border ${
+                active === id
+                  ? "sports-accent-bg border-transparent text-white shadow-[0_0_25px_-5px_hsl(var(--sports-accent)/0.7)]"
+                  : "bg-white/[0.04] border-white/10 text-[hsl(var(--sports-muted))] hover:text-[hsl(var(--sports-text))] hover:border-white/20"
+              }`}
+            >
+              <I className="h-3.5 w-3.5" /> {label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+
 const Stat = ({ icon: Icon, value, label, prefix, suffix }: any) => {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true });
