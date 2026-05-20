@@ -24,6 +24,7 @@ const db: any = supabase;
 const Sports = () => {
   const [tournaments, setTournaments] = useState<any[]>([]);
   const [tid, setTid] = useState<string>("");
+  const [introVideoOpen, setIntroVideoOpen] = useState(false);
   const [teams, setTeams] = useState<any[]>([]);
   const [matches, setMatches] = useState<any[]>([]);
   const [innings, setInnings] = useState<any[]>([]);
