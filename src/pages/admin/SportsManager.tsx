@@ -948,8 +948,9 @@ const SportsManager = () => {
       </div>
 
       {tournamentId && (
-        <Tabs defaultValue="teams" className="space-y-4">
+        <Tabs defaultValue="settings" className="space-y-4">
           <TabsList className="flex-wrap h-auto">
+            <TabsTrigger value="settings"><Trophy className="h-4 w-4 mr-1" /> Settings</TabsTrigger>
             <TabsTrigger value="teams"><Users className="h-4 w-4 mr-1" /> Teams</TabsTrigger>
             <TabsTrigger value="players"><Users className="h-4 w-4 mr-1" /> Players</TabsTrigger>
             <TabsTrigger value="fixtures"><Calendar className="h-4 w-4 mr-1" /> Fixtures</TabsTrigger>
@@ -957,6 +958,12 @@ const SportsManager = () => {
             <TabsTrigger value="news"><Newspaper className="h-4 w-4 mr-1" /> News</TabsTrigger>
             <TabsTrigger value="media"><ImageIcon className="h-4 w-4 mr-1" /> Media</TabsTrigger>
           </TabsList>
+          <TabsContent value="settings">
+            <TournamentSettingsTab
+              tournamentId={tournamentId}
+              onSaved={() => db.from("tournaments").select("*").order("display_order").then(({ data }: any) => setTournaments(data || []))}
+            />
+          </TabsContent>
           <TabsContent value="teams"><TeamsTab tournamentId={tournamentId} /></TabsContent>
           <TabsContent value="players"><PlayersTab tournamentId={tournamentId} /></TabsContent>
           <TabsContent value="fixtures"><FixturesTab tournamentId={tournamentId} /></TabsContent>
