@@ -300,7 +300,7 @@ const Sports = () => {
               </div>
 
               {/* Feel the Excitement band */}
-              <ExcitementBand tournament={tournament} />
+              <ExcitementBand tournament={tournament} onPlay={() => setIntroVideoOpen(true)} />
 
               {/* Tabs for full lists */}
               <div id="teams">
@@ -800,22 +800,37 @@ const PointsTableCompact = ({ rows }: { rows: any[] }) => (
   </div>
 );
 
-const ExcitementBand = ({ tournament }: any) => {
+const ExcitementBand = ({ tournament, onPlay }: any) => {
   const features = [
     { I: Tv, title: "Live Streaming", desc: "Catch every match live, anywhere in the world." },
     { I: BarChart3, title: "Real-Time Stats", desc: "Ball-by-ball updates, scores, and AI insights." },
     { I: Award, title: "Exclusive Rewards", desc: "Win prizes, unlock badges, and climb the leaderboard." },
   ];
+  const hasVideo = !!tournament?.intro_video_url;
+  const poster = tournament?.banner_url || stadiumHero;
   return (
-    <div className="grid gap-5 md:grid-cols-[1fr_1.2fr] items-center sports-glass rounded-3xl overflow-hidden">
-      <div className="relative aspect-video md:aspect-auto md:h-full min-h-[220px]">
-        <img src={stadiumHero} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--sports-bg))] via-transparent to-transparent" />
-        <button className="absolute inset-0 flex items-center justify-center group">
-          <span className="w-14 h-14 rounded-full sports-accent-bg flex items-center justify-center shadow-[0_0_40px_-5px_hsl(var(--sports-accent)/0.8)] group-hover:scale-110 transition">
-            <Play className="h-5 w-5 fill-current ml-0.5" />
+    <div className="grid gap-5 md:grid-cols-[1fr_1.2fr] items-stretch sports-glass rounded-3xl overflow-hidden">
+      <div className="relative aspect-video md:aspect-auto md:h-full min-h-[260px] group">
+        <img src={poster} alt="" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--sports-bg))]/70 via-[hsl(var(--sports-bg))]/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[hsl(var(--sports-bg))]/80 via-transparent to-transparent" />
+        <button
+          type="button"
+          onClick={hasVideo ? onPlay : undefined}
+          disabled={!hasVideo}
+          aria-label={hasVideo ? "Play tournament intro video" : "Intro video coming soon"}
+          className="absolute inset-0 flex items-center justify-center group/btn focus:outline-none"
+        >
+          <span className="absolute w-24 h-24 rounded-full sports-accent-bg/30 animate-ping opacity-60" />
+          <span className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full sports-accent-bg flex items-center justify-center shadow-[0_0_60px_-5px_hsl(var(--sports-accent)/0.9)] transition-transform duration-300 group-hover/btn:scale-110 group-active/btn:scale-95">
+            <Play className="h-6 w-6 sm:h-7 sm:w-7 fill-current ml-1" />
           </span>
         </button>
+        {!hasVideo && (
+          <span className="absolute bottom-4 left-4 text-[10px] font-bold tracking-widest uppercase text-white/70 bg-black/40 backdrop-blur px-2 py-1 rounded">
+            Intro coming soon
+          </span>
+        )}
       </div>
       <div className="p-5 sm:p-7">
         <p className="text-[10px] font-bold tracking-[0.3em] uppercase sports-accent-text">The Tournament</p>
