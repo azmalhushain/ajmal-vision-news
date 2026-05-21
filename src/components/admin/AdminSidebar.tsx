@@ -1,152 +1,136 @@
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
-  LayoutDashboard,
-  FileText,
-  Users,
-  BarChart3,
-  Settings,
-  Home,
-  Eye,
-  Grid3x3,
-  Info,
-  Image,
-  Phone,
-  PanelBottom,
-  Mic,
-  MessageCircle,
-  Heart,
-  Mail,
-  Send,
-  Newspaper,
-  TrendingUp,
-  FlaskConical,
-  Trophy,
+  LayoutDashboard, FileText, Users, BarChart3, Settings, Home, Eye, Grid3x3,
+  Info, Image, Phone, PanelBottom, Mic, MessageCircle, Heart, Mail, Send,
+  Newspaper, TrendingUp, FlaskConical, Trophy, Sparkles,
 } from "lucide-react";
 
-interface MenuItem {
-  icon: React.ElementType;
-  label: string;
-  path: string;
-}
-
-interface MenuSection {
-  title: string;
-  items: MenuItem[];
-}
+interface MenuItem { icon: React.ElementType; label: string; path: string; }
+interface MenuSection { title: string; items: MenuItem[]; }
 
 const menuSections: MenuSection[] = [
-  {
-    title: "Dashboard",
-    items: [
-      { icon: LayoutDashboard, label: "Overview", path: "/admin" },
-      { icon: BarChart3, label: "Analytics", path: "/admin/analytics" },
-      { icon: TrendingUp, label: "Engagement", path: "/admin/engagement" },
-    ],
-  },
-  {
-    title: "Content",
-    items: [
-      { icon: FileText, label: "Posts", path: "/admin/posts" },
-      { icon: Mic, label: "Podcasts", path: "/admin/podcasts" },
-      { icon: Image, label: "Gallery", path: "/admin/gallery" },
-    ],
-  },
-  {
-    title: "Sports / KPL",
-    items: [
-      { icon: Trophy, label: "KPL3 Manager", path: "/admin/sports" },
-    ],
-  },
-  {
-    title: "Engagement",
-    items: [
-      { icon: MessageCircle, label: "Comments", path: "/admin/comments" },
-      { icon: Heart, label: "Post Stats", path: "/admin/post-stats" },
-      { icon: Mail, label: "Newsletter", path: "/admin/newsletter" },
-      { icon: Send, label: "Email Marketing", path: "/admin/email-marketing" },
-      { icon: FlaskConical, label: "A/B Testing", path: "/admin/ab-testing" },
-      { icon: Newspaper, label: "Email Builder", path: "/admin/email-builder" },
-      { icon: Phone, label: "Contact Messages", path: "/admin/contact-messages" },
-    ],
-  },
-  {
-    title: "Page Sections",
-    items: [
-      { icon: Home, label: "Hero Section", path: "/admin/hero" },
-      { icon: Eye, label: "Vision Section", path: "/admin/vision" },
-      { icon: Grid3x3, label: "Development Areas", path: "/admin/development-areas" },
-      { icon: Info, label: "About Page", path: "/admin/about" },
-      { icon: Phone, label: "Contact Page", path: "/admin/contact" },
-      { icon: PanelBottom, label: "Footer", path: "/admin/footer" },
-    ],
-  },
-  {
-    title: "Administration",
-    items: [
-      { icon: Users, label: "Users", path: "/admin/users" },
-      { icon: Mail, label: "Email Templates", path: "/admin/email-templates" },
-      { icon: Settings, label: "Settings", path: "/admin/settings" },
-    ],
-  },
+  { title: "Dashboard", items: [
+    { icon: LayoutDashboard, label: "Overview", path: "/admin" },
+    { icon: BarChart3, label: "Analytics", path: "/admin/analytics" },
+    { icon: TrendingUp, label: "Engagement", path: "/admin/engagement" },
+  ]},
+  { title: "Content", items: [
+    { icon: FileText, label: "Posts", path: "/admin/posts" },
+    { icon: Mic, label: "Podcasts", path: "/admin/podcasts" },
+    { icon: Image, label: "Gallery", path: "/admin/gallery" },
+  ]},
+  { title: "Sports / KPL", items: [
+    { icon: Trophy, label: "KPL3 Manager", path: "/admin/sports" },
+  ]},
+  { title: "Engagement", items: [
+    { icon: MessageCircle, label: "Comments", path: "/admin/comments" },
+    { icon: Heart, label: "Post Stats", path: "/admin/post-stats" },
+    { icon: Mail, label: "Newsletter", path: "/admin/newsletter" },
+    { icon: Send, label: "Email Marketing", path: "/admin/email-marketing" },
+    { icon: FlaskConical, label: "A/B Testing", path: "/admin/ab-testing" },
+    { icon: Newspaper, label: "Email Builder", path: "/admin/email-builder" },
+    { icon: Phone, label: "Contact Messages", path: "/admin/contact-messages" },
+  ]},
+  { title: "Page Sections", items: [
+    { icon: Home, label: "Hero Section", path: "/admin/hero" },
+    { icon: Eye, label: "Vision Section", path: "/admin/vision" },
+    { icon: Grid3x3, label: "Development Areas", path: "/admin/development-areas" },
+    { icon: Info, label: "About Page", path: "/admin/about" },
+    { icon: Phone, label: "Contact Page", path: "/admin/contact" },
+    { icon: PanelBottom, label: "Footer", path: "/admin/footer" },
+  ]},
+  { title: "Administration", items: [
+    { icon: Users, label: "Users", path: "/admin/users" },
+    { icon: Mail, label: "Email Templates", path: "/admin/email-templates" },
+    { icon: Settings, label: "Settings", path: "/admin/settings" },
+  ]},
 ];
 
 const AdminSidebar = () => {
   const location = useLocation();
 
   return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-border bg-card hidden lg:block overflow-y-auto">
-      <div className="flex h-full flex-col">
-        <div className="flex h-16 items-center border-b border-border px-6">
-          <Link to="/admin" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-              <Newspaper className="h-4 w-4 text-primary-foreground" />
+    <aside className="fixed left-0 top-0 z-40 h-screen w-64 hidden lg:block overflow-hidden border-r border-border/60 bg-gradient-to-b from-card via-card to-card/80 backdrop-blur-xl">
+      {/* Decorative glow */}
+      <div className="pointer-events-none absolute -top-32 -left-20 w-64 h-64 rounded-full bg-primary/20 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-0 -right-20 w-56 h-56 rounded-full bg-accent/20 blur-3xl" />
+
+      <div className="relative flex h-full flex-col">
+        {/* Brand */}
+        <div className="flex h-16 items-center border-b border-border/60 px-6">
+          <Link to="/admin" className="flex items-center gap-2.5 group">
+            <motion.div
+              whileHover={{ rotate: 10, scale: 1.08 }}
+              transition={{ type: "spring", stiffness: 300, damping: 15 }}
+              className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary via-primary to-accent flex items-center justify-center shadow-lg shadow-primary/30"
+            >
+              <Sparkles className="h-4 w-4 text-primary-foreground" />
+            </motion.div>
+            <div className="flex flex-col leading-tight">
+              <span className="text-base font-black bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                Admin Panel
+              </span>
+              <span className="text-[10px] text-muted-foreground uppercase tracking-widest">Control Centre</span>
             </div>
-            <span className="text-lg font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Admin Panel
-            </span>
           </Link>
         </div>
-        
-        <nav className="flex-1 p-4 space-y-6">
+
+        {/* Nav */}
+        <nav className="flex-1 p-3 space-y-5 overflow-y-auto scrollbar-thin">
           {menuSections.map((section, sectionIndex) => (
-            <div key={section.title}>
-              <h3 className="px-4 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            <motion.div
+              key={section.title}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: sectionIndex * 0.05 }}
+            >
+              <h3 className="px-3 mb-2 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">
                 {section.title}
               </h3>
-              <div className="space-y-1">
-                {section.items.map((item, index) => {
+              <div className="space-y-0.5">
+                {section.items.map((item) => {
                   const isActive = location.pathname === item.path;
-                  const globalIndex = sectionIndex * 10 + index;
                   return (
                     <Link key={item.path} to={item.path}>
                       <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: globalIndex * 0.03 }}
-                        className={`flex items-center gap-3 rounded-lg px-4 py-2.5 transition-all text-sm ${
+                        whileHover={{ x: 3 }}
+                        whileTap={{ scale: 0.97 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                        className={`relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
                           isActive
-                            ? "bg-primary text-primary-foreground shadow-md"
-                            : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                            ? "text-primary-foreground"
+                            : "text-muted-foreground hover:text-foreground hover:bg-accent/40"
                         }`}
                       >
-                        <item.icon className="h-4 w-4" />
-                        <span className="font-medium">{item.label}</span>
+                        {isActive && (
+                          <motion.div
+                            layoutId="admin-active-pill"
+                            className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary to-primary/80 shadow-md shadow-primary/30"
+                            transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                          />
+                        )}
+                        <item.icon className={`relative h-4 w-4 shrink-0 ${isActive ? "" : "text-muted-foreground/80"}`} />
+                        <span className="relative truncate">{item.label}</span>
+                        {isActive && (
+                          <span className="relative ml-auto h-1.5 w-1.5 rounded-full bg-primary-foreground/80" />
+                        )}
                       </motion.div>
                     </Link>
                   );
                 })}
               </div>
-            </div>
+            </motion.div>
           ))}
         </nav>
 
-        {/* Quick Access Footer */}
-        <div className="p-4 border-t border-border">
+        {/* Footer */}
+        <div className="p-3 border-t border-border/60">
           <Link to="/" target="_blank">
             <motion.div
               whileHover={{ scale: 1.02 }}
-              className="flex items-center gap-3 rounded-lg px-4 py-2.5 bg-gradient-to-r from-primary/10 to-accent/10 text-foreground text-sm font-medium hover:from-primary/20 hover:to-accent/20 transition-all"
+              whileTap={{ scale: 0.98 }}
+              className="flex items-center gap-3 rounded-xl px-3 py-2.5 bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 hover:from-primary/20 hover:via-accent/20 hover:to-primary/20 transition-all text-sm font-semibold"
             >
               <Eye className="h-4 w-4 text-primary" />
               <span>View Live Site</span>
