@@ -80,7 +80,7 @@ const AdminLayout = () => {
   if (!user || !isAdmin) return null;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       <AdminSidebar />
       <MobileSidebar 
         isOpen={isMobileSidebarOpen} 
@@ -92,7 +92,7 @@ const AdminLayout = () => {
           onLogout={handleLogout} 
           onMenuClick={() => setIsMobileSidebarOpen(true)}
         />
-        <main className="p-3 sm:p-4 md:p-6">
+        <main className="p-3 sm:p-4 md:p-6 lg:p-8 animate-fade-in">
           <Outlet />
         </main>
       </div>

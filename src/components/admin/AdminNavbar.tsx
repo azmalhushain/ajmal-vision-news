@@ -43,31 +43,37 @@ const AdminNavbar = ({ user, onLogout, onMenuClick }: AdminNavbarProps) => {
   };
 
   return (
-    <header className="sticky top-0 z-30 h-14 sm:h-16 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
+    <header className="sticky top-0 z-30 h-14 sm:h-16 border-b border-border/60 bg-gradient-to-r from-card/95 via-card/90 to-card/95 backdrop-blur-xl supports-[backdrop-filter]:bg-card/60">
       <div className="flex h-full items-center gap-2 sm:gap-4 px-3 sm:px-6">
-        {/* Mobile menu button */}
         <Button
           variant="ghost"
           size="icon"
-          className="lg:hidden"
+          className="lg:hidden hover:bg-accent/60 transition-colors"
           onClick={onMenuClick}
+          aria-label="Open menu"
         >
           <Menu className="h-5 w-5" />
         </Button>
 
         <div className="flex-1 flex items-center gap-2 sm:gap-4">
-          <div className="relative w-full max-w-md hidden sm:block">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <div className="relative w-full max-w-md hidden sm:block group">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" />
             <Input
               type="search"
-              placeholder="Search..."
-              className="pl-10 bg-background"
+              placeholder="Search posts, users, settings…"
+              className="pl-10 bg-background/60 border-border/60 focus-visible:ring-primary/40 focus-visible:border-primary/40 transition-all"
             />
           </div>
         </div>
 
         <div className="flex items-center gap-1 sm:gap-2">
-          <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-8 w-8 sm:h-10 sm:w-10">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            className="h-9 w-9 sm:h-10 sm:w-10 rounded-full hover:bg-accent/60 transition-all hover:rotate-12"
+            aria-label="Toggle theme"
+          >
             {isDarkMode ? <Sun className="h-4 w-4 sm:h-5 sm:w-5" /> : <Moon className="h-4 w-4 sm:h-5 sm:w-5" />}
           </Button>
 
@@ -75,11 +81,11 @@ const AdminNavbar = ({ user, onLogout, onMenuClick }: AdminNavbarProps) => {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="gap-1 sm:gap-2 px-2 sm:px-3">
-                <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <UserIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <Button variant="ghost" className="gap-2 px-1.5 sm:px-2 rounded-full hover:bg-accent/60 transition-all">
+                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-primary-foreground shadow-md shadow-primary/20">
+                  <UserIcon className="h-4 w-4" />
                 </div>
-                <span className="hidden md:inline-block text-sm truncate max-w-[120px]">{user.email}</span>
+                <span className="hidden md:inline-block text-sm font-medium truncate max-w-[140px]">{user.email}</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
@@ -90,7 +96,7 @@ const AdminNavbar = ({ user, onLogout, onMenuClick }: AdminNavbarProps) => {
                 Profile
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={onLogout} className="text-destructive">
+              <DropdownMenuItem onClick={onLogout} className="text-destructive focus:text-destructive">
                 <LogOut className="mr-2 h-4 w-4" />
                 Logout
               </DropdownMenuItem>
