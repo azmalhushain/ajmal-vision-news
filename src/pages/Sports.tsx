@@ -147,33 +147,55 @@ const Sports = () => {
         keywords="KPL, cricket, Nepal, Bhokraha Narsingh, sports, fixtures, live score, points table"
       />
       <div className="sports-theme min-h-screen pt-20 sm:pt-24 relative overflow-x-hidden">
-        {/* Stadium hero */}
+        {/* ============ CINEMATIC BENTO HERO ============ */}
         <section className="relative overflow-hidden sports-stadium-bg">
+          {/* Backdrop layers */}
           <div className="absolute inset-0 -z-10">
             <img
               src={stadiumHero}
               alt=""
-              className="w-full h-full object-cover opacity-25"
+              className="w-full h-full object-cover opacity-[0.18]"
               width={1920}
               height={1080}
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[hsl(var(--sports-bg))]/70 to-[hsl(var(--sports-bg))]" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,transparent,hsl(var(--sports-bg))_75%)]" />
+            {/* Floating accent orbs */}
+            <motion.div
+              aria-hidden
+              className="absolute -top-32 -left-20 w-[28rem] h-[28rem] rounded-full blur-3xl opacity-30"
+              style={{ background: "radial-gradient(circle, hsl(var(--sports-accent)) 0%, transparent 70%)" }}
+              animate={{ scale: [1, 1.15, 1], opacity: [0.25, 0.4, 0.25] }}
+              transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+            />
+            <motion.div
+              aria-hidden
+              className="absolute top-1/3 -right-32 w-[34rem] h-[34rem] rounded-full blur-3xl opacity-20"
+              style={{ background: "radial-gradient(circle, hsl(var(--sports-accent-glow)) 0%, transparent 70%)" }}
+              animate={{ scale: [1.1, 1, 1.1], opacity: [0.2, 0.35, 0.2] }}
+              transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+            />
           </div>
 
-          <div className="container mx-auto px-4 pt-6 pb-10 sm:pt-10 sm:pb-16 relative">
-            {/* Top row: badge + tournament selector */}
+          <div className="container mx-auto px-4 pt-4 pb-8 sm:pt-8 sm:pb-14 relative">
+            {/* Top bar */}
             <motion.div
-              initial={{ opacity: 0, y: 16 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="flex items-center justify-between gap-3 flex-wrap mb-6"
+              className="flex items-center justify-between gap-3 flex-wrap mb-6 sm:mb-8"
             >
-              <span className="inline-flex items-center gap-2 text-[10px] sm:text-[11px] font-bold tracking-[0.3em] uppercase sports-accent-text">
-                <span className="h-1.5 w-1.5 rounded-full sports-accent-bg" /> Cricket League
-              </span>
+              <div className="inline-flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full sports-accent-bg opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 sports-accent-bg" />
+                </span>
+                <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.35em] uppercase sports-accent-text">
+                  Cricket League · Season {tournament?.season || new Date().getFullYear()}
+                </span>
+              </div>
               {tournaments.length > 1 && (
                 <Select value={tid} onValueChange={setTid}>
-                  <SelectTrigger className="w-48 sports-glass border-white/10 text-[hsl(var(--sports-text))]">
+                  <SelectTrigger className="w-48 sports-glass border-white/10 text-[hsl(var(--sports-text))] rounded-full h-10">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -183,74 +205,99 @@ const Sports = () => {
               )}
             </motion.div>
 
-            {/* Two-column hero: wordmark + featured rail */}
-            <div className="grid gap-8 lg:grid-cols-[1.5fr_1fr] items-start">
-              {/* LEFT: wordmark + CTAs */}
+            {/* BENTO GRID — 12 cols on desktop */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4">
+              {/* MAIN WORDMARK TILE — spans 8 cols */}
               <motion.div
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
+                transition={{ duration: 0.7 }}
+                className="lg:col-span-8 relative overflow-hidden rounded-3xl sports-glass p-6 sm:p-8 lg:p-10 min-h-[380px] sm:min-h-[460px] flex flex-col justify-between group"
               >
-                <h1 className="font-black tracking-tight leading-[0.9] text-[clamp(2.75rem,9vw,6.5rem)] uppercase">
-                  <span className="block">{(tournament?.name || "Cricket").split(" ")[0]}</span>
-                  <span className="flex items-end gap-2 sm:gap-4 flex-wrap">
-                    <span className="block">{(tournament?.name || "League").split(" ").slice(1).join(" ") || "League"}</span>
-                    <span
-                      className="sports-accent-text italic font-serif text-[clamp(2rem,7vw,5rem)] -mb-1 sm:-mb-2"
-                      style={{ fontFamily: "Georgia, serif" }}
-                    >
-                      {tournament?.season || new Date().getFullYear()}
+                {/* Corner brackets */}
+                <div className="absolute top-4 left-4 w-6 h-6 border-t-2 border-l-2 sports-accent-text border-current opacity-60" />
+                <div className="absolute top-4 right-4 w-6 h-6 border-t-2 border-r-2 sports-accent-text border-current opacity-60" />
+                <div className="absolute bottom-4 left-4 w-6 h-6 border-b-2 border-l-2 sports-accent-text border-current opacity-60" />
+                <div className="absolute bottom-4 right-4 w-6 h-6 border-b-2 border-r-2 sports-accent-text border-current opacity-60" />
+
+                {/* Gradient wash */}
+                <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--sports-accent))]/10 via-transparent to-[hsl(var(--sports-accent-glow))]/5 pointer-events-none" />
+
+                <div className="relative">
+                  <div className="flex items-center gap-3 mb-4 sm:mb-6">
+                    <div className="h-px flex-1 max-w-[60px] bg-gradient-to-r from-transparent via-[hsl(var(--sports-accent))] to-transparent" />
+                    <span className="text-[10px] font-bold tracking-[0.4em] uppercase text-[hsl(var(--sports-muted))]">Now Live</span>
+                  </div>
+
+                  <h1 className="font-black tracking-[-0.02em] leading-[0.85] text-[clamp(2.5rem,8.5vw,6.5rem)] uppercase">
+                    <span className="block bg-gradient-to-r from-[hsl(var(--sports-text))] via-[hsl(var(--sports-text))] to-[hsl(var(--sports-text))]/70 bg-clip-text text-transparent">
+                      {(tournament?.name || "Cricket").split(" ")[0]}
                     </span>
-                  </span>
-                </h1>
-                <p className="mt-5 max-w-xl text-sm sm:text-base text-[hsl(var(--sports-muted))] leading-relaxed">
-                  {tournament?.description ||
-                    "The ultimate cricket showdown. Join top teams, battle for glory, and experience the thrill of every six, wicket, and victory."}
-                </p>
-                <div className="mt-7 flex gap-3 flex-wrap">
-                  <Button
-                    asChild
-                    size="lg"
-                    className="sports-accent-bg hover:sports-accent-bg/90 rounded-full font-bold px-7 h-12 shadow-[0_0_40px_-5px_hsl(var(--sports-accent)/0.6)]"
-                  >
-                    <a href="#fixtures">
-                      <Trophy className="h-4 w-4 mr-2" /> Watch Fixtures
-                    </a>
-                  </Button>
-                  <Button
-                    asChild
-                    size="lg"
-                    variant="outline"
-                    className="rounded-full border-white/20 bg-white/5 hover:bg-white/10 text-[hsl(var(--sports-text))] h-12 px-7 font-bold"
-                  >
-                    <a href="#teams">Explore Teams</a>
-                  </Button>
-                  {tournament?.intro_video_url && (
+                    <span className="flex items-baseline gap-2 sm:gap-4 flex-wrap mt-1">
+                      <span className="block">{(tournament?.name || "League").split(" ").slice(1).join(" ") || "League"}</span>
+                      <motion.span
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.4, type: "spring" }}
+                        className="sports-accent-text italic text-[clamp(1.75rem,6vw,4.5rem)] leading-none"
+                        style={{ fontFamily: "Georgia, serif" }}
+                      >
+                        '{String(tournament?.season || new Date().getFullYear()).slice(-2)}
+                      </motion.span>
+                    </span>
+                  </h1>
+
+                  <p className="mt-5 sm:mt-6 max-w-xl text-sm sm:text-base text-[hsl(var(--sports-muted))] leading-relaxed">
+                    {tournament?.description ||
+                      "The ultimate cricket showdown. Top teams battle for glory across every six, wicket and roaring crowd."}
+                  </p>
+                </div>
+
+                <div className="relative mt-7">
+                  <div className="flex gap-2.5 flex-wrap">
                     <Button
+                      asChild
+                      size="lg"
+                      className="sports-accent-bg hover:sports-accent-bg/90 rounded-full font-bold px-6 sm:px-7 h-12 shadow-[0_0_40px_-5px_hsl(var(--sports-accent)/0.7)] group/btn"
+                    >
+                      <a href="#fixtures">
+                        <Trophy className="h-4 w-4 mr-2 group-hover/btn:rotate-12 transition" /> Watch Fixtures
+                      </a>
+                    </Button>
+                    <Button
+                      asChild
                       size="lg"
                       variant="outline"
-                      onClick={() => setIntroVideoOpen(true)}
-                      className="rounded-full border-white/20 bg-white/5 hover:bg-white/10 text-[hsl(var(--sports-text))] h-12 px-7 font-bold"
+                      className="rounded-full border-white/20 bg-white/5 hover:bg-white/10 text-[hsl(var(--sports-text))] h-12 px-6 sm:px-7 font-bold"
                     >
-                      <Play className="h-4 w-4 mr-2 fill-current" /> Play Intro
+                      <a href="#teams">
+                        Explore Teams <ArrowRight className="h-4 w-4 ml-2" />
+                      </a>
                     </Button>
+                    {tournament?.intro_video_url && (
+                      <Button
+                        size="lg"
+                        variant="outline"
+                        onClick={() => setIntroVideoOpen(true)}
+                        className="rounded-full border-[hsl(var(--sports-accent))]/40 bg-[hsl(var(--sports-accent))]/10 hover:bg-[hsl(var(--sports-accent))]/20 text-[hsl(var(--sports-text))] h-12 px-6 sm:px-7 font-bold"
+                      >
+                        <Play className="h-4 w-4 mr-2 fill-current sports-accent-text" /> Intro
+                      </Button>
+                    )}
+                  </div>
+                  {tournament?.tagline && (
+                    <p className="mt-4 text-xs sports-accent-text font-bold tracking-[0.25em] uppercase">— {tournament.tagline}</p>
                   )}
-                </div>
-                {tournament?.tagline && (
-                  <p className="mt-4 text-sm sports-accent-text font-semibold tracking-wide uppercase">{tournament.tagline}</p>
-                )}
-
-                {/* Stat strip */}
-                <div className="mt-8 sm:mt-10 sports-glass rounded-2xl p-4 sm:p-5 grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  <Stat icon={Users} value={teams.length || 16} label="Elite Teams" />
-                  <Stat icon={Trophy} value={matches.length || 48} label="Matches" />
-                  <Stat icon={Calendar} value={daysToFinal || 24} label="Days Left" />
-                  <Stat icon={Award} value={50} suffix="K" prefix="$" label="Prize Pool" />
                 </div>
               </motion.div>
 
-              {/* RIGHT: hero scoreboard / featured match */}
-              <div>
+              {/* SCOREBOARD TILE — spans 4 cols */}
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.15 }}
+                className="lg:col-span-4"
+              >
                 {heroMatch ? (
                   <HeroScoreboard
                     match={heroMatch}
@@ -259,14 +306,55 @@ const Sports = () => {
                     innings={innByMatch[heroMatch.id] || []}
                   />
                 ) : (
-                  <div className="sports-glass rounded-2xl p-8 text-center text-[hsl(var(--sports-muted))]">
-                    <Trophy className="h-10 w-10 mx-auto mb-3 sports-accent-text" />
-                    No featured match yet — check back soon.
+                  <div className="sports-glass rounded-3xl p-8 text-center text-[hsl(var(--sports-muted))] h-full flex flex-col items-center justify-center min-h-[300px]">
+                    <Trophy className="h-12 w-12 mb-3 sports-accent-text" />
+                    <p className="font-bold text-[hsl(var(--sports-text))]">Featured match coming soon</p>
+                    <p className="text-xs mt-1">Check back at first whistle</p>
                   </div>
                 )}
-              </div>
+              </motion.div>
+
+              {/* STAT BENTO TILES — 4 tiles spanning 12 cols */}
+              {[
+                { I: Users, v: teams.length || 16, l: "Elite Teams" },
+                { I: Trophy, v: matches.length || 48, l: "Matches" },
+                { I: Calendar, v: daysToFinal || 24, l: "Days Left" },
+                { I: Award, v: 50, suffix: "K", prefix: "$", l: "Prize Pool" },
+              ].map((s, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.3 + i * 0.08 }}
+                  whileHover={{ y: -4 }}
+                  className="lg:col-span-3 sports-glass sports-glow-hover rounded-2xl p-5 sm:p-6 relative overflow-hidden group"
+                >
+                  <div className="absolute -right-4 -top-4 w-24 h-24 rounded-full bg-[hsl(var(--sports-accent))]/5 group-hover:bg-[hsl(var(--sports-accent))]/15 transition" />
+                  <Stat icon={s.I} value={s.v} label={s.l} prefix={s.prefix} suffix={s.suffix} />
+                </motion.div>
+              ))}
             </div>
           </div>
+
+          {/* Team marquee strip */}
+          {teams.length > 0 && (
+            <div className="relative border-y border-white/5 bg-black/30 backdrop-blur-sm overflow-hidden">
+              <div className="flex sports-marquee-track py-4 gap-12 whitespace-nowrap">
+                {[...teams, ...teams, ...teams].map((t, i) => (
+                  <div key={i} className="inline-flex items-center gap-3 shrink-0">
+                    <div
+                      className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center text-white text-xs font-black border border-white/10"
+                      style={{ background: t.color_primary || "hsl(var(--sports-accent))" }}
+                    >
+                      {t.logo_url ? <img src={t.logo_url} alt="" className="w-full h-full object-cover" /> : (t.short_name || t.name?.[0])}
+                    </div>
+                    <span className="text-sm font-bold uppercase tracking-[0.2em] text-[hsl(var(--sports-text))]/80">{t.name}</span>
+                    <Flame className="h-3 w-3 sports-accent-text" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </section>
 
         {/* Sticky in-page navigation */}
