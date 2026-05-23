@@ -146,157 +146,133 @@ const Sports = () => {
         imageAlt="KPL Cricket League 2025 — neon-green stadium banner"
         keywords="KPL, cricket, Nepal, Bhokraha Narsingh, sports, fixtures, live score, points table"
       />
-      <div className="sports-theme min-h-screen pt-20 sm:pt-24 relative overflow-x-hidden">
-        {/* ============ CINEMATIC BENTO HERO ============ */}
-        <section className="relative overflow-hidden sports-stadium-bg">
-          {/* Backdrop layers */}
-          <div className="absolute inset-0 -z-10">
-            <img
-              src={stadiumHero}
-              alt=""
-              className="w-full h-full object-cover opacity-[0.18]"
-              width={1920}
-              height={1080}
-            />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,transparent,hsl(var(--sports-bg))_75%)]" />
-            {/* Floating accent orbs */}
+      <div className="sports-theme min-h-screen pt-20 sm:pt-24 relative overflow-x-hidden bg-[#0a0b0e]" style={{ fontFamily: "'Hind', sans-serif" }}>
+        {/* ============ NEON STADIUM BROADCAST HERO ============ */}
+        <section className="relative overflow-hidden">
+          {/* Ambient blue glows */}
+          <div className="absolute inset-0 pointer-events-none -z-10">
             <motion.div
               aria-hidden
-              className="absolute -top-32 -left-20 w-[28rem] h-[28rem] rounded-full blur-3xl opacity-30"
-              style={{ background: "radial-gradient(circle, hsl(var(--sports-accent)) 0%, transparent 70%)" }}
-              animate={{ scale: [1, 1.15, 1], opacity: [0.25, 0.4, 0.25] }}
-              transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] rounded-full bg-[#3B82F6]/20 blur-[120px]"
+              animate={{ scale: [1, 1.1, 1], opacity: [0.7, 1, 0.7] }}
+              transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
             />
             <motion.div
               aria-hidden
-              className="absolute top-1/3 -right-32 w-[34rem] h-[34rem] rounded-full blur-3xl opacity-20"
-              style={{ background: "radial-gradient(circle, hsl(var(--sports-accent-glow)) 0%, transparent 70%)" }}
-              animate={{ scale: [1.1, 1, 1.1], opacity: [0.2, 0.35, 0.2] }}
-              transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute -bottom-[10%] -right-[10%] w-[50%] h-[50%] rounded-full bg-[#3B82F6]/10 blur-[150px]"
+              animate={{ scale: [1.1, 1, 1.1], opacity: [0.5, 0.9, 0.5] }}
+              transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }}
             />
           </div>
 
-          <div className="container mx-auto px-4 pt-4 pb-8 sm:pt-8 sm:pb-14 relative">
-            {/* Top bar */}
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="flex items-center justify-between gap-3 flex-wrap mb-6 sm:mb-8"
-            >
-              <div className="inline-flex items-center gap-2">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full sports-accent-bg opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 sports-accent-bg" />
-                </span>
-                <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.35em] uppercase sports-accent-text">
-                  Cricket League · Season {tournament?.season || new Date().getFullYear()}
-                </span>
-              </div>
-              {tournaments.length > 1 && (
+          <div className="container mx-auto px-4 lg:px-8 py-6 sm:py-10 lg:py-14 relative">
+            {/* Top bar — tournament switcher */}
+            {tournaments.length > 1 && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="flex justify-end mb-4 sm:mb-6"
+              >
                 <Select value={tid} onValueChange={setTid}>
-                  <SelectTrigger className="w-48 sports-glass border-white/10 text-[hsl(var(--sports-text))] rounded-full h-10">
+                  <SelectTrigger className="w-48 bg-black/40 backdrop-blur-md border-white/10 text-white rounded-full h-10">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {tournaments.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
-              )}
-            </motion.div>
+              </motion.div>
+            )}
 
-            {/* BENTO GRID — 12 cols on desktop */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4">
+            {/* BENTO GRID — 12 cols */}
+            <div className="grid grid-cols-12 gap-3 sm:gap-4 lg:gap-6">
               {/* MAIN WORDMARK TILE — spans 8 cols */}
               <motion.div
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7 }}
-                className="lg:col-span-8 relative overflow-hidden rounded-3xl sports-glass p-6 sm:p-8 lg:p-10 min-h-[380px] sm:min-h-[460px] flex flex-col justify-between group"
+                className="col-span-12 lg:col-span-8 relative group"
               >
-                {/* Corner brackets */}
-                <div className="absolute top-4 left-4 w-6 h-6 border-t-2 border-l-2 sports-accent-text border-current opacity-60" />
-                <div className="absolute top-4 right-4 w-6 h-6 border-t-2 border-r-2 sports-accent-text border-current opacity-60" />
-                <div className="absolute bottom-4 left-4 w-6 h-6 border-b-2 border-l-2 sports-accent-text border-current opacity-60" />
-                <div className="absolute bottom-4 right-4 w-6 h-6 border-b-2 border-r-2 sports-accent-text border-current opacity-60" />
+                <div className="h-full bg-black/40 backdrop-blur-xl border border-white/10 rounded-3xl p-6 sm:p-8 lg:p-12 flex flex-col justify-end overflow-hidden relative min-h-[420px] sm:min-h-[500px]">
+                  {/* Scanline overlay */}
+                  <div
+                    className="absolute inset-0 pointer-events-none opacity-30"
+                    style={{
+                      backgroundImage:
+                        "linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.25) 50%), linear-gradient(90deg, rgba(255,0,0,0.02), rgba(0,255,0,0.01), rgba(0,0,255,0.02))",
+                      backgroundSize: "100% 4px, 3px 100%",
+                    }}
+                  />
 
-                {/* Gradient wash */}
-                <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--sports-accent))]/10 via-transparent to-[hsl(var(--sports-accent-glow))]/5 pointer-events-none" />
-
-                <div className="relative">
-                  <div className="flex items-center gap-3 mb-4 sm:mb-6">
-                    <div className="h-px flex-1 max-w-[60px] bg-gradient-to-r from-transparent via-[hsl(var(--sports-accent))] to-transparent" />
-                    <span className="text-[10px] font-bold tracking-[0.4em] uppercase text-[hsl(var(--sports-muted))]">Now Live</span>
-                  </div>
-
-                  <h1 className="font-black tracking-[-0.02em] leading-[0.85] text-[clamp(2.5rem,8.5vw,6.5rem)] uppercase">
-                    <span className="block bg-gradient-to-r from-[hsl(var(--sports-text))] via-[hsl(var(--sports-text))] to-[hsl(var(--sports-text))]/70 bg-clip-text text-transparent">
-                      {(tournament?.name || "Cricket").split(" ")[0]}
+                  <div className="relative z-20">
+                    <span className="inline-flex items-center gap-2 text-[#3B82F6] font-bold tracking-[0.2em] text-[10px] sm:text-xs uppercase mb-5 sm:mb-6">
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#3B82F6] opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-[#3B82F6] shadow-[0_0_8px_#3B82F6]" />
+                      </span>
+                      Official Broadcast · Season {tournament?.season || new Date().getFullYear()}
                     </span>
-                    <span className="flex items-baseline gap-2 sm:gap-4 flex-wrap mt-1">
-                      <span className="block">{(tournament?.name || "League").split(" ").slice(1).join(" ") || "League"}</span>
+
+                    <h1
+                      className="text-5xl sm:text-7xl md:text-8xl lg:text-[100px] leading-[0.95] lg:leading-[0.85] text-white uppercase mb-6 sm:mb-8"
+                      style={{ fontFamily: "'Archivo Black', sans-serif" }}
+                    >
+                      <span className="block">{(tournament?.name || "Cricket League").split(" ")[0] || "Cricket"}</span>
+                      <span className="block text-transparent bg-clip-text bg-gradient-to-r from-white via-[#3B82F6] to-[#3B82F6]">
+                        {(tournament?.name || "Cricket League").split(" ").slice(1).join(" ") || "League"}
+                      </span>
                       <motion.span
-                        initial={{ opacity: 0, scale: 0.8 }}
+                        initial={{ opacity: 0, scale: 0.85 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.4, type: "spring" }}
-                        className="sports-accent-text italic text-[clamp(1.75rem,6vw,4.5rem)] leading-none"
-                        style={{ fontFamily: "Georgia, serif" }}
+                        className="block text-3xl sm:text-5xl lg:text-6xl mt-2 italic text-[#3B82F6] opacity-90 drop-shadow-[0_0_20px_rgba(59,130,246,0.5)]"
                       >
-                        '{String(tournament?.season || new Date().getFullYear()).slice(-2)}
+                        {tournament?.season || new Date().getFullYear()}
                       </motion.span>
-                    </span>
-                  </h1>
+                    </h1>
 
-                  <p className="mt-5 sm:mt-6 max-w-xl text-sm sm:text-base text-[hsl(var(--sports-muted))] leading-relaxed">
-                    {tournament?.description ||
-                      "The ultimate cricket showdown. Top teams battle for glory across every six, wicket and roaring crowd."}
-                  </p>
-                </div>
+                    <p className="max-w-md text-white/60 text-base sm:text-lg leading-relaxed mb-8 sm:mb-10">
+                      {tournament?.description ||
+                        "The ultimate showdown of precision and power. Witness history in the making as titans clash for the title."}
+                    </p>
 
-                <div className="relative mt-7">
-                  <div className="flex gap-2.5 flex-wrap">
-                    <Button
-                      asChild
-                      size="lg"
-                      className="sports-accent-bg hover:sports-accent-bg/90 rounded-full font-bold px-6 sm:px-7 h-12 shadow-[0_0_40px_-5px_hsl(var(--sports-accent)/0.7)] group/btn"
-                    >
-                      <a href="#fixtures">
-                        <Trophy className="h-4 w-4 mr-2 group-hover/btn:rotate-12 transition" /> Watch Fixtures
-                      </a>
-                    </Button>
-                    <Button
-                      asChild
-                      size="lg"
-                      variant="outline"
-                      className="rounded-full border-white/20 bg-white/5 hover:bg-white/10 text-[hsl(var(--sports-text))] h-12 px-6 sm:px-7 font-bold"
-                    >
-                      <a href="#teams">
-                        Explore Teams <ArrowRight className="h-4 w-4 ml-2" />
-                      </a>
-                    </Button>
-                    {tournament?.intro_video_url && (
+                    <div className="flex flex-wrap gap-3 sm:gap-4">
                       <Button
-                        size="lg"
-                        variant="outline"
-                        onClick={() => setIntroVideoOpen(true)}
-                        className="rounded-full border-[hsl(var(--sports-accent))]/40 bg-[hsl(var(--sports-accent))]/10 hover:bg-[hsl(var(--sports-accent))]/20 text-[hsl(var(--sports-text))] h-12 px-6 sm:px-7 font-bold"
+                        asChild
+                        className="px-6 sm:px-8 h-12 sm:h-14 bg-[#3B82F6] hover:bg-[#3B82F6]/90 text-white font-bold rounded-full shadow-[0_0_30px_rgba(59,130,246,0.4)] hover:shadow-[0_0_50px_rgba(59,130,246,0.6)] transition-all hover:-translate-y-0.5"
                       >
-                        <Play className="h-4 w-4 mr-2 fill-current sports-accent-text" /> Intro
+                        <a href="#fixtures">
+                          <Trophy className="h-4 w-4 mr-2" /> WATCH FIXTURES
+                        </a>
                       </Button>
-                    )}
+                      <Button
+                        asChild
+                        variant="outline"
+                        className="px-6 sm:px-8 h-12 sm:h-14 bg-white/5 border-white/10 text-white font-bold rounded-full backdrop-blur-md hover:bg-white/10 hover:text-white transition-all"
+                      >
+                        <a href="#teams">EXPLORE TEAMS</a>
+                      </Button>
+                      {tournament?.intro_video_url && (
+                        <Button
+                          onClick={() => setIntroVideoOpen(true)}
+                          variant="outline"
+                          className="px-6 sm:px-8 h-12 sm:h-14 bg-[#3B82F6]/10 border-[#3B82F6]/40 text-white font-bold rounded-full backdrop-blur-md hover:bg-[#3B82F6]/20 hover:text-white transition-all"
+                        >
+                          <Play className="h-4 w-4 mr-2 fill-[#3B82F6] text-[#3B82F6]" /> INTRO
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                  {tournament?.tagline && (
-                    <p className="mt-4 text-xs sports-accent-text font-bold tracking-[0.25em] uppercase">— {tournament.tagline}</p>
-                  )}
                 </div>
               </motion.div>
 
-              {/* SCOREBOARD TILE — spans 4 cols */}
+              {/* FEATURED MATCH TILE — spans 4 cols */}
               <motion.div
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.15 }}
-                className="lg:col-span-4"
+                className="col-span-12 lg:col-span-4 relative"
               >
                 {heroMatch ? (
                   <HeroScoreboard
@@ -306,20 +282,30 @@ const Sports = () => {
                     innings={innByMatch[heroMatch.id] || []}
                   />
                 ) : (
-                  <div className="sports-glass rounded-3xl p-8 text-center text-[hsl(var(--sports-muted))] h-full flex flex-col items-center justify-center min-h-[300px]">
-                    <Trophy className="h-12 w-12 mb-3 sports-accent-text" />
-                    <p className="font-bold text-[hsl(var(--sports-text))]">Featured match coming soon</p>
-                    <p className="text-xs mt-1">Check back at first whistle</p>
+                  <div className="h-full min-h-[300px] bg-black/60 backdrop-blur-2xl border border-[#3B82F6]/30 rounded-3xl p-8 flex flex-col items-center justify-center text-center overflow-hidden relative shadow-[inset_0_0_40px_rgba(59,130,246,0.1)]">
+                    <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#3B82F6] to-transparent opacity-60" />
+                    <div className="w-20 h-20 rounded-2xl bg-[#3B82F6]/10 border border-[#3B82F6]/30 flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(59,130,246,0.2)]">
+                      <Trophy className="w-10 h-10 text-[#3B82F6]" />
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2 tracking-tight" style={{ fontFamily: "'Archivo Black', sans-serif" }}>
+                      MATCH CENTER
+                    </h3>
+                    <p className="text-white/40 text-sm max-w-[220px] leading-relaxed">
+                      Live broadcast schedule and stadium lineups arriving soon.
+                    </p>
+                    <div className="mt-6 px-4 py-1.5 rounded-full border border-white/10 bg-white/5 text-[10px] font-bold text-white/50 tracking-[0.2em] uppercase">
+                      Awaiting Selection
+                    </div>
                   </div>
                 )}
               </motion.div>
 
-              {/* STAT BENTO TILES — 4 tiles spanning 12 cols */}
+              {/* STAT TILES — 4 tiles */}
               {[
-                { I: Users, v: teams.length || 16, l: "Elite Teams" },
-                { I: Trophy, v: matches.length || 48, l: "Matches" },
-                { I: Calendar, v: daysToFinal || 24, l: "Days Left" },
-                { I: Award, v: 50, suffix: "K", prefix: "$", l: "Prize Pool" },
+                { I: Users, v: teams.length || 5, l: "Elite Teams" },
+                { I: Trophy, v: matches.length || 16, l: "Total Matches" },
+                { I: Calendar, v: daysToFinal || 8, l: "Days Left" },
+                { I: Award, v: 16, suffix: "K", prefix: "$", l: "Prize Pool", glow: true },
               ].map((s, i) => (
                 <motion.div
                   key={i}
@@ -327,153 +313,31 @@ const Sports = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.3 + i * 0.08 }}
                   whileHover={{ y: -4 }}
-                  className="lg:col-span-3 sports-glass sports-glow-hover rounded-2xl p-5 sm:p-6 relative overflow-hidden group"
+                  className="col-span-6 lg:col-span-3"
                 >
-                  <div className="absolute -right-4 -top-4 w-24 h-24 rounded-full bg-[hsl(var(--sports-accent))]/5 group-hover:bg-[hsl(var(--sports-accent))]/15 transition" />
-                  <Stat icon={s.I} value={s.v} label={s.l} prefix={s.prefix} suffix={s.suffix} />
+                  <div className={`relative bg-black/40 backdrop-blur-md border ${s.glow ? "border-[#3B82F6]/20" : "border-white/5"} rounded-2xl p-5 sm:p-6 lg:p-8 flex flex-col hover:border-[#3B82F6]/40 transition-colors group overflow-hidden h-full`}>
+                    {s.glow && (
+                      <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-[#3B82F6]/10 rounded-full blur-2xl group-hover:bg-[#3B82F6]/20 transition-colors" />
+                    )}
+                    <span className="text-[#3B82F6] mb-3 sm:mb-4 group-hover:scale-110 transition-transform relative z-10 inline-block">
+                      <s.I className="w-5 h-5 sm:w-6 sm:h-6" />
+                    </span>
+                    <div
+                      className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-1 relative z-10 tabular-nums"
+                      style={{ fontFamily: "'Archivo Black', sans-serif" }}
+                    >
+                      {s.prefix || ""}{String(s.v).padStart(2, "0")}{s.suffix || ""}
+                    </div>
+                    <div className="text-white/40 text-[10px] sm:text-xs font-bold tracking-widest uppercase relative z-10">
+                      {s.l}
+                    </div>
+                  </div>
                 </motion.div>
               ))}
             </div>
           </div>
-
-          {/* Team marquee strip */}
-          {teams.length > 0 && (
-            <div className="relative border-y border-white/5 bg-black/30 backdrop-blur-sm overflow-hidden">
-              <div className="flex sports-marquee-track py-4 gap-12 whitespace-nowrap">
-                {[...teams, ...teams, ...teams].map((t, i) => (
-                  <div key={i} className="inline-flex items-center gap-3 shrink-0">
-                    <div
-                      className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center text-white text-xs font-black border border-white/10"
-                      style={{ background: t.color_primary || "hsl(var(--sports-accent))" }}
-                    >
-                      {t.logo_url ? <img src={t.logo_url} alt="" className="w-full h-full object-cover" /> : (t.short_name || t.name?.[0])}
-                    </div>
-                    <span className="text-sm font-bold uppercase tracking-[0.2em] text-[hsl(var(--sports-text))]/80">{t.name}</span>
-                    <Flame className="h-3 w-3 sports-accent-text" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </section>
 
-        {/* Sticky in-page navigation */}
-        <SportsSubNav hasLive={live.length > 0} />
-
-        {/* MAIN CONTENT — two columns on tablet+, stacked on mobile */}
-        <section className="container mx-auto px-4 py-10 sm:py-14">
-          <div className="grid gap-8 md:grid-cols-[1fr_320px] lg:grid-cols-[1fr_360px]">
-            {/* LEFT MAIN */}
-            <div className="space-y-10 min-w-0">
-              {/* Next Big Battles */}
-              <div id="fixtures">
-                <SectionLabel kicker="Upcoming Matches">Next Big Battles</SectionLabel>
-                {upcoming.length || live.length ? (
-                  <div className="flex gap-4 overflow-x-auto pb-3 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-3 snap-x snap-mandatory scrollbar-thin">
-                    {[...live, ...upcoming].slice(0, 6).map((m, i) => (
-                      <div key={m.id} className="min-w-[280px] sm:min-w-0 snap-start">
-                        <NeonMatchCard
-                          match={m}
-                          teamA={teamMap[m.team_a_id]}
-                          teamB={teamMap[m.team_b_id]}
-                          innings={innByMatch[m.id]}
-                          index={i}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <Empty>No upcoming matches yet.</Empty>
-                )}
-              </div>
-
-              {/* Feel the Excitement band */}
-              <ExcitementBand tournament={tournament} onPlay={() => setIntroVideoOpen(true)} />
-
-              {/* Tabs for full lists */}
-              <div id="teams">
-                <SectionLabel kicker="Browse Everything">League Hub</SectionLabel>
-                <Tabs defaultValue="all-fixtures">
-                  <TabsList className="bg-white/[0.04] border border-white/10 rounded-full p-1 h-auto gap-1 overflow-x-auto w-full justify-start">
-                    {[
-                      { v: "all-fixtures", l: "Fixtures", I: Calendar },
-                      { v: "teams", l: "Teams", I: Users },
-                      { v: "results", l: "Results", I: Trophy },
-                      { v: "news", l: "News", I: Newspaper },
-                    ].map(({ v, l, I }) => (
-                      <TabsTrigger
-                        key={v}
-                        value={v}
-                        className="rounded-full px-4 sm:px-5 h-9 font-semibold text-xs sm:text-sm whitespace-nowrap data-[state=active]:sports-accent-bg data-[state=active]:shadow-[0_0_25px_-5px_hsl(var(--sports-accent)/0.7)] text-[hsl(var(--sports-muted))] data-[state=active]:text-white"
-                      >
-                        <I className="h-3.5 w-3.5 mr-1.5" /> {l}
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
-
-                  <div className="py-6">
-                    <TabsContent value="all-fixtures" className="m-0 space-y-6">
-                      {live.length > 0 && (
-                        <Block label="Live now" tone="live">
-                          <div className="grid gap-4 sm:grid-cols-2">
-                            {live.map(m => <MatchCard key={m.id} match={m} teamA={teamMap[m.team_a_id]} teamB={teamMap[m.team_b_id]} innings={innByMatch[m.id]} />)}
-                          </div>
-                        </Block>
-                      )}
-                      <Block label="Upcoming">
-                        {upcoming.length ? (
-                          <div className="grid gap-4 sm:grid-cols-2">
-                            {upcoming.map(m => <MatchCard key={m.id} match={m} teamA={teamMap[m.team_a_id]} teamB={teamMap[m.team_b_id]} innings={innByMatch[m.id]} />)}
-                          </div>
-                        ) : <Empty>No upcoming matches.</Empty>}
-                      </Block>
-                    </TabsContent>
-
-                    <TabsContent value="teams" className="m-0">
-                      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-                        {teams.map((t, i) => <NeonTeamCard key={t.id} team={t} index={i} />)}
-                        {!teams.length && <Empty>No teams yet.</Empty>}
-                      </div>
-                    </TabsContent>
-
-                    <TabsContent value="results" className="m-0">
-                      {completed.length ? (
-                        <div className="grid gap-4 sm:grid-cols-2">
-                          {completed.map(m => <MatchCard key={m.id} match={m} teamA={teamMap[m.team_a_id]} teamB={teamMap[m.team_b_id]} innings={innByMatch[m.id]} />)}
-                        </div>
-                      ) : <Empty>No completed matches yet.</Empty>}
-                    </TabsContent>
-
-                    <TabsContent value="news" className="m-0">
-                      <div className="grid gap-4 sm:grid-cols-2">
-                        {news.map(n => (
-                          <article key={n.id} className="sports-glass sports-glow-hover rounded-2xl overflow-hidden">
-                            {n.cover_url && <img src={n.cover_url} alt={n.title} className="w-full aspect-video object-cover" loading="lazy" />}
-                            <div className="p-4">
-                              <h3 className="font-bold line-clamp-2 text-[hsl(var(--sports-text))]">{n.title}</h3>
-                              {n.excerpt && <p className="text-sm text-[hsl(var(--sports-muted))] mt-1 line-clamp-2">{n.excerpt}</p>}
-                              <p className="text-xs text-[hsl(var(--sports-muted))] mt-2">{n.published_at ? new Date(n.published_at).toLocaleDateString() : ""}</p>
-                            </div>
-                          </article>
-                        ))}
-                        {!news.length && <Empty>No sports news yet.</Empty>}
-                      </div>
-                    </TabsContent>
-                  </div>
-                </Tabs>
-              </div>
-
-              {/* Final CTA card */}
-              <ReadyCard />
-            </div>
-
-            {/* RIGHT RAIL */}
-            <aside className="space-y-6 md:sticky md:top-36 self-start">
-              <FeaturedTeamsRail teams={teams} />
-              <PointsTableCompact rows={pointsTable} />
-            </aside>
-          </div>
-        </section>
 
         <div id="stats"><StatsLeaderboards players={players} teams={teams} /></div>
         <div id="videos"><VideosShowcase videos={videos} /></div>
