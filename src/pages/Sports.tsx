@@ -323,10 +323,10 @@ const Sports = () => {
                       <s.I className="w-5 h-5 sm:w-6 sm:h-6" />
                     </span>
                     <div
-                      className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-1 relative z-10"
+                      className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-1 relative z-10 tabular-nums"
                       style={{ fontFamily: "'Archivo Black', sans-serif" }}
                     >
-                      <Stat icon={undefined as any} value={s.v} prefix={s.prefix} suffix={s.suffix} label="" inline />
+                      {s.prefix || ""}{String(s.v).padStart(2, "0")}{s.suffix || ""}
                     </div>
                     <div className="text-white/40 text-[10px] sm:text-xs font-bold tracking-widest uppercase relative z-10">
                       {s.l}
