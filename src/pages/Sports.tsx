@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Trophy, Calendar, Users, Newspaper, Radio, Play, MapPin, ArrowRight,
-  Clock, Tv, BarChart3, Award, Flame,
+  Clock, Tv, BarChart3, Award, Flame, Loader2, AlertTriangle, RefreshCw,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Footer } from "@/components/Footer";
