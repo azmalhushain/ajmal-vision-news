@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Trophy, Calendar, Users, Newspaper, Radio, Play, MapPin, ArrowRight,
-  Clock, Tv, BarChart3, Award, Flame,
+  Clock, Tv, BarChart3, Award, Flame, Loader2, AlertTriangle, RefreshCw,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Footer } from "@/components/Footer";
@@ -41,35 +41,53 @@ const Sports = () => {
     })();
   }, []);
 
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [retryNonce, setRetryNonce] = useState(0);
+
   useEffect(() => {
     if (!tid) return;
-    const load = async () => {
-      const [{ data: t }, { data: m }, { data: n }, { data: v }, { data: g }] = await Promise.all([
-        db.from("teams").select("*").eq("tournament_id", tid).eq("is_active", true).order("display_order"),
-        db.from("matches").select("*").eq("tournament_id", tid).order("scheduled_at", { ascending: true }),
-        db.from("sports_news").select("*").eq("tournament_id", tid).eq("status", "published").order("published_at", { ascending: false }).limit(8),
-        db.from("sports_media").select("*").eq("tournament_id", tid).eq("kind", "video").eq("is_active", true).order("is_pinned", { ascending: false }).order("display_order").limit(12),
-        db.from("sports_media").select("*").eq("tournament_id", tid).eq("kind", "image").eq("is_active", true).order("is_pinned", { ascending: false }).order("display_order").limit(24),
-      ]);
-      setTeams(t || []); setMatches(m || []); setNews(n || []); setVideos(v || []); setGallery(g || []);
-      const teamIds = (t || []).map((x: any) => x.id);
-      if (teamIds.length) {
-        const { data: pls } = await db.from("players").select("*").in("team_id", teamIds).eq("is_active", true);
-        setPlayers(pls || []);
-      } else setPlayers([]);
-      const ids = (m || []).map((x: any) => x.id);
-      if (ids.length) {
-        const { data: inn } = await db.from("match_innings").select("*").in("match_id", ids);
-        setInnings(inn || []);
-      } else setInnings([]);
+    let cancelled = false;
+    const load = async (silent = false) => {
+      if (!silent) setIsRefreshing(true);
+      try {
+        const results = await Promise.all([
+          db.from("teams").select("*").eq("tournament_id", tid).eq("is_active", true).order("display_order"),
+          db.from("matches").select("*").eq("tournament_id", tid).order("scheduled_at", { ascending: true }),
+          db.from("sports_news").select("*").eq("tournament_id", tid).eq("status", "published").order("published_at", { ascending: false }).limit(8),
+          db.from("sports_media").select("*").eq("tournament_id", tid).eq("kind", "video").eq("is_active", true).order("is_pinned", { ascending: false }).order("display_order").limit(12),
+          db.from("sports_media").select("*").eq("tournament_id", tid).eq("kind", "image").eq("is_active", true).order("is_pinned", { ascending: false }).order("display_order").limit(24),
+        ]);
+        const firstErr = results.find((r: any) => r.error)?.error;
+        if (firstErr) throw firstErr;
+        const [{ data: t }, { data: m }, { data: n }, { data: v }, { data: g }] = results as any;
+        if (cancelled) return;
+        setTeams(t || []); setMatches(m || []); setNews(n || []); setVideos(v || []); setGallery(g || []);
+        const teamIds = (t || []).map((x: any) => x.id);
+        if (teamIds.length) {
+          const { data: pls } = await db.from("players").select("*").in("team_id", teamIds).eq("is_active", true);
+          if (!cancelled) setPlayers(pls || []);
+        } else setPlayers([]);
+        const ids = (m || []).map((x: any) => x.id);
+        if (ids.length) {
+          const { data: inn } = await db.from("match_innings").select("*").in("match_id", ids);
+          if (!cancelled) setInnings(inn || []);
+        } else setInnings([]);
+        if (!cancelled) setLoadError(null);
+      } catch (err: any) {
+        if (!cancelled) setLoadError(err?.message || "Failed to load match data");
+      } finally {
+        if (!cancelled) setIsRefreshing(false);
+      }
     };
     load();
+    const intervalId = setInterval(() => load(true), 30000);
     const ch = db.channel(`sports-${tid}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "matches" }, load)
-      .on("postgres_changes", { event: "*", schema: "public", table: "match_innings" }, load)
+      .on("postgres_changes", { event: "*", schema: "public", table: "matches" }, () => load(true))
+      .on("postgres_changes", { event: "*", schema: "public", table: "match_innings" }, () => load(true))
       .subscribe();
-    return () => { db.removeChannel(ch); };
-  }, [tid]);
+    return () => { cancelled = true; clearInterval(intervalId); db.removeChannel(ch); };
+  }, [tid, retryNonce]);
 
   const teamMap = useMemo(() => Object.fromEntries(teams.map(t => [t.id, t])), [teams]);
   const innByMatch = useMemo(() => {
@@ -205,31 +223,31 @@ const Sports = () => {
               )}
             </motion.div>
 
-            {/* BENTO GRID — 12 cols on desktop */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4">
-              {/* MAIN WORDMARK TILE — spans 8 cols */}
+            {/* BENTO GRID — 2 cols mobile, 12 cols desktop */}
+            <div className="grid grid-cols-2 lg:grid-cols-12 gap-2.5 sm:gap-4 auto-rows-auto">
+              {/* MAIN WORDMARK TILE */}
               <motion.div
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7 }}
-                className="lg:col-span-8 relative overflow-hidden rounded-3xl sports-glass p-6 sm:p-8 lg:p-10 min-h-[380px] sm:min-h-[460px] flex flex-col justify-between group"
+                className="col-span-2 lg:col-span-8 relative overflow-hidden rounded-3xl sports-glass p-5 sm:p-8 lg:p-10 min-h-[320px] sm:min-h-[420px] lg:min-h-[460px] flex flex-col justify-between group"
               >
                 {/* Corner brackets */}
-                <div className="absolute top-4 left-4 w-6 h-6 border-t-2 border-l-2 sports-accent-text border-current opacity-60" />
-                <div className="absolute top-4 right-4 w-6 h-6 border-t-2 border-r-2 sports-accent-text border-current opacity-60" />
-                <div className="absolute bottom-4 left-4 w-6 h-6 border-b-2 border-l-2 sports-accent-text border-current opacity-60" />
-                <div className="absolute bottom-4 right-4 w-6 h-6 border-b-2 border-r-2 sports-accent-text border-current opacity-60" />
+                <div className="absolute top-3 left-3 w-5 h-5 sm:w-6 sm:h-6 border-t-2 border-l-2 sports-accent-text border-current opacity-60" />
+                <div className="absolute top-3 right-3 w-5 h-5 sm:w-6 sm:h-6 border-t-2 border-r-2 sports-accent-text border-current opacity-60" />
+                <div className="absolute bottom-3 left-3 w-5 h-5 sm:w-6 sm:h-6 border-b-2 border-l-2 sports-accent-text border-current opacity-60" />
+                <div className="absolute bottom-3 right-3 w-5 h-5 sm:w-6 sm:h-6 border-b-2 border-r-2 sports-accent-text border-current opacity-60" />
 
                 {/* Gradient wash */}
                 <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--sports-accent))]/10 via-transparent to-[hsl(var(--sports-accent-glow))]/5 pointer-events-none" />
 
                 <div className="relative">
-                  <div className="flex items-center gap-3 mb-4 sm:mb-6">
+                  <div className="flex items-center gap-3 mb-3 sm:mb-6">
                     <div className="h-px flex-1 max-w-[60px] bg-gradient-to-r from-transparent via-[hsl(var(--sports-accent))] to-transparent" />
-                    <span className="text-[10px] font-bold tracking-[0.4em] uppercase text-[hsl(var(--sports-muted))]">Now Live</span>
+                    <span className="text-[9px] sm:text-[10px] font-bold tracking-[0.35em] sm:tracking-[0.4em] uppercase text-[hsl(var(--sports-muted))]">Now Live</span>
                   </div>
 
-                  <h1 className="font-black tracking-[-0.02em] leading-[0.85] text-[clamp(2.5rem,8.5vw,6.5rem)] uppercase">
+                  <h1 className="font-black tracking-[-0.02em] leading-[0.88] sm:leading-[0.85] text-[clamp(2rem,11vw,6.5rem)] uppercase break-words">
                     <span className="block bg-gradient-to-r from-[hsl(var(--sports-text))] via-[hsl(var(--sports-text))] to-[hsl(var(--sports-text))]/70 bg-clip-text text-transparent">
                       {(tournament?.name || "Cricket").split(" ")[0]}
                     </span>
@@ -239,7 +257,7 @@ const Sports = () => {
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.4, type: "spring" }}
-                        className="sports-accent-text italic text-[clamp(1.75rem,6vw,4.5rem)] leading-none"
+                        className="sports-accent-text italic text-[clamp(1.5rem,7vw,4.5rem)] leading-none"
                         style={{ fontFamily: "Georgia, serif" }}
                       >
                         '{String(tournament?.season || new Date().getFullYear()).slice(-2)}
@@ -247,31 +265,31 @@ const Sports = () => {
                     </span>
                   </h1>
 
-                  <p className="mt-5 sm:mt-6 max-w-xl text-sm sm:text-base text-[hsl(var(--sports-muted))] leading-relaxed">
+                  <p className="mt-4 sm:mt-6 max-w-xl text-xs sm:text-base text-[hsl(var(--sports-muted))] leading-relaxed line-clamp-3 sm:line-clamp-none">
                     {tournament?.description ||
                       "The ultimate cricket showdown. Top teams battle for glory across every six, wicket and roaring crowd."}
                   </p>
                 </div>
 
-                <div className="relative mt-7">
-                  <div className="flex gap-2.5 flex-wrap">
+                <div className="relative mt-5 sm:mt-7">
+                  <div className="flex gap-2 sm:gap-2.5 flex-wrap">
                     <Button
                       asChild
                       size="lg"
-                      className="sports-accent-bg hover:sports-accent-bg/90 rounded-full font-bold px-6 sm:px-7 h-12 shadow-[0_0_40px_-5px_hsl(var(--sports-accent)/0.7)] group/btn"
+                      className="sports-accent-bg hover:sports-accent-bg/90 rounded-full font-bold px-4 sm:px-7 h-10 sm:h-12 text-xs sm:text-sm shadow-[0_0_40px_-5px_hsl(var(--sports-accent)/0.7)] group/btn"
                     >
                       <a href="#fixtures">
-                        <Trophy className="h-4 w-4 mr-2 group-hover/btn:rotate-12 transition" /> Watch Fixtures
+                        <Trophy className="h-4 w-4 mr-1.5 sm:mr-2 group-hover/btn:rotate-12 transition" /> Fixtures
                       </a>
                     </Button>
                     <Button
                       asChild
                       size="lg"
                       variant="outline"
-                      className="rounded-full border-white/20 bg-white/5 hover:bg-white/10 text-[hsl(var(--sports-text))] h-12 px-6 sm:px-7 font-bold"
+                      className="rounded-full border-white/20 bg-white/5 hover:bg-white/10 text-[hsl(var(--sports-text))] h-10 sm:h-12 px-4 sm:px-7 text-xs sm:text-sm font-bold"
                     >
                       <a href="#teams">
-                        Explore Teams <ArrowRight className="h-4 w-4 ml-2" />
+                        Teams <ArrowRight className="h-4 w-4 ml-1.5 sm:ml-2" />
                       </a>
                     </Button>
                     {tournament?.intro_video_url && (
@@ -279,42 +297,66 @@ const Sports = () => {
                         size="lg"
                         variant="outline"
                         onClick={() => setIntroVideoOpen(true)}
-                        className="rounded-full border-[hsl(var(--sports-accent))]/40 bg-[hsl(var(--sports-accent))]/10 hover:bg-[hsl(var(--sports-accent))]/20 text-[hsl(var(--sports-text))] h-12 px-6 sm:px-7 font-bold"
+                        className="rounded-full border-[hsl(var(--sports-accent))]/40 bg-[hsl(var(--sports-accent))]/10 hover:bg-[hsl(var(--sports-accent))]/20 text-[hsl(var(--sports-text))] h-10 sm:h-12 px-4 sm:px-7 text-xs sm:text-sm font-bold"
                       >
-                        <Play className="h-4 w-4 mr-2 fill-current sports-accent-text" /> Intro
+                        <Play className="h-4 w-4 mr-1.5 sm:mr-2 fill-current sports-accent-text" /> Intro
                       </Button>
                     )}
                   </div>
                   {tournament?.tagline && (
-                    <p className="mt-4 text-xs sports-accent-text font-bold tracking-[0.25em] uppercase">— {tournament.tagline}</p>
+                    <p className="mt-3 sm:mt-4 text-[10px] sm:text-xs sports-accent-text font-bold tracking-[0.2em] sm:tracking-[0.25em] uppercase line-clamp-2">— {tournament.tagline}</p>
                   )}
                 </div>
               </motion.div>
 
-              {/* SCOREBOARD TILE — spans 4 cols */}
+              {/* SCOREBOARD TILE */}
               <motion.div
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.15 }}
-                className="lg:col-span-4"
+                className="col-span-2 lg:col-span-4 relative"
               >
-                {heroMatch ? (
+                {/* live refresh indicator */}
+                {isRefreshing && (
+                  <div className="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 text-[10px] font-bold sports-accent-text bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10">
+                    <Loader2 className="h-3 w-3 animate-spin" /> Refreshing
+                  </div>
+                )}
+                {loadError ? (
+                  <div className="sports-glass rounded-3xl p-6 sm:p-8 text-center h-full flex flex-col items-center justify-center min-h-[260px] sm:min-h-[300px]">
+                    <AlertTriangle className="h-10 w-10 mb-3 text-destructive" />
+                    <p className="font-bold text-[hsl(var(--sports-text))] text-sm">Could not load match data</p>
+                    <p className="text-xs mt-1 text-[hsl(var(--sports-muted))] max-w-xs">{loadError}</p>
+                    <Button
+                      size="sm"
+                      onClick={() => setRetryNonce(n => n + 1)}
+                      className="mt-4 rounded-full sports-accent-bg font-bold h-9 px-5"
+                    >
+                      <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Retry
+                    </Button>
+                  </div>
+                ) : heroMatch ? (
                   <HeroScoreboard
                     match={heroMatch}
                     teamA={teamMap[heroMatch.team_a_id]}
                     teamB={teamMap[heroMatch.team_b_id]}
                     innings={innByMatch[heroMatch.id] || []}
                   />
+                ) : isRefreshing ? (
+                  <div className="sports-glass rounded-3xl p-6 sm:p-8 text-center h-full flex flex-col items-center justify-center min-h-[260px] sm:min-h-[300px]">
+                    <Loader2 className="h-10 w-10 mb-3 sports-accent-text animate-spin" />
+                    <p className="font-bold text-[hsl(var(--sports-text))] text-sm">Loading featured match…</p>
+                  </div>
                 ) : (
-                  <div className="sports-glass rounded-3xl p-8 text-center text-[hsl(var(--sports-muted))] h-full flex flex-col items-center justify-center min-h-[300px]">
-                    <Trophy className="h-12 w-12 mb-3 sports-accent-text" />
-                    <p className="font-bold text-[hsl(var(--sports-text))]">Featured match coming soon</p>
+                  <div className="sports-glass rounded-3xl p-6 sm:p-8 text-center text-[hsl(var(--sports-muted))] h-full flex flex-col items-center justify-center min-h-[260px] sm:min-h-[300px]">
+                    <Trophy className="h-10 w-10 sm:h-12 sm:w-12 mb-3 sports-accent-text" />
+                    <p className="font-bold text-[hsl(var(--sports-text))] text-sm">Featured match coming soon</p>
                     <p className="text-xs mt-1">Check back at first whistle</p>
                   </div>
                 )}
               </motion.div>
 
-              {/* STAT BENTO TILES — 4 tiles spanning 12 cols */}
+              {/* STAT BENTO TILES — 2 per row mobile, 4 per row desktop */}
               {[
                 { I: Users, v: teams.length || 16, l: "Elite Teams" },
                 { I: Trophy, v: matches.length || 48, l: "Matches" },
@@ -327,9 +369,9 @@ const Sports = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.3 + i * 0.08 }}
                   whileHover={{ y: -4 }}
-                  className="lg:col-span-3 sports-glass sports-glow-hover rounded-2xl p-5 sm:p-6 relative overflow-hidden group"
+                  className="col-span-1 lg:col-span-3 sports-glass sports-glow-hover rounded-2xl p-4 sm:p-6 relative overflow-hidden group min-h-[110px] sm:min-h-[130px] flex items-center justify-center"
                 >
-                  <div className="absolute -right-4 -top-4 w-24 h-24 rounded-full bg-[hsl(var(--sports-accent))]/5 group-hover:bg-[hsl(var(--sports-accent))]/15 transition" />
+                  <div className="absolute -right-4 -top-4 w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-[hsl(var(--sports-accent))]/5 group-hover:bg-[hsl(var(--sports-accent))]/15 transition" />
                   <Stat icon={s.I} value={s.v} label={s.l} prefix={s.prefix} suffix={s.suffix} />
                 </motion.div>
               ))}
