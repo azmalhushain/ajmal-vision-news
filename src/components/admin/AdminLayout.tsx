@@ -80,16 +80,21 @@ const AdminLayout = () => {
   if (!user || !isAdmin) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+    <div className="min-h-screen relative bg-gradient-to-br from-background via-background to-muted/20 overflow-hidden">
+      {/* Ambient animated backdrop */}
+      <div className="pointer-events-none fixed inset-0 -z-0">
+        <div className="absolute top-1/4 -left-32 w-[28rem] h-[28rem] rounded-full bg-primary/10 blur-3xl animate-pulse" style={{ animationDuration: "9s" }} />
+        <div className="absolute bottom-1/4 -right-32 w-[32rem] h-[32rem] rounded-full bg-accent/10 blur-3xl animate-pulse" style={{ animationDuration: "11s" }} />
+      </div>
       <AdminSidebar />
-      <MobileSidebar 
-        isOpen={isMobileSidebarOpen} 
-        onClose={() => setIsMobileSidebarOpen(false)} 
+      <MobileSidebar
+        isOpen={isMobileSidebarOpen}
+        onClose={() => setIsMobileSidebarOpen(false)}
       />
-      <div className="lg:pl-64">
-        <AdminNavbar 
-          user={user} 
-          onLogout={handleLogout} 
+      <div className="lg:pl-64 relative">
+        <AdminNavbar
+          user={user}
+          onLogout={handleLogout}
           onMenuClick={() => setIsMobileSidebarOpen(true)}
         />
         <main className="p-3 sm:p-4 md:p-6 lg:p-8 animate-fade-in">
