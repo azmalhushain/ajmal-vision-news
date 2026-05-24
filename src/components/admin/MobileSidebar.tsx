@@ -1,81 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
-import { X, Newspaper } from "lucide-react";
+import { X, Sparkles, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  LayoutDashboard,
-  FileText,
-  Users,
-  BarChart3,
-  Settings,
-  Home,
-  Eye,
-  Grid3x3,
-  Info,
-  Image,
-  Phone,
-  PanelBottom,
-  Mic,
-  MessageCircle,
-  Heart,
-  Mail,
-} from "lucide-react";
-
-interface MenuItem {
-  icon: React.ElementType;
-  label: string;
-  path: string;
-}
-
-interface MenuSection {
-  title: string;
-  items: MenuItem[];
-}
-
-const menuSections: MenuSection[] = [
-  {
-    title: "Dashboard",
-    items: [
-      { icon: LayoutDashboard, label: "Overview", path: "/admin" },
-      { icon: BarChart3, label: "Analytics", path: "/admin/analytics" },
-    ],
-  },
-  {
-    title: "Content",
-    items: [
-      { icon: FileText, label: "Posts", path: "/admin/posts" },
-      { icon: Mic, label: "Podcasts", path: "/admin/podcasts" },
-      { icon: Image, label: "Gallery", path: "/admin/gallery" },
-    ],
-  },
-  {
-    title: "Engagement",
-    items: [
-      { icon: MessageCircle, label: "Comments", path: "/admin/comments" },
-      { icon: Heart, label: "Post Stats", path: "/admin/post-stats" },
-      { icon: Mail, label: "Newsletter", path: "/admin/newsletter" },
-      { icon: Phone, label: "Messages", path: "/admin/contact-messages" },
-    ],
-  },
-  {
-    title: "Page Sections",
-    items: [
-      { icon: Home, label: "Hero", path: "/admin/hero" },
-      { icon: Eye, label: "Vision", path: "/admin/vision" },
-      { icon: Grid3x3, label: "Dev Areas", path: "/admin/development-areas" },
-      { icon: Info, label: "About", path: "/admin/about" },
-      { icon: Phone, label: "Contact", path: "/admin/contact" },
-      { icon: PanelBottom, label: "Footer", path: "/admin/footer" },
-    ],
-  },
-  {
-    title: "Administration",
-    items: [
-      { icon: Users, label: "Users", path: "/admin/users" },
-      { icon: Mail, label: "Email Templates", path: "/admin/email-templates" },
-      { icon: Settings, label: "Settings", path: "/admin/settings" },
-    ],
-  },
-];
+import { motion, AnimatePresence } from "framer-motion";
+import { menuSections } from "./adminMenu";
+import { useEffect } from "react";
 
 interface MobileSidebarProps {
   isOpen: boolean;
@@ -85,64 +13,116 @@ interface MobileSidebarProps {
 const MobileSidebar = ({ isOpen, onClose }: MobileSidebarProps) => {
   const location = useLocation();
 
-  if (!isOpen) return null;
+  // Lock body scroll while open
+  useEffect(() => {
+    if (isOpen) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => { document.body.style.overflow = prev; };
+    }
+  }, [isOpen]);
 
   return (
-    <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm lg:hidden"
-        onClick={onClose}
-      />
-      
-      {/* Sidebar */}
-      <aside className="fixed left-0 top-0 z-50 h-screen w-64 border-r border-border bg-card lg:hidden overflow-y-auto animate-in slide-in-from-left duration-300">
-        <div className="flex h-full flex-col">
-          <div className="flex h-14 items-center justify-between border-b border-border px-4">
-            <Link to="/admin" className="flex items-center gap-2" onClick={onClose}>
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                <Newspaper className="h-3.5 w-3.5 text-primary-foreground" />
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-40 bg-background/70 backdrop-blur-md lg:hidden"
+            onClick={onClose}
+          />
+
+          {/* Sidebar */}
+          <motion.aside
+            initial={{ x: "-100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "-100%" }}
+            transition={{ type: "spring", stiffness: 320, damping: 34 }}
+            className="fixed left-0 top-0 z-50 h-screen w-[85vw] max-w-xs overflow-hidden border-r border-border/60 bg-gradient-to-b from-card via-card to-card/90 backdrop-blur-xl lg:hidden"
+          >
+            <div className="pointer-events-none absolute -top-24 -left-16 w-56 h-56 rounded-full bg-primary/20 blur-3xl" />
+            <div className="pointer-events-none absolute bottom-0 -right-16 w-56 h-56 rounded-full bg-accent/20 blur-3xl" />
+
+            <div className="relative flex h-full flex-col">
+              {/* Brand */}
+              <div className="flex h-16 items-center justify-between border-b border-border/60 px-4">
+                <Link to="/admin" className="flex items-center gap-2.5" onClick={onClose}>
+                  <motion.div
+                    whileTap={{ scale: 0.9, rotate: 10 }}
+                    className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary via-primary to-accent flex items-center justify-center shadow-lg shadow-primary/30"
+                  >
+                    <Sparkles className="h-4 w-4 text-primary-foreground" />
+                  </motion.div>
+                  <div className="flex flex-col leading-tight">
+                    <span className="text-base font-black bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                      Admin Panel
+                    </span>
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-widest">Control Centre</span>
+                  </div>
+                </Link>
+                <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close menu" className="rounded-full hover:bg-accent/60">
+                  <X className="h-5 w-5" />
+                </Button>
               </div>
-              <span className="text-base font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Admin
-              </span>
-            </Link>
-            <Button variant="ghost" size="icon" onClick={onClose}>
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
-          
-          <nav className="flex-1 p-3 overflow-y-auto space-y-4">
-            {menuSections.map((section) => (
-              <div key={section.title}>
-                <h3 className="px-3 mb-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  {section.title}
-                </h3>
-                <div className="space-y-0.5">
-                  {section.items.map((item) => {
-                    const isActive = location.pathname === item.path;
-                    return (
-                      <Link key={item.path} to={item.path} onClick={onClose}>
-                        <div
-                          className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all ${
-                            isActive
-                              ? "bg-primary text-primary-foreground"
-                              : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
-                          }`}
-                        >
-                          <item.icon className="h-4 w-4 flex-shrink-0" />
-                          <span className="truncate font-medium">{item.label}</span>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
+
+              {/* Nav */}
+              <nav className="flex-1 p-3 overflow-y-auto scrollbar-thin space-y-5">
+                {menuSections.map((section, sectionIndex) => (
+                  <motion.div
+                    key={section.title}
+                    initial={{ opacity: 0, x: -12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.04 + sectionIndex * 0.04 }}
+                  >
+                    <h3 className="px-3 mb-2 text-[10px] font-bold text-muted-foreground/70 uppercase tracking-[0.2em]">
+                      {section.title}
+                    </h3>
+                    <div className="space-y-0.5">
+                      {section.items.map((item) => {
+                        const isActive = location.pathname === item.path;
+                        return (
+                          <Link key={item.path} to={item.path} onClick={onClose}>
+                            <motion.div
+                              whileTap={{ scale: 0.97 }}
+                              className={`relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
+                                isActive
+                                  ? "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-md shadow-primary/30"
+                                  : "text-muted-foreground hover:text-foreground hover:bg-accent/40"
+                              }`}
+                            >
+                              <item.icon className="h-4 w-4 shrink-0" />
+                              <span className="truncate">{item.label}</span>
+                              {isActive && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary-foreground/80" />}
+                            </motion.div>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                ))}
+              </nav>
+
+              {/* Footer */}
+              <div className="p-3 border-t border-border/60">
+                <Link to="/" target="_blank" onClick={onClose}>
+                  <motion.div
+                    whileTap={{ scale: 0.98 }}
+                    className="flex items-center gap-3 rounded-xl px-3 py-2.5 bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 text-sm font-semibold"
+                  >
+                    <Eye className="h-4 w-4 text-primary" />
+                    <span>View Live Site</span>
+                  </motion.div>
+                </Link>
               </div>
-            ))}
-          </nav>
-        </div>
-      </aside>
-    </>
+            </div>
+          </motion.aside>
+        </>
+      )}
+    </AnimatePresence>
   );
 };
 
