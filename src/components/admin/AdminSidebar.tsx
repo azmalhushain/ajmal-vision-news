@@ -1,51 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import {
-  LayoutDashboard, FileText, Users, BarChart3, Settings, Home, Eye, Grid3x3,
-  Info, Image, Phone, PanelBottom, Mic, MessageCircle, Heart, Mail, Send,
-  Newspaper, TrendingUp, FlaskConical, Trophy, Sparkles,
-} from "lucide-react";
-
-interface MenuItem { icon: React.ElementType; label: string; path: string; }
-interface MenuSection { title: string; items: MenuItem[]; }
-
-const menuSections: MenuSection[] = [
-  { title: "Dashboard", items: [
-    { icon: LayoutDashboard, label: "Overview", path: "/admin" },
-    { icon: BarChart3, label: "Analytics", path: "/admin/analytics" },
-    { icon: TrendingUp, label: "Engagement", path: "/admin/engagement" },
-  ]},
-  { title: "Content", items: [
-    { icon: FileText, label: "Posts", path: "/admin/posts" },
-    { icon: Mic, label: "Podcasts", path: "/admin/podcasts" },
-    { icon: Image, label: "Gallery", path: "/admin/gallery" },
-  ]},
-  { title: "Sports / KPL", items: [
-    { icon: Trophy, label: "KPL3 Manager", path: "/admin/sports" },
-  ]},
-  { title: "Engagement", items: [
-    { icon: MessageCircle, label: "Comments", path: "/admin/comments" },
-    { icon: Heart, label: "Post Stats", path: "/admin/post-stats" },
-    { icon: Mail, label: "Newsletter", path: "/admin/newsletter" },
-    { icon: Send, label: "Email Marketing", path: "/admin/email-marketing" },
-    { icon: FlaskConical, label: "A/B Testing", path: "/admin/ab-testing" },
-    { icon: Newspaper, label: "Email Builder", path: "/admin/email-builder" },
-    { icon: Phone, label: "Contact Messages", path: "/admin/contact-messages" },
-  ]},
-  { title: "Page Sections", items: [
-    { icon: Home, label: "Hero Section", path: "/admin/hero" },
-    { icon: Eye, label: "Vision Section", path: "/admin/vision" },
-    { icon: Grid3x3, label: "Development Areas", path: "/admin/development-areas" },
-    { icon: Info, label: "About Page", path: "/admin/about" },
-    { icon: Phone, label: "Contact Page", path: "/admin/contact" },
-    { icon: PanelBottom, label: "Footer", path: "/admin/footer" },
-  ]},
-  { title: "Administration", items: [
-    { icon: Users, label: "Users", path: "/admin/users" },
-    { icon: Mail, label: "Email Templates", path: "/admin/email-templates" },
-    { icon: Settings, label: "Settings", path: "/admin/settings" },
-  ]},
-];
+import { Eye, Sparkles } from "lucide-react";
+import { menuSections } from "./adminMenu";
 
 const AdminSidebar = () => {
   const location = useLocation();
@@ -53,8 +9,8 @@ const AdminSidebar = () => {
   return (
     <aside className="fixed left-0 top-0 z-40 h-screen w-64 hidden lg:block overflow-hidden border-r border-border/60 bg-gradient-to-b from-card via-card to-card/80 backdrop-blur-xl">
       {/* Decorative glow */}
-      <div className="pointer-events-none absolute -top-32 -left-20 w-64 h-64 rounded-full bg-primary/20 blur-3xl" />
-      <div className="pointer-events-none absolute bottom-0 -right-20 w-56 h-56 rounded-full bg-accent/20 blur-3xl" />
+      <div className="pointer-events-none absolute -top-32 -left-20 w-64 h-64 rounded-full bg-primary/20 blur-3xl animate-pulse" style={{ animationDuration: "6s" }} />
+      <div className="pointer-events-none absolute bottom-0 -right-20 w-56 h-56 rounded-full bg-accent/20 blur-3xl animate-pulse" style={{ animationDuration: "8s" }} />
 
       <div className="relative flex h-full flex-col">
         {/* Brand */}
@@ -125,7 +81,11 @@ const AdminSidebar = () => {
         </nav>
 
         {/* Footer */}
-        <div className="p-3 border-t border-border/60">
+        <div className="p-3 border-t border-border/60 space-y-2">
+          <div className="px-3 py-2 rounded-xl bg-muted/40 border border-border/50 flex items-center justify-between text-[11px] text-muted-foreground">
+            <span>Quick search</span>
+            <kbd className="px-1.5 py-0.5 rounded bg-background border border-border/60 font-mono text-[10px]">⌘K</kbd>
+          </div>
           <Link to="/" target="_blank">
             <motion.div
               whileHover={{ scale: 1.02 }}
