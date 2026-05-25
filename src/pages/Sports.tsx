@@ -1064,6 +1064,237 @@ const SocialPosts = () => {
   );
 };
 
+/* ---------- NEW DASHBOARD WIDGETS ---------- */
+
+const TournamentProgressStrip = ({ tournament, matches, completed, live, upcoming }: any) => {
+  const total = matches.length || 1;
+  const done = completed.length;
+  const pct = Math.round((done / total) * 100);
+  const startD = tournament?.start_date ? new Date(tournament.start_date) : null;
+  const endD = tournament?.end_date ? new Date(tournament.end_date) : null;
+  const today = new Date();
+  const timePct = startD && endD
+    ? Math.min(100, Math.max(0, ((today.getTime() - startD.getTime()) / (endD.getTime() - startD.getTime())) * 100))
+    : pct;
+
+  return (
+    <div className="container mx-auto px-4 -mt-2 sm:-mt-4 relative z-10">
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="sports-glass rounded-2xl p-4 sm:p-5 grid gap-4 md:grid-cols-[1fr_auto_auto_auto] items-center"
+      >
+        <div className="min-w-0">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[10px] font-bold tracking-[0.3em] uppercase sports-accent-text flex items-center gap-1.5">
+              <Activity className="h-3 w-3" /> Tournament Progress
+            </p>
+            <span className="text-[11px] font-bold sports-accent-text tabular-nums">{pct}%</span>
+          </div>
+          <Progress value={pct} className="h-2 bg-white/5" />
+          <p className="text-[10px] text-[hsl(var(--sports-muted))] mt-1.5">
+            {done} of {total} matches played
+            {endD && ` · Finals on ${endD.toLocaleDateString(undefined, { month: "short", day: "numeric" })}`}
+          </p>
+        </div>
+        <MiniPill icon={Radio} label="Live" value={live.length} tone="live" />
+        <MiniPill icon={Clock} label="Upcoming" value={upcoming.length} />
+        <MiniPill icon={Trophy} label="Done" value={done} />
+      </motion.div>
+    </div>
+  );
+};
+
+const MiniPill = ({ icon: Icon, label, value, tone }: any) => (
+  <div className={`flex items-center gap-2.5 rounded-xl px-3 py-2 border ${tone === "live" ? "bg-destructive/10 border-destructive/30" : "bg-white/[0.03] border-white/10"}`}>
+    <Icon className={`h-4 w-4 ${tone === "live" ? "text-destructive animate-pulse" : "sports-accent-text"}`} />
+    <div className="leading-tight">
+      <p className="text-base font-black tabular-nums text-[hsl(var(--sports-text))]">{value}</p>
+      <p className="text-[9px] uppercase tracking-widest text-[hsl(var(--sports-muted))]">{label}</p>
+    </div>
+  </div>
+);
+
+const NextMatchSpotlight = ({ upcoming, teamMap }: any) => {
+  const [now, setNow] = useState(Date.now());
+  const next = upcoming[0];
+  useEffect(() => { const id = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(id); }, []);
+  if (!next) return null;
+  const a = teamMap[next.team_a_id]; const b = teamMap[next.team_b_id];
+  const target = next.scheduled_at ? new Date(next.scheduled_at).getTime() : now;
+  const diff = Math.max(0, target - now);
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff % 86400000) / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+
+  return (
+    <Link to={`/sports/match/${next.id}`} className="relative block sports-glass sports-glow rounded-2xl p-5 overflow-hidden group">
+      <div className="absolute inset-0 opacity-25" style={{ background: `linear-gradient(135deg, ${a?.color_primary || "#1e88ff"}, transparent 60%, ${b?.color_primary || "#3b82f6"})` }} />
+      <div className="relative">
+        <p className="text-[10px] font-bold tracking-[0.3em] uppercase sports-accent-text flex items-center gap-1.5">
+          <CalendarDays className="h-3 w-3" /> Match of the Day
+        </p>
+        <div className="mt-3 flex items-center justify-between gap-2">
+          <TeamMini t={a} />
+          <span className="text-[10px] font-black tracking-widest text-[hsl(var(--sports-muted))]">VS</span>
+          <TeamMini t={b} />
+        </div>
+        <div className="mt-4 grid grid-cols-4 gap-1.5 rounded-xl bg-black/30 border border-white/10 p-2">
+          {[{ v: d, l: "D" }, { v: h, l: "H" }, { v: m, l: "M" }, { v: s, l: "S" }].map((x, i) => (
+            <div key={i} className="text-center">
+              <p className="text-lg font-black tabular-nums sports-accent-text">{String(x.v).padStart(2, "0")}</p>
+              <p className="text-[8px] uppercase tracking-widest text-[hsl(var(--sports-muted))]">{x.l}</p>
+            </div>
+          ))}
+        </div>
+        {next.venue && <p className="text-[10px] text-[hsl(var(--sports-muted))] mt-3 flex items-center gap-1"><MapPin className="h-3 w-3" /> {next.venue}</p>}
+      </div>
+    </Link>
+  );
+};
+
+const TeamMini = ({ t }: any) => (
+  <div className="flex flex-col items-center gap-1.5 min-w-0 flex-1">
+    <div className="w-11 h-11 rounded-xl overflow-hidden flex items-center justify-center text-white text-xs font-black border-2 border-white/10 shadow-lg" style={{ background: t?.color_primary || "#1e88ff" }}>
+      {t?.logo_url ? <img src={t.logo_url} alt={t?.name} className="w-full h-full object-cover" /> : (t?.short_name || t?.name?.[0] || "?")}
+    </div>
+    <span className="text-[10px] font-bold text-[hsl(var(--sports-text))] truncate w-full text-center">{t?.short_name || t?.name || "TBA"}</span>
+  </div>
+);
+
+const PlayerOfTheWeek = ({ players, teamMap }: { players: any[]; teamMap: any }) => {
+  const top = useMemo(() => {
+    if (!players?.length) return null;
+    const scored = players.map((p: any) => {
+      const s = p.stats || {};
+      const score = (Number(s.runs) || 0) * 1 + (Number(s.wickets) || 0) * 20 + (Number(s.sixes) || 0) * 4 + (Number(s.catches) || 0) * 5;
+      return { p, score };
+    });
+    scored.sort((a, b) => b.score - a.score);
+    return scored[0]?.score > 0 ? scored[0].p : null;
+  }, [players]);
+  if (!top) return null;
+  const team = teamMap[top.team_id];
+  const s = top.stats || {};
+
+  return (
+    <div className="sports-glass sports-glow rounded-2xl p-5 relative overflow-hidden">
+      <div className="absolute -right-6 -top-6 w-32 h-32 rounded-full bg-[hsl(var(--sports-accent))]/10 blur-2xl" />
+      <p className="text-[10px] font-bold tracking-[0.3em] uppercase sports-accent-text flex items-center gap-1.5 relative">
+        <Star className="h-3 w-3 fill-current" /> Star of the Week
+      </p>
+      <Link to={`/sports/player/${top.slug}`} className="flex items-center gap-3 mt-3 relative group">
+        <div className="w-14 h-14 rounded-xl overflow-hidden flex items-center justify-center text-white font-black border-2 shadow-lg shrink-0" style={{ background: team?.color_primary || "#1e88ff", borderColor: team?.color_primary || "#1e88ff" }}>
+          {top.photo_url ? <img src={top.photo_url} alt={top.name} className="w-full h-full object-cover" /> : (top.jersey_number ?? top.name?.[0])}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-black text-[hsl(var(--sports-text))] truncate group-hover:sports-accent-text transition">{top.name}</p>
+          <p className="text-[10px] uppercase tracking-wider text-[hsl(var(--sports-muted))] truncate">{team?.short_name || team?.name || "—"} · {top.role || "Player"}</p>
+        </div>
+      </Link>
+      <div className="grid grid-cols-3 gap-2 mt-4 relative">
+        {[{ l: "Runs", v: s.runs ?? 0 }, { l: "Wkts", v: s.wickets ?? 0 }, { l: "6s", v: s.sixes ?? 0 }].map((x, i) => (
+          <div key={i} className="rounded-lg bg-white/[0.03] border border-white/5 p-2 text-center">
+            <p className="text-base font-black sports-accent-text tabular-nums">{x.v}</p>
+            <p className="text-[9px] uppercase tracking-widest text-[hsl(var(--sports-muted))]">{x.l}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const QuickInsights = ({ matches, players, innings }: any) => {
+  const totals = useMemo(() => {
+    const runs = innings.reduce((a: number, i: any) => a + (Number(i.runs) || 0), 0);
+    const wickets = innings.reduce((a: number, i: any) => a + (Number(i.wickets) || 0), 0);
+    const sixes = players.reduce((a: number, p: any) => a + (Number(p.stats?.sixes) || 0), 0);
+    const fours = players.reduce((a: number, p: any) => a + (Number(p.stats?.fours) || 0), 0);
+    return { runs, wickets, sixes, fours };
+  }, [matches, players, innings]);
+  if (!totals.runs && !totals.wickets) return null;
+
+  const items = [
+    { I: TrendingUp, l: "Runs", v: totals.runs },
+    { I: Target, l: "Wickets", v: totals.wickets },
+    { I: Zap, l: "Sixes", v: totals.sixes },
+    { I: CircleDot, l: "Fours", v: totals.fours },
+  ];
+  return (
+    <div className="sports-glass rounded-2xl p-5">
+      <p className="text-[10px] font-bold tracking-[0.3em] uppercase sports-accent-text flex items-center gap-1.5">
+        <BarChart3 className="h-3 w-3" /> Tournament Pulse
+      </p>
+      <h3 className="text-base font-black text-[hsl(var(--sports-text))] mt-1 mb-3">Cumulative Numbers</h3>
+      <div className="grid grid-cols-2 gap-2">
+        {items.map((x, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: i * 0.05 }}
+            className="rounded-xl bg-white/[0.03] border border-white/5 p-3 flex items-center gap-2.5"
+          >
+            <x.I className="h-4 w-4 sports-accent-text shrink-0" />
+            <div className="min-w-0">
+              <CountUp value={x.v} className="text-lg font-black tabular-nums text-[hsl(var(--sports-text))] block leading-none" />
+              <p className="text-[9px] uppercase tracking-widest text-[hsl(var(--sports-muted))] mt-1">{x.l}</p>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const RecentResultsStrip = ({ completed, teamMap, innByMatch }: any) => {
+  const recent = [...completed]
+    .sort((a: any, b: any) => new Date(b.scheduled_at || 0).getTime() - new Date(a.scheduled_at || 0).getTime())
+    .slice(0, 4);
+  if (!recent.length) return null;
+  return (
+    <div className="sports-glass rounded-2xl p-5">
+      <p className="text-[10px] font-bold tracking-[0.3em] uppercase sports-accent-text flex items-center gap-1.5">
+        <Trophy className="h-3 w-3" /> Recent Results
+      </p>
+      <h3 className="text-base font-black text-[hsl(var(--sports-text))] mt-1 mb-3">Latest Verdicts</h3>
+      <ul className="space-y-2">
+        {recent.map(m => {
+          const a = teamMap[m.team_a_id]; const b = teamMap[m.team_b_id];
+          const inns = innByMatch[m.id] || [];
+          const aInn = inns.find((i: any) => i.batting_team_id === m.team_a_id);
+          const bInn = inns.find((i: any) => i.batting_team_id === m.team_b_id);
+          return (
+            <li key={m.id}>
+              <Link to={`/sports/match/${m.id}`} className="flex items-center gap-2 rounded-xl bg-white/[0.03] border border-white/5 hover:border-white/15 transition p-2.5 group">
+                <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                  <span className="w-5 h-5 rounded text-[8px] font-bold flex items-center justify-center text-white shrink-0 overflow-hidden" style={{ background: a?.color_primary || "#1e88ff" }}>
+                    {a?.logo_url ? <img src={a.logo_url} alt="" className="w-full h-full object-cover" /> : a?.short_name?.[0]}
+                  </span>
+                  <span className="text-[11px] font-bold text-[hsl(var(--sports-text))] truncate">{a?.short_name || "TBA"}</span>
+                  {aInn && <span className="text-[10px] tabular-nums text-[hsl(var(--sports-muted))]">{aInn.runs}/{aInn.wickets}</span>}
+                </div>
+                <span className="text-[8px] font-black text-[hsl(var(--sports-muted))]">VS</span>
+                <div className="flex items-center gap-1.5 flex-1 min-w-0 justify-end">
+                  {bInn && <span className="text-[10px] tabular-nums text-[hsl(var(--sports-muted))]">{bInn.runs}/{bInn.wickets}</span>}
+                  <span className="text-[11px] font-bold text-[hsl(var(--sports-text))] truncate">{b?.short_name || "TBA"}</span>
+                  <span className="w-5 h-5 rounded text-[8px] font-bold flex items-center justify-center text-white shrink-0 overflow-hidden" style={{ background: b?.color_primary || "#3b82f6" }}>
+                    {b?.logo_url ? <img src={b.logo_url} alt="" className="w-full h-full object-cover" /> : b?.short_name?.[0]}
+                  </span>
+                </div>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+};
+
+
 /* ---------- Stats Leaderboards ---------- */
 const StatsLeaderboards = ({ players, teams }: { players: any[]; teams: any[] }) => {
   const teamMap = useMemo(() => Object.fromEntries(teams.map(t => [t.id, t])), [teams]);
