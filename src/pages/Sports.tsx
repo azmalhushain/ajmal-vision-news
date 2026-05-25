@@ -404,17 +404,26 @@ const Sports = () => {
         {/* Sticky in-page navigation */}
         <SportsSubNav hasLive={live.length > 0} />
 
-        {/* MAIN CONTENT — two columns on tablet+, stacked on mobile */}
-        <section className="container mx-auto px-4 py-10 sm:py-14">
-          <div className="grid gap-8 md:grid-cols-[1fr_320px] lg:grid-cols-[1fr_360px]">
-            {/* LEFT MAIN */}
-            <div className="space-y-10 min-w-0">
+        {/* TOURNAMENT PROGRESS STRIP */}
+        <TournamentProgressStrip
+          tournament={tournament}
+          matches={matches}
+          completed={completed}
+          live={live}
+          upcoming={upcoming}
+        />
+
+        {/* MAIN CONTENT — true dashboard: 8/4 split on desktop, sidebar packed with widgets */}
+        <section className="container mx-auto px-4 py-8 sm:py-12">
+          <div className="grid gap-6 lg:gap-7 lg:grid-cols-12">
+            {/* LEFT MAIN — 8 cols */}
+            <div className="lg:col-span-8 space-y-10 min-w-0">
               {/* Next Big Battles */}
               <div id="fixtures">
                 <SectionLabel kicker="Upcoming Matches">Next Big Battles</SectionLabel>
                 {upcoming.length || live.length ? (
-                  <div className="flex gap-4 overflow-x-auto pb-3 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-3 snap-x snap-mandatory scrollbar-thin">
-                    {[...live, ...upcoming].slice(0, 6).map((m, i) => (
+                  <div className="flex gap-4 overflow-x-auto pb-3 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 snap-x snap-mandatory scrollbar-thin">
+                    {[...live, ...upcoming].slice(0, 4).map((m, i) => (
                       <div key={m.id} className="min-w-[280px] sm:min-w-0 snap-start">
                         <NeonMatchCard
                           match={m}
@@ -511,13 +520,18 @@ const Sports = () => {
               <ReadyCard />
             </div>
 
-            {/* RIGHT RAIL */}
-            <aside className="space-y-6 md:sticky md:top-36 self-start">
+            {/* RIGHT RAIL — 4 cols, sticky, packed with widgets */}
+            <aside className="lg:col-span-4 space-y-5 lg:sticky lg:top-36 self-start max-h-[calc(100vh-9rem)] lg:overflow-y-auto pr-1 scrollbar-thin">
+              <NextMatchSpotlight upcoming={upcoming} teamMap={teamMap} />
+              <PlayerOfTheWeek players={players} teamMap={teamMap} />
+              <QuickInsights matches={matches} players={players} innings={innings} />
+              <RecentResultsStrip completed={completed} teamMap={teamMap} innByMatch={innByMatch} />
               <FeaturedTeamsRail teams={teams} />
               <PointsTableCompact rows={pointsTable} />
             </aside>
           </div>
         </section>
+
 
         <div id="stats"><StatsLeaderboards players={players} teams={teams} /></div>
         <div id="videos"><VideosShowcase videos={videos} /></div>
