@@ -978,4 +978,105 @@ const SportsManager = () => {
   );
 };
 
+const OverviewTab = ({ tournamentId }: { tournamentId: string }) => {
+  const [data, setData] = useState<any>({ teams: 0, players: 0, matches: 0, live: 0, completed: 0, upcoming: 0, runs: 0, wickets: 0, topScorer: null, topWicket: null });
+
+  useEffect(() => {
+    if (!tournamentId) return;
+    const load = async () => {
+      const [{ data: teams }, { data: matches }] = await Promise.all([
+        db.from("teams").select("id").eq("tournament_id", tournamentId),
+        db.from("matches").select("*").eq("tournament_id", tournamentId),
+      ]);
+      const teamIds = (teams || []).map((t: any) => t.id);
+      const { data: players } = teamIds.length
+        ? await db.from("players").select("*").in("team_id", teamIds)
+        : { data: [] };
+      const matchIds = (matches || []).map((m: any) => m.id);
+      const { data: inns } = matchIds.length
+        ? await db.from("match_innings").select("*").in("match_id", matchIds)
+        : { data: [] };
+      const runs = (inns || []).reduce((a: number, i: any) => a + (Number(i.runs) || 0), 0);
+      const wickets = (inns || []).reduce((a: number, i: any) => a + (Number(i.wickets) || 0), 0);
+      const sortedR = [...(players || [])].sort((a, b) => (Number(b.stats?.runs) || 0) - (Number(a.stats?.runs) || 0));
+      const sortedW = [...(players || [])].sort((a, b) => (Number(b.stats?.wickets) || 0) - (Number(a.stats?.wickets) || 0));
+      setData({
+        teams: teams?.length || 0,
+        players: players?.length || 0,
+        matches: matches?.length || 0,
+        live: (matches || []).filter((m: any) => m.status === "live").length,
+        completed: (matches || []).filter((m: any) => m.status === "completed").length,
+        upcoming: (matches || []).filter((m: any) => m.status === "scheduled").length,
+        runs, wickets,
+        topScorer: sortedR[0]?.stats?.runs ? sortedR[0] : null,
+        topWicket: sortedW[0]?.stats?.wickets ? sortedW[0] : null,
+      });
+    };
+    load();
+  }, [tournamentId]);
+
+  const kpis = [
+    { l: "Teams", v: data.teams, I: Users, color: "from-blue-500/20 to-blue-500/5" },
+    { l: "Players", v: data.players, I: Users, color: "from-purple-500/20 to-purple-500/5" },
+    { l: "Matches", v: data.matches, I: Calendar, color: "from-emerald-500/20 to-emerald-500/5" },
+    { l: "Live", v: data.live, I: Radio, color: "from-red-500/20 to-red-500/5" },
+    { l: "Completed", v: data.completed, I: Trophy, color: "from-amber-500/20 to-amber-500/5" },
+    { l: "Upcoming", v: data.upcoming, I: Activity, color: "from-cyan-500/20 to-cyan-500/5" },
+    { l: "Total Runs", v: data.runs, I: TrendingUp, color: "from-orange-500/20 to-orange-500/5" },
+    { l: "Total Wickets", v: data.wickets, I: Target, color: "from-rose-500/20 to-rose-500/5" },
+  ];
+
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
+        {kpis.map((k, i) => (
+          <Card key={i} className={`bg-gradient-to-br ${k.color} border-border/50`}>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <k.I className="h-5 w-5 text-muted-foreground" />
+                <span className="text-2xl font-black tabular-nums">{k.v}</span>
+              </div>
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-2">{k.l}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+      <div className="grid gap-3 md:grid-cols-2">
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><Crown className="h-4 w-4 text-amber-500" /> Top Run Scorer</CardTitle></CardHeader>
+          <CardContent>
+            {data.topScorer ? (
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center overflow-hidden font-bold">
+                  {data.topScorer.photo_url ? <img src={data.topScorer.photo_url} alt="" className="w-full h-full object-cover" /> : data.topScorer.name?.[0]}
+                </div>
+                <div>
+                  <p className="font-bold">{data.topScorer.name}</p>
+                  <p className="text-2xl font-black text-primary">{data.topScorer.stats?.runs} runs</p>
+                </div>
+              </div>
+            ) : <p className="text-sm text-muted-foreground">No stats yet</p>}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><Target className="h-4 w-4 text-rose-500" /> Top Wicket Taker</CardTitle></CardHeader>
+          <CardContent>
+            {data.topWicket ? (
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center overflow-hidden font-bold">
+                  {data.topWicket.photo_url ? <img src={data.topWicket.photo_url} alt="" className="w-full h-full object-cover" /> : data.topWicket.name?.[0]}
+                </div>
+                <div>
+                  <p className="font-bold">{data.topWicket.name}</p>
+                  <p className="text-2xl font-black text-primary">{data.topWicket.stats?.wickets} wkts</p>
+                </div>
+              </div>
+            ) : <p className="text-sm text-muted-foreground">No stats yet</p>}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
 export default SportsManager;
