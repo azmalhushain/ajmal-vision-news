@@ -1078,7 +1078,7 @@ const TournamentProgressStrip = ({ tournament, matches, completed, live, upcomin
     : pct;
 
   return (
-    <div className="container mx-auto px-4 -mt-2 sm:-mt-4 relative z-10">
+    <div className="container mx-auto px-4 pt-4 sm:pt-6 relative z-10">
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         whileInView={{ opacity: 1, y: 0 }}
