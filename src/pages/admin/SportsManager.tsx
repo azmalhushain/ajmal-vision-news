@@ -948,8 +948,9 @@ const SportsManager = () => {
       </div>
 
       {tournamentId && (
-        <Tabs defaultValue="settings" className="space-y-4">
+        <Tabs defaultValue="overview" className="space-y-4">
           <TabsList className="flex-wrap h-auto">
+            <TabsTrigger value="overview"><LayoutDashboard className="h-4 w-4 mr-1" /> Overview</TabsTrigger>
             <TabsTrigger value="settings"><Trophy className="h-4 w-4 mr-1" /> Settings</TabsTrigger>
             <TabsTrigger value="teams"><Users className="h-4 w-4 mr-1" /> Teams</TabsTrigger>
             <TabsTrigger value="players"><Users className="h-4 w-4 mr-1" /> Players</TabsTrigger>
@@ -958,6 +959,7 @@ const SportsManager = () => {
             <TabsTrigger value="news"><Newspaper className="h-4 w-4 mr-1" /> News</TabsTrigger>
             <TabsTrigger value="media"><ImageIcon className="h-4 w-4 mr-1" /> Media</TabsTrigger>
           </TabsList>
+          <TabsContent value="overview"><OverviewTab tournamentId={tournamentId} /></TabsContent>
           <TabsContent value="settings">
             <TournamentSettingsTab
               tournamentId={tournamentId}
