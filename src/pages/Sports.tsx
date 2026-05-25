@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button";
 import {
   Trophy, Calendar, Users, Newspaper, Radio, Play, MapPin, ArrowRight,
   Clock, Tv, BarChart3, Award, Flame, Loader2, AlertTriangle, RefreshCw,
+  Activity, Star, Zap, Target, TrendingUp, CalendarDays, CircleDot,
 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import { Link } from "react-router-dom";
 import { Footer } from "@/components/Footer";
 import { PageTransition } from "@/components/PageTransition";
