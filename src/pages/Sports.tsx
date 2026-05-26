@@ -32,8 +32,8 @@ const Sports = () => {
   const [innings, setInnings] = useState<any[]>([]);
   const [news, setNews] = useState<any[]>([]);
   const [players, setPlayers] = useState<any[]>([]);
-  const [videos, setVideos] = useState<any[]>([]);
-  const [gallery, setGallery] = useState<any[]>([]);
+  // videos & gallery are self-fetched inside their components with pagination
+
 
   useEffect(() => {
     (async () => {
