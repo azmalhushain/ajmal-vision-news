@@ -32,8 +32,8 @@ const Sports = () => {
   const [innings, setInnings] = useState<any[]>([]);
   const [news, setNews] = useState<any[]>([]);
   const [players, setPlayers] = useState<any[]>([]);
-  const [videos, setVideos] = useState<any[]>([]);
-  const [gallery, setGallery] = useState<any[]>([]);
+  // videos & gallery are self-fetched inside their components with pagination
+
 
   useEffect(() => {
     (async () => {
@@ -57,14 +57,12 @@ const Sports = () => {
           db.from("teams").select("*").eq("tournament_id", tid).eq("is_active", true).order("display_order"),
           db.from("matches").select("*").eq("tournament_id", tid).order("scheduled_at", { ascending: true }),
           db.from("sports_news").select("*").eq("tournament_id", tid).eq("status", "published").order("published_at", { ascending: false }).limit(8),
-          db.from("sports_media").select("*").eq("tournament_id", tid).eq("kind", "video").eq("is_active", true).order("is_pinned", { ascending: false }).order("display_order").limit(12),
-          db.from("sports_media").select("*").eq("tournament_id", tid).eq("kind", "image").eq("is_active", true).order("is_pinned", { ascending: false }).order("display_order").limit(24),
         ]);
         const firstErr = results.find((r: any) => r.error)?.error;
         if (firstErr) throw firstErr;
-        const [{ data: t }, { data: m }, { data: n }, { data: v }, { data: g }] = results as any;
+        const [{ data: t }, { data: m }, { data: n }] = results as any;
         if (cancelled) return;
-        setTeams(t || []); setMatches(m || []); setNews(n || []); setVideos(v || []); setGallery(g || []);
+        setTeams(t || []); setMatches(m || []); setNews(n || []);
         const teamIds = (t || []).map((x: any) => x.id);
         if (teamIds.length) {
           const { data: pls } = await db.from("players").select("*").in("team_id", teamIds).eq("is_active", true);
@@ -534,8 +532,8 @@ const Sports = () => {
 
 
         <div id="stats"><StatsLeaderboards players={players} teams={teams} /></div>
-        <div id="videos"><VideosShowcase videos={videos} /></div>
-        <div id="gallery"><GalleryShowcase images={gallery} /></div>
+        <div id="videos"><VideosShowcase tournamentId={tid} /></div>
+        <div id="gallery"><GalleryShowcase tournamentId={tid} /></div>
         <SocialPosts />
         <Footer />
         {tournament?.intro_video_url && (
@@ -1379,96 +1377,144 @@ const CountUp = ({ value, className }: { value: number; className?: string }) =>
   return <motion.span ref={ref} className={className}>{display}</motion.span>;
 };
 
-/* ---------- Videos Showcase (modernized) ---------- */
-const VideosShowcase = ({ videos }: { videos: any[] }) => {
-  const [active, setActive] = useState<any | null>(null);
-  if (!videos?.length) return null;
+/* ---------- Videos Showcase (modern multi-aspect) ---------- */
+const PAGE = 12;
 
-  const ytEmbed = (url: string) => {
-    try {
-      const u = new URL(url);
-      if (u.hostname.includes("youtu.be")) return `https://www.youtube.com/embed/${u.pathname.slice(1)}`;
-      if (u.searchParams.get("v")) return `https://www.youtube.com/embed/${u.searchParams.get("v")}`;
-      return url.replace("watch?v=", "embed/");
-    } catch { return url; }
+const detectOrientation = (m: any): "portrait" | "landscape" | "square" => {
+  if (m.width && m.height) {
+    const r = m.width / m.height;
+    if (r < 0.85) return "portrait";
+    if (r > 1.2) return "landscape";
+    return "square";
+  }
+  return "landscape";
+};
+
+const ytEmbedUrl = (url: string) => {
+  try {
+    const u = new URL(url);
+    if (u.hostname.includes("youtu.be")) return `https://www.youtube.com/embed/${u.pathname.slice(1)}`;
+    if (u.searchParams.get("v")) return `https://www.youtube.com/embed/${u.searchParams.get("v")}`;
+    return url.replace("watch?v=", "embed/");
+  } catch { return url; }
+};
+
+const VideosShowcase = ({ tournamentId }: { tournamentId: string }) => {
+  const [items, setItems] = useState<any[]>([]);
+  const [page, setPage] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [active, setActive] = useState<any | null>(null);
+
+  const load = async (reset = false) => {
+    if (!tournamentId) return;
+    setLoading(true);
+    const p = reset ? 0 : page;
+    const from = p * PAGE;
+    const to = from + PAGE - 1;
+    const { data } = await db.from("sports_media")
+      .select("*")
+      .eq("tournament_id", tournamentId).eq("kind", "video").eq("is_active", true)
+      .order("is_pinned", { ascending: false }).order("display_order")
+      .range(from, to);
+    const rows = data || [];
+    setItems(reset ? rows : [...items, ...rows]);
+    setHasMore(rows.length === PAGE);
+    setPage(p + 1);
+    setLoading(false);
   };
 
-  const [hero, ...rest] = videos;
+  useEffect(() => { setItems([]); setPage(0); setHasMore(true); load(true); /* eslint-disable-next-line */ }, [tournamentId]);
+
+  if (!items.length && !loading) return null;
 
   return (
     <section className="container mx-auto px-4 py-10 sm:py-14">
-      <SectionLabel kicker="Watch">Videos & Highlights</SectionLabel>
-      <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
-        {/* Hero video */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="sports-glass sports-glow-hover rounded-2xl overflow-hidden cursor-pointer group"
-          onClick={() => setActive(hero)}
-        >
-          <div className="relative bg-black flex items-center justify-center">
-            {hero.thumbnail_url ? (
-              <img src={hero.thumbnail_url} alt={hero.caption || ""} className="w-full h-auto max-h-[420px] object-contain" loading="lazy" />
-            ) : hero.source === "upload" ? (
-              <video src={hero.url} className="w-full h-auto max-h-[420px] object-contain" preload="metadata" muted />
-            ) : (
-              <div className="w-full aspect-video bg-gradient-to-br from-[hsl(var(--sports-accent)/0.3)] to-black" />
-            )}
-            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/60 via-transparent to-transparent group-hover:from-black/40 transition">
-              <motion.span whileHover={{ scale: 1.1 }} className="w-16 h-16 sm:w-20 sm:h-20 rounded-full sports-accent-bg flex items-center justify-center shadow-[0_0_60px_-5px_hsl(var(--sports-accent)/0.9)]">
-                <Play className="h-6 w-6 sm:h-7 sm:w-7 fill-current ml-1" />
-              </motion.span>
-            </div>
-            <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
-              <Badge className="sports-accent-bg mb-2 text-[10px]">FEATURED</Badge>
-              <p className="font-black text-lg sm:text-2xl text-white line-clamp-2 drop-shadow-lg">{hero.caption || "Featured clip"}</p>
-            </div>
-          </div>
-        </motion.div>
+      <SectionLabel kicker="Watch">Videos, Reels & Highlights</SectionLabel>
 
-        {/* Sidebar list */}
-        <div className="grid grid-cols-2 lg:grid-cols-1 gap-3 lg:max-h-[420px] lg:overflow-y-auto pr-1">
-          {rest.slice(0, 6).map((v, i) => (
-            <motion.div
+      {/* Mixed-orientation responsive grid. Reels/portrait take 1 col x 2 rows; landscape spans 2 cols. */}
+      <div
+        className="grid gap-3 sm:gap-4 auto-rows-[120px] sm:auto-rows-[140px]"
+        style={{ gridTemplateColumns: "repeat(auto-fill, minmax(170px, 1fr))", gridAutoFlow: "dense" }}
+      >
+        {items.map((v, i) => {
+          const o = detectOrientation(v);
+          const isPortrait = o === "portrait";
+          const isLandscape = o === "landscape";
+          // Featured first tile gets bigger emphasis
+          const featured = i === 0;
+          const colSpan = isPortrait ? "col-span-1" : featured ? "sm:col-span-2 col-span-2" : isLandscape ? "sm:col-span-2 col-span-2" : "col-span-1";
+          const rowSpan = isPortrait ? "row-span-3 sm:row-span-3" : featured ? "row-span-3 sm:row-span-3" : "row-span-2";
+          return (
+            <motion.button
               key={v.id}
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.05 }}
-              className="sports-glass sports-glow-hover rounded-xl overflow-hidden cursor-pointer group flex flex-col lg:flex-row gap-2 lg:gap-3 p-2"
+              initial={{ opacity: 0, scale: 0.96 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.4, delay: Math.min(i * 0.03, 0.35) }}
               onClick={() => setActive(v)}
+              className={`relative group sports-glass sports-glow-hover rounded-2xl overflow-hidden text-left ${colSpan} ${rowSpan}`}
             >
-              <div className="relative bg-black rounded-lg overflow-hidden flex items-center justify-center lg:w-32 lg:shrink-0 aspect-video lg:aspect-video">
-                {v.thumbnail_url ? (
-                  <img src={v.thumbnail_url} alt="" className="w-full h-full object-cover" loading="lazy" />
-                ) : v.source === "upload" ? (
-                  <video src={v.url} className="w-full h-full object-cover" preload="metadata" muted />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-[hsl(var(--sports-accent)/0.3)] to-black" />
-                )}
-                <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/10 transition">
-                  <Play className="h-5 w-5 fill-white text-white" />
+              {v.thumbnail_url ? (
+                <img src={v.thumbnail_url} alt={v.caption || ""} loading="lazy" className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.06]" />
+              ) : v.source === "upload" ? (
+                <video src={v.url} className="absolute inset-0 w-full h-full object-cover" preload="metadata" muted playsInline />
+              ) : (
+                <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--sports-accent)/0.35)] via-black/40 to-black" />
+              )}
+
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-black/30" />
+
+              {/* Orientation badge */}
+              <span className="absolute top-2 left-2 z-10 inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-white border border-white/10">
+                {isPortrait ? "REEL" : isLandscape ? (featured ? "FEATURED" : "CLIP") : "SHORT"}
+              </span>
+              {v.is_pinned && (
+                <span className="absolute top-2 right-2 z-10 sports-accent-bg text-[9px] font-black uppercase tracking-widest rounded-full px-2 py-0.5">★ PIN</span>
+              )}
+
+              {/* Play affordance */}
+              <span className="absolute inset-0 flex items-center justify-center">
+                <span className="w-11 h-11 sm:w-14 sm:h-14 rounded-full sports-accent-bg flex items-center justify-center shadow-[0_0_45px_-5px_hsl(var(--sports-accent)/0.85)] transition-transform group-hover:scale-110">
+                  <Play className="h-4 w-4 sm:h-5 sm:w-5 fill-current ml-0.5" />
+                </span>
+              </span>
+
+              {(v.caption || v.source) && (
+                <div className="absolute bottom-0 left-0 right-0 p-2.5 sm:p-3">
+                  {v.caption && (
+                    <p className={`font-bold text-white drop-shadow line-clamp-2 ${featured ? "text-sm sm:text-base" : "text-[11px] sm:text-xs"}`}>{v.caption}</p>
+                  )}
+                  <p className="text-[9px] sm:text-[10px] text-white/70 mt-0.5 uppercase tracking-wider">{v.source === "youtube" ? "YouTube" : "Video"}</p>
                 </div>
-              </div>
-              <div className="flex-1 min-w-0 px-1 py-1">
-                <p className="font-bold text-xs sm:text-sm text-[hsl(var(--sports-text))] line-clamp-2">{v.caption || "Clip"}</p>
-                <p className="text-[10px] text-[hsl(var(--sports-muted))] mt-1 uppercase tracking-wider">{v.source === "youtube" ? "YouTube" : "Video"}</p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+              )}
+            </motion.button>
+          );
+        })}
+      </div>
+
+      <div className="mt-7 flex justify-center">
+        {hasMore ? (
+          <Button onClick={() => load()} disabled={loading} size="lg" variant="outline" className="rounded-full border-[hsl(var(--sports-accent))]/40 bg-[hsl(var(--sports-accent))]/10 hover:bg-[hsl(var(--sports-accent))]/20 text-[hsl(var(--sports-text))] h-11 px-6 font-bold">
+            {loading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Loading…</> : <>Load more videos <ArrowRight className="h-4 w-4 ml-1.5" /></>}
+          </Button>
+        ) : items.length > PAGE ? (
+          <p className="text-xs text-[hsl(var(--sports-muted))] uppercase tracking-widest">All caught up · {items.length} clips</p>
+        ) : null}
       </div>
 
       {active && (
-        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setActive(null)}>
-          <div className="w-full max-w-5xl" onClick={e => e.stopPropagation()}>
-            <div className="aspect-video bg-black rounded-2xl overflow-hidden">
+        <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-4" onClick={() => setActive(null)}>
+          <div
+            className={`w-full ${detectOrientation(active) === "portrait" ? "max-w-sm" : "max-w-5xl"}`}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className={`bg-black rounded-2xl overflow-hidden ${detectOrientation(active) === "portrait" ? "aspect-[9/16]" : "aspect-video"}`}>
               {active.source === "youtube"
-                ? <iframe src={`${ytEmbed(active.url)}?autoplay=1`} className="w-full h-full" allowFullScreen allow="autoplay; encrypted-media" />
-                : <video src={active.url} className="w-full h-full object-contain" controls autoPlay />}
+                ? <iframe src={`${ytEmbedUrl(active.url)}?autoplay=1`} className="w-full h-full" allowFullScreen allow="autoplay; encrypted-media" />
+                : <video src={active.url} className="w-full h-full object-contain" controls autoPlay playsInline />}
             </div>
-            {active.caption && <p className="text-center text-white mt-3 font-medium">{active.caption}</p>}
+            {active.caption && <p className="text-center text-white mt-3 font-medium px-2">{active.caption}</p>}
           </div>
         </div>
       )}
@@ -1476,58 +1522,90 @@ const VideosShowcase = ({ videos }: { videos: any[] }) => {
   );
 };
 
-/* ---------- Gallery Showcase (masonry, original ratios) ---------- */
-const GalleryShowcase = ({ images }: { images: any[] }) => {
+/* ---------- Gallery Showcase (modern bento, real ratios + load more) ---------- */
+const GalleryShowcase = ({ tournamentId }: { tournamentId: string }) => {
+  const PAGE_G = 18;
+  const [items, setItems] = useState<any[]>([]);
+  const [page, setPage] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [active, setActive] = useState<any | null>(null);
-  if (!images?.length) return null;
+
+  const load = async (reset = false) => {
+    if (!tournamentId) return;
+    setLoading(true);
+    const p = reset ? 0 : page;
+    const from = p * PAGE_G;
+    const to = from + PAGE_G - 1;
+    const { data } = await db.from("sports_media")
+      .select("*")
+      .eq("tournament_id", tournamentId).eq("kind", "image").eq("is_active", true)
+      .order("is_pinned", { ascending: false }).order("display_order")
+      .range(from, to);
+    const rows = data || [];
+    setItems(reset ? rows : [...items, ...rows]);
+    setHasMore(rows.length === PAGE_G);
+    setPage(p + 1);
+    setLoading(false);
+  };
+
+  useEffect(() => { setItems([]); setPage(0); setHasMore(true); load(true); /* eslint-disable-next-line */ }, [tournamentId]);
+
+  if (!items.length && !loading) return null;
 
   return (
     <section className="container mx-auto px-4 py-10 sm:py-14">
       <SectionLabel kicker="Capture">Match Gallery</SectionLabel>
-      <div
-        className="grid gap-3 sm:gap-4"
-        style={{ gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gridAutoFlow: "dense" }}
-      >
-        {images.map((img, i) => {
-          const ratio = img.width && img.height ? img.width / img.height : undefined;
-          const isWide = ratio && ratio > 1.4;
-          const isTall = ratio && ratio < 0.75;
+
+      {/* CSS columns masonry — preserves any aspect ratio, no cropping, fills horizontally */}
+      <div className="columns-2 sm:columns-3 lg:columns-4 xl:columns-5 gap-3 sm:gap-4 [column-fill:_balance]">
+        {items.map((img, i) => {
+          const ratio = img.width && img.height ? img.width / img.height : 4 / 3;
           return (
             <motion.button
               key={img.id}
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: Math.min(i * 0.03, 0.4) }}
-              whileHover={{ y: -3 }}
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ duration: 0.35, delay: Math.min(i * 0.02, 0.3) }}
               onClick={() => setActive(img)}
-              className={`relative group sports-glass sports-glow-hover rounded-2xl overflow-hidden block ${isWide ? "sm:col-span-2" : ""} ${isTall ? "sm:row-span-2" : ""}`}
-              style={{ aspectRatio: ratio ? String(ratio) : "1 / 1" }}
+              className="relative group sports-glass sports-glow-hover rounded-2xl overflow-hidden mb-3 sm:mb-4 break-inside-avoid block w-full text-left"
+              style={{ aspectRatio: String(ratio) }}
             >
               <img
                 src={img.url}
                 alt={img.alt_text || img.caption || "Match photo"}
                 loading="lazy"
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.05]"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent opacity-50 group-hover:opacity-90 transition" />
+              {img.is_pinned && (
+                <span className="absolute top-2 left-2 sports-accent-bg text-[9px] font-black uppercase tracking-widest rounded-full px-2 py-0.5">★ PIN</span>
+              )}
               {img.caption && (
-                <div className="absolute bottom-0 left-0 right-0 p-3 text-left translate-y-2 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition">
+                <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-1 group-hover:translate-y-0 opacity-90 group-hover:opacity-100 transition">
                   <p className="text-xs sm:text-sm font-bold text-white line-clamp-2 drop-shadow">{img.caption}</p>
                 </div>
-              )}
-              {img.is_pinned && (
-                <span className="absolute top-2 left-2 sports-accent-bg text-[9px] font-black uppercase tracking-widest rounded-full px-2 py-0.5">★</span>
               )}
             </motion.button>
           );
         })}
       </div>
 
+      <div className="mt-7 flex justify-center">
+        {hasMore ? (
+          <Button onClick={() => load()} disabled={loading} size="lg" variant="outline" className="rounded-full border-[hsl(var(--sports-accent))]/40 bg-[hsl(var(--sports-accent))]/10 hover:bg-[hsl(var(--sports-accent))]/20 text-[hsl(var(--sports-text))] h-11 px-6 font-bold">
+            {loading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Loading…</> : <>Load more photos <ArrowRight className="h-4 w-4 ml-1.5" /></>}
+          </Button>
+        ) : items.length > PAGE_G ? (
+          <p className="text-xs text-[hsl(var(--sports-muted))] uppercase tracking-widest">All caught up · {items.length} photos</p>
+        ) : null}
+      </div>
+
       {active && (
-        <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setActive(null)}>
+        <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-4" onClick={() => setActive(null)}>
           <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
+            initial={{ scale: 0.92, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className="max-w-6xl w-full max-h-[90vh] flex flex-col items-center"
             onClick={e => e.stopPropagation()}
@@ -1542,3 +1620,4 @@ const GalleryShowcase = ({ images }: { images: any[] }) => {
 };
 
 export default Sports;
+
