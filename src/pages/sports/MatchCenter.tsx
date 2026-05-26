@@ -101,34 +101,111 @@ const MatchCenter = () => {
             </div>
           </div>
 
-          {embed && (
-            <div className="glass-card rounded-3xl p-3 sm:p-4 mt-6">
-              <h3 className="text-lg font-bold mb-3 flex items-center gap-2"><Play className="h-5 w-5 text-destructive" /> Live Broadcast</h3>
-              <div className="relative aspect-video rounded-2xl overflow-hidden">
-                <iframe
-                  src={embed}
-                  title="Live broadcast"
-                  className="absolute inset-0 w-full h-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              </div>
-            </div>
-          )}
-
-          {innings.length > 0 && (
-            <div className="glass-card rounded-3xl p-5 mt-6">
-              <h3 className="text-lg font-bold mb-3">Scorecard</h3>
-              <div className="space-y-2">
-                {innings.map(i => (
-                  <div key={i.id} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
-                    <span className="font-semibold text-sm">{teams[i.batting_team_id]?.name || "—"} <span className="text-xs text-muted-foreground">Inn {i.innings_no}</span></span>
-                    <span className="font-bold tabular-nums">{i.runs}/{i.wickets} <span className="text-xs text-muted-foreground">({formatOvers(i.overs)} ov, {i.extras} ext)</span></span>
+          {/* Broadcast + live side panel — fills space across the row */}
+          <div className="mt-6 grid gap-4 lg:grid-cols-3">
+            <div className={`${embed ? "lg:col-span-2" : "lg:col-span-3"} space-y-4`}>
+              {embed ? (
+                <div className="glass-card rounded-3xl p-3 sm:p-4">
+                  <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
+                    <Play className="h-5 w-5 text-destructive" /> Live Broadcast
+                    {isLive && <Badge variant="destructive" className="gap-1 ml-1"><Radio className="h-3 w-3 animate-pulse" /> ON AIR</Badge>}
+                  </h3>
+                  <div className="relative aspect-video rounded-2xl overflow-hidden bg-black">
+                    <iframe
+                      src={embed}
+                      title="Live broadcast"
+                      className="absolute inset-0 w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
                   </div>
-                ))}
-              </div>
+                </div>
+              ) : (
+                <div className="glass-card rounded-3xl p-6 text-center">
+                  <p className="text-sm text-muted-foreground">No live broadcast available for this match.</p>
+                </div>
+              )}
+
+              {innings.length > 0 && (
+                <div className="glass-card rounded-3xl p-5">
+                  <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-accent" /> Scorecard
+                  </h3>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    {innings.map(i => {
+                      const t = teams[i.batting_team_id];
+                      return (
+                        <div key={i.id} className="rounded-2xl p-4 bg-background/40 border border-border/50">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 flex items-center justify-center text-white font-bold text-xs" style={{ background: t?.color_primary || "#444" }}>
+                              {t?.logo_url ? <img src={t.logo_url} alt="" className="w-full h-full object-cover" /> : (t?.short_name || t?.name?.[0])}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="font-semibold text-sm truncate">{t?.name || "—"}</p>
+                              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Innings {i.innings_no}</p>
+                            </div>
+                          </div>
+                          <p className="text-3xl font-black tabular-nums">{i.runs}/{i.wickets}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">{formatOvers(i.overs)} ov · {i.extras} extras</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+
+            {/* Side panel — only when there's a broadcast to balance with */}
+            {embed && (
+              <aside className="space-y-4">
+                <div className="glass-card rounded-3xl p-5">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-accent mb-2">Match Status</p>
+                  <p className="text-2xl font-black capitalize">{isLive ? "Live now" : match.status}</p>
+                  {match.result_text && <p className="text-sm text-muted-foreground mt-2">{match.result_text}</p>}
+                  {match.commentary_note && (
+                    <p className="text-sm italic mt-3 border-l-2 border-accent/60 pl-3 text-muted-foreground">"{match.commentary_note}"</p>
+                  )}
+                </div>
+
+                <div className="glass-card rounded-3xl p-5 space-y-3">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-accent">Match Info</p>
+                  {match.scheduled_at && (
+                    <div className="flex items-start gap-2 text-sm">
+                      <Calendar className="h-4 w-4 mt-0.5 text-accent shrink-0" />
+                      <span>{new Date(match.scheduled_at).toLocaleString()}</span>
+                    </div>
+                  )}
+                  {match.venue && (
+                    <div className="flex items-start gap-2 text-sm">
+                      <MapPin className="h-4 w-4 mt-0.5 text-accent shrink-0" />
+                      <span>{match.venue}</span>
+                    </div>
+                  )}
+                  {match.match_no && (
+                    <div className="flex items-start gap-2 text-sm">
+                      <Radio className="h-4 w-4 mt-0.5 text-accent shrink-0" />
+                      <span>Match #{match.match_no}</span>
+                    </div>
+                  )}
+                </div>
+
+                {aInn && bInn && (
+                  <div className="glass-card rounded-3xl p-5">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-accent mb-3">Head to Head</p>
+                    <div className="space-y-2">
+                      {[{ t: a, inn: aInn }, { t: b, inn: bInn }].map((row, idx) => (
+                        <div key={idx} className="flex items-center justify-between gap-2">
+                          <span className="text-sm font-semibold truncate">{row.t?.short_name || row.t?.name}</span>
+                          <span className="text-sm font-black tabular-nums">{row.inn.runs}/{row.inn.wickets}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </aside>
+            )}
+          </div>
+
         </div>
         <Footer />
       </div>
