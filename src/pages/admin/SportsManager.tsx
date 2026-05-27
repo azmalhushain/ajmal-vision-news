@@ -956,6 +956,7 @@ const SportsManager = () => {
             <TabsTrigger value="players"><Users className="h-4 w-4 mr-1" /> Players</TabsTrigger>
             <TabsTrigger value="fixtures"><Calendar className="h-4 w-4 mr-1" /> Fixtures</TabsTrigger>
             <TabsTrigger value="live"><Radio className="h-4 w-4 mr-1" /> Live Score</TabsTrigger>
+            <TabsTrigger value="points"><BarChart3 className="h-4 w-4 mr-1" /> Points Table</TabsTrigger>
             <TabsTrigger value="news"><Newspaper className="h-4 w-4 mr-1" /> News</TabsTrigger>
             <TabsTrigger value="media"><ImageIcon className="h-4 w-4 mr-1" /> Media</TabsTrigger>
           </TabsList>
@@ -970,6 +971,7 @@ const SportsManager = () => {
           <TabsContent value="players"><PlayersTab tournamentId={tournamentId} /></TabsContent>
           <TabsContent value="fixtures"><FixturesTab tournamentId={tournamentId} /></TabsContent>
           <TabsContent value="live"><LiveScoreTab tournamentId={tournamentId} /></TabsContent>
+          <TabsContent value="points"><PointsTableTab tournamentId={tournamentId} /></TabsContent>
           <TabsContent value="news"><SportsNewsTab tournamentId={tournamentId} /></TabsContent>
           <TabsContent value="media"><MediaTab tournamentId={tournamentId} /></TabsContent>
         </Tabs>
