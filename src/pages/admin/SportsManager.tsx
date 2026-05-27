@@ -15,7 +15,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { Trophy, Users, Calendar, Radio, Newspaper, Image as ImageIcon, Plus, Pencil, Trash2, Upload, RefreshCw, Crown, LayoutDashboard, TrendingUp, Activity, Target } from "lucide-react";
+import { Trophy, Users, Calendar, Radio, Newspaper, Image as ImageIcon, Plus, Pencil, Trash2, Upload, RefreshCw, Crown, LayoutDashboard, TrendingUp, Activity, Target, BarChart3, Save, RotateCcw } from "lucide-react";
 import { uploadSportsLogo, uploadSportsMedia } from "@/lib/sportsHelpers";
 import { BallByBallPad } from "@/components/sports/BallByBallPad";
 import { Video, Film, Star, Trash } from "lucide-react";
@@ -956,6 +956,7 @@ const SportsManager = () => {
             <TabsTrigger value="players"><Users className="h-4 w-4 mr-1" /> Players</TabsTrigger>
             <TabsTrigger value="fixtures"><Calendar className="h-4 w-4 mr-1" /> Fixtures</TabsTrigger>
             <TabsTrigger value="live"><Radio className="h-4 w-4 mr-1" /> Live Score</TabsTrigger>
+            <TabsTrigger value="points"><BarChart3 className="h-4 w-4 mr-1" /> Points Table</TabsTrigger>
             <TabsTrigger value="news"><Newspaper className="h-4 w-4 mr-1" /> News</TabsTrigger>
             <TabsTrigger value="media"><ImageIcon className="h-4 w-4 mr-1" /> Media</TabsTrigger>
           </TabsList>
@@ -970,6 +971,7 @@ const SportsManager = () => {
           <TabsContent value="players"><PlayersTab tournamentId={tournamentId} /></TabsContent>
           <TabsContent value="fixtures"><FixturesTab tournamentId={tournamentId} /></TabsContent>
           <TabsContent value="live"><LiveScoreTab tournamentId={tournamentId} /></TabsContent>
+          <TabsContent value="points"><PointsTableTab tournamentId={tournamentId} /></TabsContent>
           <TabsContent value="news"><SportsNewsTab tournamentId={tournamentId} /></TabsContent>
           <TabsContent value="media"><MediaTab tournamentId={tournamentId} /></TabsContent>
         </Tabs>
@@ -1075,6 +1077,175 @@ const OverviewTab = ({ tournamentId }: { tournamentId: string }) => {
           </CardContent>
         </Card>
       </div>
+    </div>
+  );
+};
+
+// ============ POINTS TABLE (admin overrides + live preview) ============
+const PointsTableTab = ({ tournamentId }: { tournamentId: string }) => {
+  const { toast } = useToast();
+  const [teams, setTeams] = useState<any[]>([]);
+  const [matches, setMatches] = useState<any[]>([]);
+  const [innings, setInnings] = useState<any[]>([]);
+  const [overrides, setOverrides] = useState<Record<string, any>>({});
+  const [saving, setSaving] = useState<string | null>(null);
+
+  const load = async () => {
+    const [{ data: t }, { data: m }, { data: ov }] = await Promise.all([
+      db.from("teams").select("*").eq("tournament_id", tournamentId).eq("is_active", true).order("display_order"),
+      db.from("matches").select("*").eq("tournament_id", tournamentId),
+      db.from("points_overrides").select("*").eq("tournament_id", tournamentId),
+    ]);
+    setTeams(t || []);
+    setMatches(m || []);
+    const ids = (m || []).map((x: any) => x.id);
+    if (ids.length) {
+      const { data: inn } = await db.from("match_innings").select("*").in("match_id", ids);
+      setInnings(inn || []);
+    } else setInnings([]);
+    const ovMap: Record<string, any> = {};
+    (ov || []).forEach((o: any) => { ovMap[o.team_id] = o; });
+    setOverrides(ovMap);
+  };
+
+  useEffect(() => { if (tournamentId) load(); }, [tournamentId]);
+
+  const autoRows = (() => {
+    const rows: Record<string, any> = {};
+    teams.forEach(t => { rows[t.id] = { team: t, m: 0, w: 0, l: 0, nr: 0, pts: 0, runsFor: 0, oversFor: 0, runsAgst: 0, oversAgst: 0 }; });
+    const innByMatch: Record<string, any[]> = {};
+    innings.forEach(i => { (innByMatch[i.match_id] ||= []).push(i); });
+    for (const c of matches) {
+      const a = rows[c.team_a_id], b = rows[c.team_b_id];
+      if (c.status === "completed") {
+        if (a) a.m++; if (b) b.m++;
+        if (c.winner_id && rows[c.winner_id]) { rows[c.winner_id].w++; rows[c.winner_id].pts += 2; }
+        const loser = c.winner_id === c.team_a_id ? c.team_b_id : c.winner_id === c.team_b_id ? c.team_a_id : null;
+        if (loser && rows[loser]) rows[loser].l++;
+        const inns = innByMatch[c.id] || [];
+        for (const inn of inns) {
+          const bat = rows[inn.batting_team_id], bowl = rows[inn.bowling_team_id];
+          const ovs = Number(inn.overs) || 0;
+          if (bat) { bat.runsFor += inn.runs || 0; bat.oversFor += ovs; }
+          if (bowl) { bowl.runsAgst += inn.runs || 0; bowl.oversAgst += ovs; }
+        }
+      } else if (c.status === "abandoned" || c.status === "postponed") {
+        if (a) { a.m++; a.nr++; a.pts += 1; }
+        if (b) { b.m++; b.nr++; b.pts += 1; }
+      }
+    }
+    return Object.values(rows).map((r: any) => ({
+      ...r,
+      nrr: +((r.oversFor > 0 ? r.runsFor / r.oversFor : 0) - (r.oversAgst > 0 ? r.runsAgst / r.oversAgst : 0)).toFixed(3),
+    }));
+  })();
+
+  const handleField = (teamId: string, field: string, value: any) => {
+    setOverrides(prev => ({
+      ...prev,
+      [teamId]: { ...(prev[teamId] || { team_id: teamId, tournament_id: tournamentId }), [field]: value },
+    }));
+  };
+
+  const save = async (teamId: string) => {
+    setSaving(teamId);
+    const row = overrides[teamId] || { team_id: teamId, tournament_id: tournamentId };
+    const payload = {
+      tournament_id: tournamentId,
+      team_id: teamId,
+      played_offset: Number(row.played_offset) || 0,
+      won_offset: Number(row.won_offset) || 0,
+      lost_offset: Number(row.lost_offset) || 0,
+      no_result_offset: Number(row.no_result_offset) || 0,
+      points_offset: Number(row.points_offset) || 0,
+      nrr_override: row.nrr_override === "" || row.nrr_override === null || row.nrr_override === undefined ? null : Number(row.nrr_override),
+      pinned_rank: row.pinned_rank === "" || row.pinned_rank === null || row.pinned_rank === undefined ? null : Number(row.pinned_rank),
+      note: row.note || null,
+    };
+    const { error } = await db.from("points_overrides").upsert(payload, { onConflict: "tournament_id,team_id" });
+    setSaving(null);
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else { toast({ title: "Saved", description: "Standings override updated." }); load(); }
+  };
+
+  const reset = async (teamId: string) => {
+    const { error } = await db.from("points_overrides").delete().eq("tournament_id", tournamentId).eq("team_id", teamId);
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else { toast({ title: "Reset", description: "Override removed." }); load(); }
+  };
+
+  return (
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><BarChart3 className="h-5 w-5" /> Points Table — Admin Overrides</CardTitle>
+          <p className="text-xs text-muted-foreground">Auto-computed from match results. Use offsets below to add/subtract from the auto totals, or set a manual NRR / pinned rank to override entirely.</p>
+        </CardHeader>
+        <CardContent className="overflow-x-auto">
+          <table className="w-full text-xs min-w-[900px]">
+            <thead>
+              <tr className="bg-muted/40 text-[10px] uppercase tracking-wider">
+                <th className="text-left px-2 py-2">Team</th>
+                <th className="px-1 py-2">Auto P/W/L</th>
+                <th className="px-1 py-2">Auto Pts</th>
+                <th className="px-1 py-2">Auto NRR</th>
+                <th className="px-1 py-2">+P</th>
+                <th className="px-1 py-2">+W</th>
+                <th className="px-1 py-2">+L</th>
+                <th className="px-1 py-2">+NR</th>
+                <th className="px-1 py-2">+Pts</th>
+                <th className="px-1 py-2">NRR ovr</th>
+                <th className="px-1 py-2">Pin #</th>
+                <th className="px-2 py-2 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {autoRows.map((row: any) => {
+                const ov = overrides[row.team.id] || {};
+                return (
+                  <tr key={row.team.id} className="border-t border-border/40">
+                    <td className="px-2 py-2">
+                      <div className="flex items-center gap-2 min-w-[140px]">
+                        <span className="w-6 h-6 rounded flex items-center justify-center text-white text-[10px] font-bold shrink-0" style={{ background: row.team.color_primary || "#333" }}>
+                          {row.team.logo_url ? <img src={row.team.logo_url} alt="" className="w-full h-full object-cover rounded" /> : (row.team.short_name?.[0] || row.team.name[0])}
+                        </span>
+                        <span className="font-semibold truncate">{row.team.short_name || row.team.name}</span>
+                      </div>
+                    </td>
+                    <td className="px-1 py-2 text-center tabular-nums">{row.m}/{row.w}/{row.l}</td>
+                    <td className="px-1 py-2 text-center font-bold tabular-nums">{row.pts}</td>
+                    <td className={`px-1 py-2 text-center tabular-nums ${row.nrr > 0 ? "text-emerald-500" : row.nrr < 0 ? "text-rose-500" : ""}`}>{row.nrr.toFixed(2)}</td>
+                    {(["played_offset", "won_offset", "lost_offset", "no_result_offset", "points_offset"] as const).map(f => (
+                      <td key={f} className="px-1 py-1">
+                        <Input type="number" className="h-8 w-14 text-xs text-center" value={ov[f] ?? ""} onChange={e => handleField(row.team.id, f, e.target.value)} placeholder="0" />
+                      </td>
+                    ))}
+                    <td className="px-1 py-1">
+                      <Input type="number" step="0.01" className="h-8 w-20 text-xs text-center" value={ov.nrr_override ?? ""} onChange={e => handleField(row.team.id, "nrr_override", e.target.value)} placeholder="auto" />
+                    </td>
+                    <td className="px-1 py-1">
+                      <Input type="number" className="h-8 w-14 text-xs text-center" value={ov.pinned_rank ?? ""} onChange={e => handleField(row.team.id, "pinned_rank", e.target.value)} placeholder="—" />
+                    </td>
+                    <td className="px-2 py-1 text-right whitespace-nowrap">
+                      <Button size="sm" variant="default" className="h-8 px-2 mr-1" onClick={() => save(row.team.id)} disabled={saving === row.team.id}>
+                        <Save className="h-3 w-3 mr-1" /> Save
+                      </Button>
+                      {ov.id && (
+                        <Button size="sm" variant="ghost" className="h-8 px-2" onClick={() => reset(row.team.id)}>
+                          <RotateCcw className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+              {!teams.length && (
+                <tr><td colSpan={12} className="text-center text-muted-foreground py-8">No teams in this tournament yet.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </CardContent>
+      </Card>
     </div>
   );
 };

@@ -113,6 +113,16 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground font-body;
+    overflow-x: hidden;
+  }
+
+  html {
+    overflow-x: hidden;
+  }
+
+  /* Prevent any layout from creating horizontal overflow on small screens */
+  img, video, iframe {
+    max-width: 100%;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -243,9 +253,12 @@ All colors MUST be HSL.
     scroll-behavior: smooth;
   }
 
-  /* Better touch targets on mobile */
+  /* Better touch targets on mobile — only for interactive controls, NOT inline text links */
   @media (max-width: 640px) {
-    button, a {
+    button:not(.inline-link),
+    [role="button"],
+    a.btn,
+    a[role="button"] {
       min-height: 44px;
     }
   }

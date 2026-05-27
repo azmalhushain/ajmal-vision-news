@@ -32,6 +32,7 @@ const Sports = () => {
   const [innings, setInnings] = useState<any[]>([]);
   const [news, setNews] = useState<any[]>([]);
   const [players, setPlayers] = useState<any[]>([]);
+  const [pointsOverrides, setPointsOverrides] = useState<any[]>([]);
   // videos & gallery are self-fetched inside their components with pagination
 
 
@@ -57,12 +58,13 @@ const Sports = () => {
           db.from("teams").select("*").eq("tournament_id", tid).eq("is_active", true).order("display_order"),
           db.from("matches").select("*").eq("tournament_id", tid).order("scheduled_at", { ascending: true }),
           db.from("sports_news").select("*").eq("tournament_id", tid).eq("status", "published").order("published_at", { ascending: false }).limit(8),
+          db.from("points_overrides").select("*").eq("tournament_id", tid),
         ]);
         const firstErr = results.find((r: any) => r.error)?.error;
         if (firstErr) throw firstErr;
-        const [{ data: t }, { data: m }, { data: n }] = results as any;
+        const [{ data: t }, { data: m }, { data: n }, { data: ov }] = results as any;
         if (cancelled) return;
-        setTeams(t || []); setMatches(m || []); setNews(n || []);
+        setTeams(t || []); setMatches(m || []); setNews(n || []); setPointsOverrides(ov || []);
         const teamIds = (t || []).map((x: any) => x.id);
         if (teamIds.length) {
           const { data: pls } = await db.from("players").select("*").in("team_id", teamIds).eq("is_active", true);
@@ -85,6 +87,7 @@ const Sports = () => {
     const ch = db.channel(`sports-${tid}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "matches" }, () => load(true))
       .on("postgres_changes", { event: "*", schema: "public", table: "match_innings" }, () => load(true))
+      .on("postgres_changes", { event: "*", schema: "public", table: "points_overrides" }, () => load(true))
       .subscribe();
     return () => { cancelled = true; clearInterval(intervalId); db.removeChannel(ch); };
   }, [tid, retryNonce]);
@@ -146,13 +149,35 @@ const Sports = () => {
       }
     }
 
+    const ovMap = Object.fromEntries(pointsOverrides.map((o: any) => [o.team_id, o]));
     const out = Object.values(rows).map(r => {
       const rrFor = r.oversFor > 0 ? r.runsFor / r.oversFor : 0;
       const rrAgst = r.oversAgst > 0 ? r.runsAgst / r.oversAgst : 0;
-      return { ...r, nrr: +(rrFor - rrAgst).toFixed(3), form: r.form.slice(-5) };
+      const autoNrr = +(rrFor - rrAgst).toFixed(3);
+      const ov = ovMap[r.team.id];
+      if (ov) {
+        return {
+          ...r,
+          m: r.m + (ov.played_offset || 0),
+          w: r.w + (ov.won_offset || 0),
+          l: r.l + (ov.lost_offset || 0),
+          nr: r.nr + (ov.no_result_offset || 0),
+          pts: r.pts + (ov.points_offset || 0),
+          nrr: ov.nrr_override !== null && ov.nrr_override !== undefined ? Number(ov.nrr_override) : autoNrr,
+          form: r.form.slice(-5),
+          pinnedRank: ov.pinned_rank,
+          adjusted: true,
+        };
+      }
+      return { ...r, nrr: autoNrr, form: r.form.slice(-5), adjusted: false };
     });
-    return out.sort((x, y) => y.pts - x.pts || y.nrr - x.nrr || y.w - x.w);
-  }, [teams, matches, innByMatch]);
+    return out.sort((x: any, y: any) => {
+      if (x.pinnedRank != null && y.pinnedRank != null) return x.pinnedRank - y.pinnedRank;
+      if (x.pinnedRank != null) return -1;
+      if (y.pinnedRank != null) return 1;
+      return y.pts - x.pts || y.nrr - x.nrr || y.w - x.w;
+    });
+  }, [teams, matches, innByMatch, pointsOverrides]);
 
   return (
     <PageTransition>
@@ -922,7 +947,12 @@ const PointsTableCompact = ({ rows }: { rows: any[] }) => (
                 <td className={`px-1 py-2.5 text-center tabular-nums font-semibold ${r.nrr > 0 ? "text-emerald-400" : r.nrr < 0 ? "text-rose-400" : "text-[hsl(var(--sports-muted))]"}`}>
                   {r.nrr > 0 ? "+" : ""}{(r.nrr ?? 0).toFixed(2)}
                 </td>
-                <td className="px-2 py-2.5 text-right font-black tabular-nums sports-accent-text">{r.pts}</td>
+                <td className="px-2 py-2.5 text-right font-black tabular-nums sports-accent-text">
+                  <span className="inline-flex items-center gap-1 justify-end">
+                    {r.adjusted && <span title="Manually adjusted by admin" className="w-1.5 h-1.5 rounded-full bg-amber-400" />}
+                    {r.pts}
+                  </span>
+                </td>
                 <td className="px-2 py-2.5">
                   <div className="flex items-center gap-0.5 justify-end">
                     {(r.form || []).map((f: any, idx: number) => <FormPip key={idx} r={f} />)}
@@ -939,7 +969,7 @@ const PointsTableCompact = ({ rows }: { rows: any[] }) => (
       </table>
     </div>
     <p className="text-[10px] text-[hsl(var(--sports-muted))] mt-3 leading-relaxed">
-      NRR auto-calculated from innings totals. Abandoned/postponed matches award 1 point to each team.
+      NRR auto-calculated from innings totals. Abandoned/postponed matches award 1 point to each team. <span className="inline-flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-amber-400" /> = admin adjusted.</span>
     </p>
   </div>
 );

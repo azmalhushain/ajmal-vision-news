@@ -91,13 +91,13 @@ const AdminLayout = () => {
         isOpen={isMobileSidebarOpen}
         onClose={() => setIsMobileSidebarOpen(false)}
       />
-      <div className="lg:pl-64 relative">
+      <div className="lg:pl-64 relative min-w-0">
         <AdminNavbar
           user={user}
           onLogout={handleLogout}
           onMenuClick={() => setIsMobileSidebarOpen(true)}
         />
-        <main className="p-3 sm:p-4 md:p-6 lg:p-8 animate-fade-in">
+        <main className="p-3 sm:p-4 md:p-6 lg:p-8 animate-fade-in min-w-0 overflow-x-hidden">
           <Outlet />
         </main>
       </div>
