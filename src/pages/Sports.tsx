@@ -87,6 +87,7 @@ const Sports = () => {
     const ch = db.channel(`sports-${tid}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "matches" }, () => load(true))
       .on("postgres_changes", { event: "*", schema: "public", table: "match_innings" }, () => load(true))
+      .on("postgres_changes", { event: "*", schema: "public", table: "points_overrides" }, () => load(true))
       .subscribe();
     return () => { cancelled = true; clearInterval(intervalId); db.removeChannel(ch); };
   }, [tid, retryNonce]);
