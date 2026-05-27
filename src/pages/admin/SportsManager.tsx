@@ -15,7 +15,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { Trophy, Users, Calendar, Radio, Newspaper, Image as ImageIcon, Plus, Pencil, Trash2, Upload, RefreshCw, Crown, LayoutDashboard, TrendingUp, Activity, Target } from "lucide-react";
+import { Trophy, Users, Calendar, Radio, Newspaper, Image as ImageIcon, Plus, Pencil, Trash2, Upload, RefreshCw, Crown, LayoutDashboard, TrendingUp, Activity, Target, BarChart3, Save, RotateCcw } from "lucide-react";
 import { uploadSportsLogo, uploadSportsMedia } from "@/lib/sportsHelpers";
 import { BallByBallPad } from "@/components/sports/BallByBallPad";
 import { Video, Film, Star, Trash } from "lucide-react";
