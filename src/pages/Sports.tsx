@@ -149,13 +149,35 @@ const Sports = () => {
       }
     }
 
+    const ovMap = Object.fromEntries(pointsOverrides.map((o: any) => [o.team_id, o]));
     const out = Object.values(rows).map(r => {
       const rrFor = r.oversFor > 0 ? r.runsFor / r.oversFor : 0;
       const rrAgst = r.oversAgst > 0 ? r.runsAgst / r.oversAgst : 0;
-      return { ...r, nrr: +(rrFor - rrAgst).toFixed(3), form: r.form.slice(-5) };
+      const autoNrr = +(rrFor - rrAgst).toFixed(3);
+      const ov = ovMap[r.team.id];
+      if (ov) {
+        return {
+          ...r,
+          m: r.m + (ov.played_offset || 0),
+          w: r.w + (ov.won_offset || 0),
+          l: r.l + (ov.lost_offset || 0),
+          nr: r.nr + (ov.no_result_offset || 0),
+          pts: r.pts + (ov.points_offset || 0),
+          nrr: ov.nrr_override !== null && ov.nrr_override !== undefined ? Number(ov.nrr_override) : autoNrr,
+          form: r.form.slice(-5),
+          pinnedRank: ov.pinned_rank,
+          adjusted: true,
+        };
+      }
+      return { ...r, nrr: autoNrr, form: r.form.slice(-5), adjusted: false };
     });
-    return out.sort((x, y) => y.pts - x.pts || y.nrr - x.nrr || y.w - x.w);
-  }, [teams, matches, innByMatch]);
+    return out.sort((x: any, y: any) => {
+      if (x.pinnedRank != null && y.pinnedRank != null) return x.pinnedRank - y.pinnedRank;
+      if (x.pinnedRank != null) return -1;
+      if (y.pinnedRank != null) return 1;
+      return y.pts - x.pts || y.nrr - x.nrr || y.w - x.w;
+    });
+  }, [teams, matches, innByMatch, pointsOverrides]);
 
   return (
     <PageTransition>
