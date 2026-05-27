@@ -947,7 +947,12 @@ const PointsTableCompact = ({ rows }: { rows: any[] }) => (
                 <td className={`px-1 py-2.5 text-center tabular-nums font-semibold ${r.nrr > 0 ? "text-emerald-400" : r.nrr < 0 ? "text-rose-400" : "text-[hsl(var(--sports-muted))]"}`}>
                   {r.nrr > 0 ? "+" : ""}{(r.nrr ?? 0).toFixed(2)}
                 </td>
-                <td className="px-2 py-2.5 text-right font-black tabular-nums sports-accent-text">{r.pts}</td>
+                <td className="px-2 py-2.5 text-right font-black tabular-nums sports-accent-text">
+                  <span className="inline-flex items-center gap-1 justify-end">
+                    {r.adjusted && <span title="Manually adjusted by admin" className="w-1.5 h-1.5 rounded-full bg-amber-400" />}
+                    {r.pts}
+                  </span>
+                </td>
                 <td className="px-2 py-2.5">
                   <div className="flex items-center gap-0.5 justify-end">
                     {(r.form || []).map((f: any, idx: number) => <FormPip key={idx} r={f} />)}
@@ -964,7 +969,7 @@ const PointsTableCompact = ({ rows }: { rows: any[] }) => (
       </table>
     </div>
     <p className="text-[10px] text-[hsl(var(--sports-muted))] mt-3 leading-relaxed">
-      NRR auto-calculated from innings totals. Abandoned/postponed matches award 1 point to each team.
+      NRR auto-calculated from innings totals. Abandoned/postponed matches award 1 point to each team. <span className="inline-flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-amber-400" /> = admin adjusted.</span>
     </p>
   </div>
 );
