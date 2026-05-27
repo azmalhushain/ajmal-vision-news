@@ -253,9 +253,12 @@ All colors MUST be HSL.
     scroll-behavior: smooth;
   }
 
-  /* Better touch targets on mobile */
+  /* Better touch targets on mobile — only for interactive controls, NOT inline text links */
   @media (max-width: 640px) {
-    button, a {
+    button:not(.inline-link),
+    [role="button"],
+    a.btn,
+    a[role="button"] {
       min-height: 44px;
     }
   }
