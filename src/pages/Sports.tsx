@@ -58,12 +58,13 @@ const Sports = () => {
           db.from("teams").select("*").eq("tournament_id", tid).eq("is_active", true).order("display_order"),
           db.from("matches").select("*").eq("tournament_id", tid).order("scheduled_at", { ascending: true }),
           db.from("sports_news").select("*").eq("tournament_id", tid).eq("status", "published").order("published_at", { ascending: false }).limit(8),
+          db.from("points_overrides").select("*").eq("tournament_id", tid),
         ]);
         const firstErr = results.find((r: any) => r.error)?.error;
         if (firstErr) throw firstErr;
-        const [{ data: t }, { data: m }, { data: n }] = results as any;
+        const [{ data: t }, { data: m }, { data: n }, { data: ov }] = results as any;
         if (cancelled) return;
-        setTeams(t || []); setMatches(m || []); setNews(n || []);
+        setTeams(t || []); setMatches(m || []); setNews(n || []); setPointsOverrides(ov || []);
         const teamIds = (t || []).map((x: any) => x.id);
         if (teamIds.length) {
           const { data: pls } = await db.from("players").select("*").in("team_id", teamIds).eq("is_active", true);
