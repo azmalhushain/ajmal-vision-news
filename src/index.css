@@ -113,6 +113,16 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground font-body;
+    overflow-x: hidden;
+  }
+
+  html {
+    overflow-x: hidden;
+  }
+
+  /* Prevent any layout from creating horizontal overflow on small screens */
+  img, video, iframe {
+    max-width: 100%;
   }
 
   h1, h2, h3, h4, h5, h6 {
