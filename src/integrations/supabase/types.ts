@@ -875,6 +875,54 @@ export type Database = {
         }
         Relationships: []
       }
+      points_overrides: {
+        Row: {
+          created_at: string
+          id: string
+          lost_offset: number
+          no_result_offset: number
+          note: string | null
+          nrr_override: number | null
+          pinned_rank: number | null
+          played_offset: number
+          points_offset: number
+          team_id: string
+          tournament_id: string
+          updated_at: string
+          won_offset: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lost_offset?: number
+          no_result_offset?: number
+          note?: string | null
+          nrr_override?: number | null
+          pinned_rank?: number | null
+          played_offset?: number
+          points_offset?: number
+          team_id: string
+          tournament_id: string
+          updated_at?: string
+          won_offset?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lost_offset?: number
+          no_result_offset?: number
+          note?: string | null
+          nrr_override?: number | null
+          pinned_rank?: number | null
+          played_offset?: number
+          points_offset?: number
+          team_id?: string
+          tournament_id?: string
+          updated_at?: string
+          won_offset?: number
+        }
+        Relationships: []
+      }
       post_comments: {
         Row: {
           author_name: string
