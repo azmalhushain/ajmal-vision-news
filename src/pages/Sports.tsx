@@ -182,12 +182,19 @@ const Sports = () => {
   return (
     <PageTransition>
       <SEOHead
-        title="KPL 2025 — Live Cricket, Fixtures, Teams & Stats"
-        description="The ultimate cricket showdown. Live scores, fixtures, team profiles, points table and AI-powered match insights for the KPL tournament."
+        title="KPL Cricket 2025 — Live Scores, Fixtures, Teams & Points Table"
+        description="Official KPL cricket portal: live ball-by-ball scores, fixtures, results, points table, team & player stats, video highlights and match center for the Koshi/Karnali Premier League."
         url="/sports"
         image={ogSports}
-        imageAlt="KPL Cricket League 2025 — neon-green stadium banner"
-        keywords="KPL, cricket, Nepal, Bhokraha Narsingh, sports, fixtures, live score, points table"
+        imageAlt="KPL Cricket Premier League — official live scores and fixtures"
+        keywords="KPL, KPL 2025, KPL 3, KPL cricket, Koshi Pride League, Karnali Premier League, Nepal cricket, live cricket score Nepal, Bhokraha Narsingh, Sunsari cricket, KPL fixtures, KPL points table, KPL teams, KPL players, KPL highlights, Nepal T20, cricket tournament Nepal"
+      />
+      <SportsJsonLd
+        tournament={tournament}
+        teams={teams}
+        matches={matches}
+        upcoming={upcoming}
+        live={live}
       />
       <div className="sports-theme min-h-screen pt-20 sm:pt-24 relative overflow-x-hidden">
         {/* ============ CINEMATIC BENTO HERO ============ */}
