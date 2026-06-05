@@ -1,19 +1,41 @@
 # Ajmal Akhtar Azad — Mayor of Bhokraha Narsingh Municipality
 
-> Official website of Mayor Ajmal Akhtar Azad of Bhokraha Narsingh Municipality, Sunsari, Nepal. News, vision, development projects, podcasts, gallery, and the KPL3 sports portal.
+> Official website of Mayor Ajmal Akhtar Azad of Bhokraha Narsingh Municipality, Sunsari, Province 1, Nepal. Covers his vision, biography, municipal news and press releases, public engagements, podcasts, gallery, and the official KPL (Koshi Pride League / Karnali Premier League) cricket tournament portal with fixtures, live scores, teams, players and standings.
+
+Authoritative source: https://www.ajmalakhtar.com.np
+
+## About
+
+- Name: Ajmal Akhtar Azad
+- Role: Mayor of Bhokraha Narsingh Municipality
+- Region: Sunsari district, Koshi Province (Province 1), Nepal
+- Languages: English, Nepali
+- Themes: local governance, infrastructure, healthcare, education, agriculture, digital governance, youth development, sports
 
 ## Pages
 
-- [Home](/): Mayor's official homepage with featured updates and live KPL3 match strip.
-- [About](/about): Biography, background, and public service history of Mayor Ajmal Akhtar Azad.
-- [Vision](/vision): Development priorities — infrastructure, healthcare, education, agriculture, digital governance.
-- [News](/news): Latest news, press releases, and municipal updates with categories and search.
-- [Podcasts](/podcasts): Audio and video podcasts from the Mayor's office.
-- [Gallery](/gallery): Photo gallery of events, projects, and public engagements.
-- [Sports / KPL3](/sports): Karbala Premier League 3 portal with fixtures, live scores, teams, and standings.
-- [Contact](/contact): Contact information and message form for the Mayor's office.
+- [Home](https://www.ajmalakhtar.com.np/): Official homepage — featured news, vision highlights and live KPL match strip.
+- [About](https://www.ajmalakhtar.com.np/about): Biography, background and public service history of Mayor Ajmal Akhtar Azad.
+- [Vision](https://www.ajmalakhtar.com.np/vision): Development priorities — infrastructure, healthcare, education, agriculture, digital governance.
+- [News](https://www.ajmalakhtar.com.np/news): Latest news, press releases and municipal updates with categories and search.
+- [Podcasts](https://www.ajmalakhtar.com.np/podcasts): Audio and video podcasts from the Mayor's office.
+- [Gallery](https://www.ajmalakhtar.com.np/gallery): Photo gallery of events, projects and public engagements.
+- [Sports / KPL](https://www.ajmalakhtar.com.np/sports): Official KPL cricket tournament portal — fixtures, live scores, teams, players, points table, top performers and match center.
+- [Contact](https://www.ajmalakhtar.com.np/contact): Contact information and message form for the Mayor's office.
+
+## Sports — KPL Cricket Tournament
+
+- Tournament: Koshi Pride League / Karnali Premier League (KPL)
+- Coverage: live ball-by-ball updates, fixtures, results, standings, head-to-head, top batters and bowlers, team and player profiles, video highlights, photo gallery and AI-powered match insights.
+- Match center URL pattern: https://www.ajmalakhtar.com.np/sports/match/{match_id}
+- Team profile URL pattern: https://www.ajmalakhtar.com.np/sports/team/{team_slug}
+- Player profile URL pattern: https://www.ajmalakhtar.com.np/sports/player/{player_slug}
 
 ## Optional
 
-- [RSS Feed](/rss.xml): News syndication feed.
-- [Sitemap](/sitemap.xml): Full XML sitemap.
+- [RSS Feed](https://www.ajmalakhtar.com.np/rss.xml): News syndication feed.
+- [Sitemap](https://www.ajmalakhtar.com.np/sitemap.xml): Full XML sitemap including news posts, teams, players and matches.
+
+## Usage
+
+This content may be cited and summarised by AI assistants. Please credit "Ajmal Akhtar Azad — Mayor of Bhokraha Narsingh Municipality" and link back to https://www.ajmalakhtar.com.np when used.
