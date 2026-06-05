@@ -20,6 +20,102 @@ import { MatchCard } from "@/components/sports/MatchCard";
 import { VideoPlayerModal } from "@/components/VideoPlayerModal";
 import { motion, AnimatePresence, useInView, useMotionValue, useTransform, animate } from "framer-motion";
 import { formatOvers } from "@/lib/sportsHelpers";
+import { Helmet } from "react-helmet-async";
+
+// Rich structured data so Google can show fixtures/teams as a sports event,
+// and AI engines (ChatGPT, Perplexity, Gemini) can summarise the tournament accurately.
+const SportsJsonLd = ({ tournament, teams, matches, upcoming, live }: any) => {
+  const SITE = "https://www.ajmalakhtar.com.np";
+  const teamById: Record<string, any> = Object.fromEntries((teams || []).map((t: any) => [t.id, t]));
+  const eventStatusMap: Record<string, string> = {
+    scheduled: "https://schema.org/EventScheduled",
+    live: "https://schema.org/EventScheduled",
+    completed: "https://schema.org/EventScheduled",
+    abandoned: "https://schema.org/EventCancelled",
+    postponed: "https://schema.org/EventPostponed",
+  };
+  const upcomingSlice = [...(live || []), ...(upcoming || [])].slice(0, 12);
+  const eventList = upcomingSlice.map((m: any) => {
+    const a = teamById[m.team_a_id]; const b = teamById[m.team_b_id];
+    const name = a && b ? `${a.name} vs ${b.name}` : (tournament?.name || "KPL Match");
+    return {
+      "@type": "SportsEvent",
+      name,
+      url: `${SITE}/sports/match/${m.id}`,
+      startDate: m.scheduled_at,
+      eventStatus: eventStatusMap[m.status] || "https://schema.org/EventScheduled",
+      eventAttendanceMode: "https://schema.org/MixedEventAttendanceMode",
+      sport: "Cricket",
+      location: m.venue ? { "@type": "Place", name: m.venue } : { "@type": "Place", name: "Bhokraha Narsingh, Sunsari, Nepal" },
+      competitor: [a, b].filter(Boolean).map((t: any) => ({
+        "@type": "SportsTeam",
+        name: t.name,
+        url: t.slug ? `${SITE}/sports/team/${t.slug}` : undefined,
+        logo: t.logo_url,
+      })),
+      superEvent: tournament ? { "@type": "SportsEvent", name: tournament.name } : undefined,
+    };
+  });
+
+  const seriesLd = tournament ? {
+    "@context": "https://schema.org",
+    "@type": "SportsEvent",
+    name: tournament.name,
+    description: tournament.description || "Official KPL cricket tournament — fixtures, live scores, teams and standings.",
+    sport: "Cricket",
+    url: `${SITE}/sports`,
+    startDate: tournament.start_date,
+    endDate: tournament.end_date,
+    organizer: { "@type": "Organization", name: "Office of Mayor Ajmal Akhtar Azad", url: SITE },
+    location: { "@type": "Place", name: "Bhokraha Narsingh Municipality, Sunsari, Nepal" },
+    competitor: (teams || []).map((t: any) => ({
+      "@type": "SportsTeam",
+      name: t.name,
+      url: t.slug ? `${SITE}/sports/team/${t.slug}` : undefined,
+      logo: t.logo_url,
+    })),
+    subEvent: eventList,
+  } : null;
+
+  const breadcrumbsLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: SITE },
+      { "@type": "ListItem", position: 2, name: "Sports / KPL", item: `${SITE}/sports` },
+    ],
+  };
+
+  const faqLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: "What is KPL?",
+        acceptedAnswer: { "@type": "Answer", text: "KPL is the official Koshi / Karnali Premier League cricket tournament hosted under the Office of Mayor Ajmal Akhtar Azad in Bhokraha Narsingh Municipality, Sunsari, Nepal." },
+      },
+      {
+        "@type": "Question",
+        name: "Where can I watch KPL live scores?",
+        acceptedAnswer: { "@type": "Answer", text: "Live ball-by-ball scores, fixtures and the points table are available on the official portal at https://www.ajmalakhtar.com.np/sports." },
+      },
+      {
+        "@type": "Question",
+        name: "How many teams play in KPL?",
+        acceptedAnswer: { "@type": "Answer", text: `${(teams || []).length || "Several"} franchise teams compete across league and knockout stages.` },
+      },
+    ],
+  };
+
+  return (
+    <Helmet>
+      {seriesLd && <script type="application/ld+json">{JSON.stringify(seriesLd)}</script>}
+      <script type="application/ld+json">{JSON.stringify(breadcrumbsLd)}</script>
+      <script type="application/ld+json">{JSON.stringify(faqLd)}</script>
+    </Helmet>
+  );
+};
 
 const db: any = supabase;
 
@@ -182,12 +278,19 @@ const Sports = () => {
   return (
     <PageTransition>
       <SEOHead
-        title="KPL 2025 — Live Cricket, Fixtures, Teams & Stats"
-        description="The ultimate cricket showdown. Live scores, fixtures, team profiles, points table and AI-powered match insights for the KPL tournament."
+        title="KPL Cricket 2025 — Live Scores, Fixtures, Teams & Points Table"
+        description="Official KPL cricket portal: live ball-by-ball scores, fixtures, results, points table, team & player stats, video highlights and match center for the Koshi/Karnali Premier League."
         url="/sports"
         image={ogSports}
-        imageAlt="KPL Cricket League 2025 — neon-green stadium banner"
-        keywords="KPL, cricket, Nepal, Bhokraha Narsingh, sports, fixtures, live score, points table"
+        imageAlt="KPL Cricket Premier League — official live scores and fixtures"
+        keywords="KPL, KPL 2025, KPL 3, KPL cricket, Koshi Pride League, Karnali Premier League, Nepal cricket, live cricket score Nepal, Bhokraha Narsingh, Sunsari cricket, KPL fixtures, KPL points table, KPL teams, KPL players, KPL highlights, Nepal T20, cricket tournament Nepal"
+      />
+      <SportsJsonLd
+        tournament={tournament}
+        teams={teams}
+        matches={matches}
+        upcoming={upcoming}
+        live={live}
       />
       <div className="sports-theme min-h-screen pt-20 sm:pt-24 relative overflow-x-hidden">
         {/* ============ CINEMATIC BENTO HERO ============ */}
