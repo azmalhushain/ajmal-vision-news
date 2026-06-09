@@ -97,7 +97,7 @@ const AdminLayout = () => {
           onLogout={handleLogout}
           onMenuClick={() => setIsMobileSidebarOpen(true)}
         />
-        <main className="p-3 sm:p-4 md:p-6 lg:p-8 animate-fade-in min-w-0 overflow-x-hidden">
+        <main className="admin-scope p-3 sm:p-4 md:p-6 lg:p-8 animate-fade-in min-w-0 overflow-x-hidden">
           <Outlet />
         </main>
       </div>

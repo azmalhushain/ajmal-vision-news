@@ -333,5 +333,125 @@ All colors MUST be HSL.
   .sports-theme .sports-marquee-track {
     animation: sportsScroll 40s linear infinite;
   }
+
+  /* ====== PREMIUM ADMIN SCOPE - GLASSMORPHISM ====== */
+  .admin-scope .bg-card {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 1.25rem;
+    box-shadow: 0 8px 32px rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+  }
+  .dark .admin-scope .bg-card {
+    background: rgba(255, 255, 255, 0.035);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+  .admin-scope .bg-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 50px rgba(15, 23, 42, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    border-color: hsl(var(--primary) / 0.25);
+  }
+  .dark .admin-scope .bg-card:hover {
+    box-shadow: 0 22px 60px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    border-color: hsl(var(--primary) / 0.4);
+  }
+
+  /* Page titles - gradient text */
+  .admin-scope > div > h1,
+  .admin-scope > h1,
+  .admin-scope main > h1 {
+    background: linear-gradient(135deg, hsl(var(--foreground)) 0%, hsl(var(--primary)) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.02em;
+  }
+
+  /* Tabs - premium look */
+  .admin-scope [role="tablist"] {
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 0.875rem;
+    padding: 0.25rem;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+  }
+  .dark .admin-scope [role="tablist"] {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+  .admin-scope [role="tab"][data-state="active"] {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+    color: hsl(var(--primary-foreground));
+    box-shadow: 0 4px 14px hsl(var(--primary) / 0.35);
+  }
+
+  /* Input fields - glassy */
+  .admin-scope input:not([type="checkbox"]):not([type="radio"]),
+  .admin-scope textarea,
+  .admin-scope [role="combobox"] {
+    background: rgba(255, 255, 255, 0.6) !important;
+    backdrop-filter: blur(10px);
+    border-color: rgba(0, 0, 0, 0.08) !important;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .dark .admin-scope input:not([type="checkbox"]):not([type="radio"]),
+  .dark .admin-scope textarea,
+  .dark .admin-scope [role="combobox"] {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+  .admin-scope input:focus,
+  .admin-scope textarea:focus {
+    border-color: hsl(var(--primary) / 0.5) !important;
+    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.12);
+  }
+
+  /* Primary buttons get a subtle gradient */
+  .admin-scope button[data-variant="default"],
+  .admin-scope .bg-primary {
+    background-image: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+  }
+
+  /* Tables look refined */
+  .admin-scope table {
+    border-radius: 1rem;
+    overflow: hidden;
+  }
+  .admin-scope thead {
+    background: hsl(var(--muted) / 0.5);
+    backdrop-filter: blur(10px);
+  }
+  .admin-scope tbody tr {
+    transition: background-color 0.2s ease;
+  }
+  .admin-scope tbody tr:hover {
+    background: hsl(var(--primary) / 0.04);
+  }
+
+  /* Badges - elevated */
+  .admin-scope [data-slot="badge"],
+  .admin-scope .inline-flex.items-center.rounded-full {
+    backdrop-filter: blur(8px);
+  }
+
+  /* Fade-in stagger for sections */
+  .admin-scope > * {
+    animation: adminFadeUp 0.5s ease-out backwards;
+  }
+  .admin-scope > *:nth-child(1) { animation-delay: 0.02s; }
+  .admin-scope > *:nth-child(2) { animation-delay: 0.08s; }
+  .admin-scope > *:nth-child(3) { animation-delay: 0.14s; }
+  .admin-scope > *:nth-child(4) { animation-delay: 0.20s; }
+  .admin-scope > *:nth-child(5) { animation-delay: 0.26s; }
+
+  @keyframes adminFadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 }
 
