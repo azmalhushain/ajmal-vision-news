@@ -359,10 +359,8 @@ All colors MUST be HSL.
     border-color: hsl(var(--primary) / 0.4);
   }
 
-  /* Page titles - gradient text */
-  .admin-scope > div > h1,
-  .admin-scope > h1,
-  .admin-scope main > h1 {
+  /* Page titles - gradient text (skip white hero headers) */
+  .admin-scope h1:not(.text-white) {
     background: linear-gradient(135deg, hsl(var(--foreground)) 0%, hsl(var(--primary)) 100%);
     -webkit-background-clip: text;
     background-clip: text;
