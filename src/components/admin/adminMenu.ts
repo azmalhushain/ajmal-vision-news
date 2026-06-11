@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, FileText, Users, BarChart3, Settings, Home, Eye, Grid3x3,
   Info, Image, Phone, PanelBottom, Mic, MessageCircle, Heart, Mail, Send,
-  Newspaper, TrendingUp, FlaskConical, Trophy,
+  Newspaper, TrendingUp, FlaskConical, Trophy, Search,
 } from "lucide-react";
 
 export interface MenuItem { icon: React.ElementType; label: string; path: string; description?: string; }
@@ -11,6 +11,7 @@ export const menuSections: MenuSection[] = [
   { title: "Dashboard", items: [
     { icon: LayoutDashboard, label: "Overview", path: "/admin", description: "Site-wide snapshot" },
     { icon: BarChart3, label: "Analytics", path: "/admin/analytics", description: "Traffic & insights" },
+    { icon: Search, label: "SEO & Search", path: "/admin/seo", description: "GSC + Semrush live" },
     { icon: TrendingUp, label: "Engagement", path: "/admin/engagement", description: "Reader interactions" },
   ]},
   { title: "Content", items: [
