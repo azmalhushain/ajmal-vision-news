@@ -148,6 +148,7 @@ function toast({ ...props }: Toast) {
   dispatch({
     type: "ADD_TOAST",
     toast: {
+      duration: TOAST_DEFAULT_DURATION,
       ...props,
       id,
       open: true,
