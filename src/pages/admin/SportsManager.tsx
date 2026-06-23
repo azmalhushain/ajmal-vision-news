@@ -957,7 +957,7 @@ const SportsManager = () => {
           <Button
             size="sm"
             variant={sportsEnabled ? "destructive" : "default"}
-            onClick={toggleSportsVisibility}
+            onClick={openToggleConfirm}
           >
             {sportsEnabled ? (
               <><EyeOff className="h-4 w-4 mr-1" /> Remove Sports from frontend</>
@@ -965,6 +965,31 @@ const SportsManager = () => {
               <><Eye className="h-4 w-4 mr-1" /> Show Sports on frontend</>
             )}
           </Button>
+
+          <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  {sportsEnabled ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  {sportsEnabled ? "Remove Sports section?" : "Show Sports section?"}
+                </DialogTitle>
+                <DialogDescription>
+                  {sportsEnabled
+                    ? "This will hide Sports from the public navigation and block access to all /sports pages. You can re-enable it anytime."
+                    : "This will restore Sports in the public navigation and make /sports pages accessible again."}
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setConfirmOpen(false)}>Cancel</Button>
+                <Button
+                  variant={sportsEnabled ? "destructive" : "default"}
+                  onClick={confirmToggle}
+                >
+                  {sportsEnabled ? "Remove Sports" : "Show Sports"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
           <Button size="sm" variant="outline" onClick={async () => {
             if (!confirm("Import teams & fixtures from kplt20.org? This may take ~30s.")) return;
             const { data, error } = await supabase.functions.invoke("kpl-import");
