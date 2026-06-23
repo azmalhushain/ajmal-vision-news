@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Trophy, Users, Calendar, Radio, Newspaper, Image as ImageIcon, Plus, Pencil, Trash2, Upload, RefreshCw, Crown, LayoutDashboard, TrendingUp, Activity, Target, BarChart3, Save, RotateCcw, EyeOff, Eye } from "lucide-react";
@@ -914,15 +914,26 @@ const SportsManager = () => {
   const { enabled: sportsEnabled } = useSiteFeature("sports", true);
   const [tournaments, setTournaments] = useState<Row[]>([]);
   const [tournamentId, setTournamentId] = useState<string>("");
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
-  const toggleSportsVisibility = async () => {
+  const openToggleConfirm = () => setConfirmOpen(true);
+
+  const confirmToggle = async () => {
+    setConfirmOpen(false);
     const next = !sportsEnabled;
-    if (!next && !confirm("Remove the Sports section from the public website? Visitors will no longer see Sports in the menu or be able to access /sports pages.")) return;
     const { error } = await setSiteFeature("sports", next);
-    if (error) return toast({ title: "Error", description: error.message, variant: "destructive" });
+    if (error) {
+      return toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
     toast({
       title: next ? "Sports section enabled" : "Sports section removed",
-      description: next ? "Sports is now visible on the frontend." : "Sports has been hidden from the frontend.",
+      description: next
+        ? "Sports is now visible on the frontend."
+        : "Sports has been hidden from the frontend.",
     });
   };
 
@@ -946,7 +957,7 @@ const SportsManager = () => {
           <Button
             size="sm"
             variant={sportsEnabled ? "destructive" : "default"}
-            onClick={toggleSportsVisibility}
+            onClick={openToggleConfirm}
           >
             {sportsEnabled ? (
               <><EyeOff className="h-4 w-4 mr-1" /> Remove Sports from frontend</>
@@ -954,6 +965,31 @@ const SportsManager = () => {
               <><Eye className="h-4 w-4 mr-1" /> Show Sports on frontend</>
             )}
           </Button>
+
+          <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  {sportsEnabled ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  {sportsEnabled ? "Remove Sports section?" : "Show Sports section?"}
+                </DialogTitle>
+                <DialogDescription>
+                  {sportsEnabled
+                    ? "This will hide Sports from the public navigation and block access to all /sports pages. You can re-enable it anytime."
+                    : "This will restore Sports in the public navigation and make /sports pages accessible again."}
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setConfirmOpen(false)}>Cancel</Button>
+                <Button
+                  variant={sportsEnabled ? "destructive" : "default"}
+                  onClick={confirmToggle}
+                >
+                  {sportsEnabled ? "Remove Sports" : "Show Sports"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
           <Button size="sm" variant="outline" onClick={async () => {
             if (!confirm("Import teams & fixtures from kplt20.org? This may take ~30s.")) return;
             const { data, error } = await supabase.functions.invoke("kpl-import");
