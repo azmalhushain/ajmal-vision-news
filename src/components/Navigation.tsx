@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { GlobalSearch } from "@/components/GlobalSearch";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useSiteFeature } from "@/hooks/useSiteFeature";
 
 export const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -26,6 +27,7 @@ export const Navigation = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { language, setLanguage, t } = useLanguage();
+  const { enabled: sportsEnabled } = useSiteFeature("sports", true);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -88,7 +90,7 @@ export const Navigation = () => {
     { name: t("vision"), path: "/vision" },
     { name: t("news"), path: "/news" },
     { name: t("podcasts"), path: "/podcasts" },
-    { name: "Sports", path: "/sports" },
+    ...(sportsEnabled ? [{ name: "Sports", path: "/sports" }] : []),
     { name: t("gallery"), path: "/gallery" },
     { name: t("contact"), path: "/contact" },
   ];

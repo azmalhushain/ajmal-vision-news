@@ -15,10 +15,11 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { Trophy, Users, Calendar, Radio, Newspaper, Image as ImageIcon, Plus, Pencil, Trash2, Upload, RefreshCw, Crown, LayoutDashboard, TrendingUp, Activity, Target, BarChart3, Save, RotateCcw } from "lucide-react";
+import { Trophy, Users, Calendar, Radio, Newspaper, Image as ImageIcon, Plus, Pencil, Trash2, Upload, RefreshCw, Crown, LayoutDashboard, TrendingUp, Activity, Target, BarChart3, Save, RotateCcw, EyeOff, Eye } from "lucide-react";
 import { uploadSportsLogo, uploadSportsMedia } from "@/lib/sportsHelpers";
 import { BallByBallPad } from "@/components/sports/BallByBallPad";
 import { Video, Film, Star, Trash } from "lucide-react";
+import { useSiteFeature, setSiteFeature } from "@/hooks/useSiteFeature";
 
 // Avoid type-gen lag: use the client untyped for the new tables.
 const db: any = supabase;
@@ -909,8 +910,21 @@ const TournamentSettingsTab = ({ tournamentId, onSaved }: { tournamentId: string
 
 // ============ MAIN PAGE ============
 const SportsManager = () => {
+  const { toast } = useToast();
+  const { enabled: sportsEnabled } = useSiteFeature("sports", true);
   const [tournaments, setTournaments] = useState<Row[]>([]);
   const [tournamentId, setTournamentId] = useState<string>("");
+
+  const toggleSportsVisibility = async () => {
+    const next = !sportsEnabled;
+    if (!next && !confirm("Remove the Sports section from the public website? Visitors will no longer see Sports in the menu or be able to access /sports pages.")) return;
+    const { error } = await setSiteFeature("sports", next);
+    if (error) return toast({ title: "Error", description: error.message, variant: "destructive" });
+    toast({
+      title: next ? "Sports section enabled" : "Sports section removed",
+      description: next ? "Sports is now visible on the frontend." : "Sports has been hidden from the frontend.",
+    });
+  };
 
   useEffect(() => {
     db.from("tournaments").select("*").order("display_order").then(({ data }: any) => {
@@ -929,6 +943,17 @@ const SportsManager = () => {
           <p className="text-sm text-muted-foreground">{current?.name} · {current?.season}</p>
         </div>
         <div className="flex gap-2 flex-wrap">
+          <Button
+            size="sm"
+            variant={sportsEnabled ? "destructive" : "default"}
+            onClick={toggleSportsVisibility}
+          >
+            {sportsEnabled ? (
+              <><EyeOff className="h-4 w-4 mr-1" /> Remove Sports from frontend</>
+            ) : (
+              <><Eye className="h-4 w-4 mr-1" /> Show Sports on frontend</>
+            )}
+          </Button>
           <Button size="sm" variant="outline" onClick={async () => {
             if (!confirm("Import teams & fixtures from kplt20.org? This may take ~30s.")) return;
             const { data, error } = await supabase.functions.invoke("kpl-import");
