@@ -58,6 +58,7 @@ const queryClient = new QueryClient();
 
 const AnimatedRoutes = () => {
   const location = useLocation();
+  const { enabled: sportsEnabled } = useSiteFeature("sports", true);
   
   return (
     <AnimatePresence mode="wait">
@@ -70,10 +71,10 @@ const AnimatedRoutes = () => {
         <Route path="/podcasts" element={<><Navigation /><Podcasts /></>} />
         <Route path="/gallery" element={<><Navigation /><Gallery /></>} />
         <Route path="/contact" element={<><Navigation /><Contact /></>} />
-        <Route path="/sports" element={<><Navigation /><Sports /></>} />
-        <Route path="/sports/match/:id" element={<><Navigation /><MatchCenter /></>} />
-        <Route path="/sports/team/:slug" element={<><Navigation /><TeamPage /></>} />
-        <Route path="/sports/player/:slug" element={<><Navigation /><PlayerProfile /></>} />
+        {sportsEnabled && <Route path="/sports" element={<><Navigation /><Sports /></>} />}
+        {sportsEnabled && <Route path="/sports/match/:id" element={<><Navigation /><MatchCenter /></>} />}
+        {sportsEnabled && <Route path="/sports/team/:slug" element={<><Navigation /><TeamPage /></>} />}
+        {sportsEnabled && <Route path="/sports/player/:slug" element={<><Navigation /><PlayerProfile /></>} />}
         <Route path="/preferences" element={<><Navigation /><SubscriberPreferences /></>} />
         
         {/* Auth route */}
