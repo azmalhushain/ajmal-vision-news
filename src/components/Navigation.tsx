@@ -27,6 +27,7 @@ export const Navigation = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { language, setLanguage, t } = useLanguage();
+  const { enabled: sportsEnabled } = useSiteFeature("sports", true);
 
   useEffect(() => {
     const handleScroll = () => {
