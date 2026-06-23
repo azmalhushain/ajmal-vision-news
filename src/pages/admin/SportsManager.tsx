@@ -910,8 +910,21 @@ const TournamentSettingsTab = ({ tournamentId, onSaved }: { tournamentId: string
 
 // ============ MAIN PAGE ============
 const SportsManager = () => {
+  const { toast } = useToast();
+  const { enabled: sportsEnabled } = useSiteFeature("sports", true);
   const [tournaments, setTournaments] = useState<Row[]>([]);
   const [tournamentId, setTournamentId] = useState<string>("");
+
+  const toggleSportsVisibility = async () => {
+    const next = !sportsEnabled;
+    if (!next && !confirm("Remove the Sports section from the public website? Visitors will no longer see Sports in the menu or be able to access /sports pages.")) return;
+    const { error } = await setSiteFeature("sports", next);
+    if (error) return toast({ title: "Error", description: error.message, variant: "destructive" });
+    toast({
+      title: next ? "Sports section enabled" : "Sports section removed",
+      description: next ? "Sports is now visible on the frontend." : "Sports has been hidden from the frontend.",
+    });
+  };
 
   useEffect(() => {
     db.from("tournaments").select("*").order("display_order").then(({ data }: any) => {
