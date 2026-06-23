@@ -52,6 +52,7 @@ import MatchCenter from "./pages/sports/MatchCenter";
 import PlayerProfile from "./pages/sports/PlayerProfile";
 import TeamPage from "./pages/sports/TeamPage";
 import { LiveScoreTicker } from "./components/sports/LiveScoreTicker";
+import { useSiteFeature } from "@/hooks/useSiteFeature";
 
 const queryClient = new QueryClient();
 
