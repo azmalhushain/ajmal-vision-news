@@ -1245,6 +1245,24 @@ export type Database = {
           },
         ]
       }
+      site_features: {
+        Row: {
+          enabled: boolean
+          key: string
+          updated_at: string
+        }
+        Insert: {
+          enabled?: boolean
+          key: string
+          updated_at?: string
+        }
+        Update: {
+          enabled?: boolean
+          key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       social_posts_cache: {
         Row: {
           created_at: string
