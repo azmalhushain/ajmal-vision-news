@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { GlobalSearch } from "@/components/GlobalSearch";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useSiteFeature } from "@/hooks/useSiteFeature";
 
 export const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
