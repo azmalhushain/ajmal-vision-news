@@ -943,6 +943,17 @@ const SportsManager = () => {
           <p className="text-sm text-muted-foreground">{current?.name} · {current?.season}</p>
         </div>
         <div className="flex gap-2 flex-wrap">
+          <Button
+            size="sm"
+            variant={sportsEnabled ? "destructive" : "default"}
+            onClick={toggleSportsVisibility}
+          >
+            {sportsEnabled ? (
+              <><EyeOff className="h-4 w-4 mr-1" /> Remove Sports from frontend</>
+            ) : (
+              <><Eye className="h-4 w-4 mr-1" /> Show Sports on frontend</>
+            )}
+          </Button>
           <Button size="sm" variant="outline" onClick={async () => {
             if (!confirm("Import teams & fixtures from kplt20.org? This may take ~30s.")) return;
             const { data, error } = await supabase.functions.invoke("kpl-import");
