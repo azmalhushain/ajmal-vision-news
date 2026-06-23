@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Trophy, Users, Calendar, Radio, Newspaper, Image as ImageIcon, Plus, Pencil, Trash2, Upload, RefreshCw, Crown, LayoutDashboard, TrendingUp, Activity, Target, BarChart3, Save, RotateCcw, EyeOff, Eye } from "lucide-react";
