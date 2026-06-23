@@ -118,6 +118,7 @@ const AnimatedRoutes = () => {
 
 const AppContent = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const { enabled: sportsEnabled } = useSiteFeature("sports", true);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 1800);
@@ -127,7 +128,7 @@ const AppContent = () => {
   return (
     <AnimatePresence mode="wait">
       {isLoading ? <PageLoader key="loader" /> : <AnimatedRoutes key="routes" />}
-      {!isLoading && <LiveScoreTicker />}
+      {!isLoading && sportsEnabled && <LiveScoreTicker />}
     </AnimatePresence>
   );
 };
