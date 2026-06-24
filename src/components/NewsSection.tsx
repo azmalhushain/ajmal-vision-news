@@ -215,18 +215,18 @@ export const NewsSection = ({ showAll = false, category = "All", query = "" }: N
         )}
 
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6 lg:gap-8 auto-rows-fr">
             {[...Array(6)].map((_, i) => (
               <CardSkeleton key={i} />
             ))}
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12">
+            <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6 lg:gap-8 auto-rows-fr mb-8 sm:mb-12">
               {articles.map((article, index) => (
                 <div
                   key={article.id}
-                  className={`${isVisible ? 'fade-in-up' : 'opacity-0'} animate-delay-${Math.min((index + 1) * 100, 600)} relative`}
+                  className={`${isVisible ? 'fade-in-up' : 'opacity-0'} animate-delay-${Math.min((index + 1) * 100, 600)} relative flex h-full min-w-0`}
                 >
                   {translatingIds.has(String(article.id)) && (
                     <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center rounded-xl">
@@ -240,6 +240,7 @@ export const NewsSection = ({ showAll = false, category = "All", query = "" }: N
                 </div>
               ))}
             </div>
+
 
             {/* Infinite scroll trigger / Load more */}
             {showAll && (
