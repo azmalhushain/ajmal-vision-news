@@ -117,16 +117,16 @@ export const VideoPlayerModal = ({ isOpen, onClose, videoUrl, title, poster }: V
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl w-full p-0 bg-black overflow-hidden">
-        <DialogHeader className="absolute top-0 left-0 right-0 z-20 p-4 bg-gradient-to-b from-black/80 to-transparent">
-          <DialogTitle className="text-white pr-10 text-lg">{title}</DialogTitle>
+      <DialogContent className="max-w-5xl w-[96vw] sm:w-full p-0 bg-black overflow-hidden rounded-lg sm:rounded-2xl border-0">
+        <DialogHeader className="absolute top-0 left-0 right-0 z-20 p-2 sm:p-4 bg-gradient-to-b from-black/80 to-transparent">
+          <DialogTitle className="text-white pr-10 text-sm sm:text-lg line-clamp-1 sm:line-clamp-2 text-left">{title}</DialogTitle>
           <Button
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="absolute right-4 top-4 text-white hover:bg-white/20"
+            className="absolute right-2 top-2 sm:right-4 sm:top-4 text-white hover:bg-white/20 h-8 w-8 sm:h-10 sm:w-10"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
         </DialogHeader>
 
@@ -148,6 +148,7 @@ export const VideoPlayerModal = ({ isOpen, onClose, videoUrl, title, poster }: V
                 ref={videoRef}
                 src={videoUrl}
                 poster={poster}
+                playsInline
                 className="w-full h-full object-contain bg-black"
                 onTimeUpdate={handleTimeUpdate}
                 onLoadedMetadata={handleLoadedMetadata}
@@ -162,9 +163,9 @@ export const VideoPlayerModal = ({ isOpen, onClose, videoUrl, title, poster }: V
                 <div className="absolute inset-0 flex items-center justify-center bg-black/30">
                   <button
                     onClick={togglePlay}
-                    className="w-20 h-20 rounded-full bg-primary/90 flex items-center justify-center hover:scale-110 transition-transform"
+                    className="w-14 h-14 sm:w-20 sm:h-20 rounded-full bg-primary/90 flex items-center justify-center hover:scale-110 transition-transform"
                   >
-                    <Play className="h-10 w-10 text-primary-foreground ml-1" fill="currentColor" />
+                    <Play className="h-7 w-7 sm:h-10 sm:w-10 text-primary-foreground ml-0.5 sm:ml-1" fill="currentColor" />
                   </button>
                 </div>
               )}
@@ -172,12 +173,12 @@ export const VideoPlayerModal = ({ isOpen, onClose, videoUrl, title, poster }: V
               {/* Controls */}
               <div
                 className={cn(
-                  "absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4 transition-opacity duration-300",
+                  "absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-2 sm:p-4 transition-opacity duration-300",
                   showControls ? "opacity-100" : "opacity-0"
                 )}
               >
                 {/* Progress Bar */}
-                <div className="mb-4">
+                <div className="mb-2 sm:mb-4">
                   <Slider
                     value={[currentTime]}
                     max={duration || 100}
@@ -185,59 +186,59 @@ export const VideoPlayerModal = ({ isOpen, onClose, videoUrl, title, poster }: V
                     onValueChange={handleSeek}
                     className="cursor-pointer"
                   />
-                  <div className="flex justify-between text-xs text-white/70 mt-1">
+                  <div className="flex justify-between text-[10px] sm:text-xs text-white/70 mt-1">
                     <span>{formatTime(currentTime)}</span>
                     <span>{formatTime(duration)}</span>
                   </div>
                 </div>
 
                 {/* Control Buttons */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between gap-1 sm:gap-2">
+                  <div className="flex items-center gap-0.5 sm:gap-2 min-w-0">
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => skipTime(-10)}
-                      className="text-white hover:bg-white/20"
+                      className="text-white hover:bg-white/20 h-8 w-8 sm:h-10 sm:w-10"
                     >
-                      <SkipBack className="h-5 w-5" />
+                      <SkipBack className="h-4 w-4 sm:h-5 sm:w-5" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={togglePlay}
-                      className="text-white hover:bg-white/20"
+                      className="text-white hover:bg-white/20 h-8 w-8 sm:h-10 sm:w-10"
                     >
                       {isPlaying ? (
-                        <Pause className="h-6 w-6" fill="currentColor" />
+                        <Pause className="h-5 w-5 sm:h-6 sm:w-6" fill="currentColor" />
                       ) : (
-                        <Play className="h-6 w-6" fill="currentColor" />
+                        <Play className="h-5 w-5 sm:h-6 sm:w-6" fill="currentColor" />
                       )}
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => skipTime(10)}
-                      className="text-white hover:bg-white/20"
+                      className="text-white hover:bg-white/20 h-8 w-8 sm:h-10 sm:w-10"
                     >
-                      <SkipForward className="h-5 w-5" />
+                      <SkipForward className="h-4 w-4 sm:h-5 sm:w-5" />
                     </Button>
 
-                    <div className="flex items-center gap-2 ml-4">
+                    <div className="flex items-center gap-1 sm:gap-2 sm:ml-4">
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={toggleMute}
-                        className="text-white hover:bg-white/20"
+                        className="text-white hover:bg-white/20 h-8 w-8 sm:h-10 sm:w-10"
                       >
-                        {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+                        {isMuted ? <VolumeX className="h-4 w-4 sm:h-5 sm:w-5" /> : <Volume2 className="h-4 w-4 sm:h-5 sm:w-5" />}
                       </Button>
                       <Slider
                         value={[isMuted ? 0 : volume]}
                         max={1}
                         step={0.1}
                         onValueChange={handleVolumeChange}
-                        className="w-24 cursor-pointer"
+                        className="w-16 sm:w-24 cursor-pointer hidden xs:flex"
                       />
                     </div>
                   </div>
@@ -246,9 +247,9 @@ export const VideoPlayerModal = ({ isOpen, onClose, videoUrl, title, poster }: V
                     variant="ghost"
                     size="icon"
                     onClick={toggleFullscreen}
-                    className="text-white hover:bg-white/20"
+                    className="text-white hover:bg-white/20 h-8 w-8 sm:h-10 sm:w-10"
                   >
-                    <Maximize2 className="h-5 w-5" />
+                    <Maximize2 className="h-4 w-4 sm:h-5 sm:w-5" />
                   </Button>
                 </div>
               </div>
@@ -259,3 +260,4 @@ export const VideoPlayerModal = ({ isOpen, onClose, videoUrl, title, poster }: V
     </Dialog>
   );
 };
+
