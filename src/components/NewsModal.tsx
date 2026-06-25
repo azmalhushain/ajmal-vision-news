@@ -60,7 +60,7 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
           <X className="h-4 w-4" />
         </Button>
 
-        <DialogHeader className="space-y-4 p-4 sm:p-0">
+        <DialogHeader className="space-y-4 p-5 sm:p-0">
           {/* Video or Image */}
           {article.videoUrl ? (
             <div className="relative w-full rounded-lg overflow-hidden sm:-mx-6 sm:-mt-6 mb-2">
@@ -131,7 +131,7 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
         </DialogHeader>
 
         <div
-          className="mt-4 sm:mt-6 px-4 sm:px-0 prose prose-sm sm:prose-base md:prose-lg max-w-none
+          className="mt-4 sm:mt-6 px-5 sm:px-0 prose prose-sm sm:prose-base md:prose-lg max-w-none
             prose-headings:text-foreground prose-headings:font-bold prose-headings:leading-snug
             prose-headings:text-base sm:prose-headings:text-lg md:prose-headings:text-xl
             prose-p:text-foreground/90 prose-p:text-sm sm:prose-p:text-base md:prose-p:text-lg
@@ -147,7 +147,7 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
         />
 
         {/* Engagement Section */}
-        <div className="mt-6 sm:mt-8 px-4 sm:px-0 pb-4 sm:pb-0">
+        <div className="mt-6 sm:mt-8 px-5 sm:px-0 pb-6 sm:pb-0">
           <PostEngagement
             postId={String(article.id)}
             initialViews={article.views || 0}
