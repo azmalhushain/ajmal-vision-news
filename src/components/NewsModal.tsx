@@ -49,7 +49,7 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
           modifiedTime={article.date ? new Date(article.date).toISOString() : undefined}
         />
       )}
-      <DialogContent className="glass-card w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto border-2 border-border p-0 sm:p-6">
+      <DialogContent className="glass-card w-[98vw] sm:w-[95vw] max-w-4xl max-h-[92vh] sm:max-h-[90vh] overflow-y-auto border-2 border-border p-0 sm:p-6">
         {/* Mobile Close Button */}
         <Button
           variant="ghost"
