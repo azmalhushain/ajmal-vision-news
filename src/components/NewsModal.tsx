@@ -130,13 +130,18 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
           </DialogDescription>
         </DialogHeader>
 
-        <div 
-          className="mt-4 sm:mt-6 px-4 sm:px-0 prose prose-sm sm:prose-lg max-w-none 
-            prose-headings:text-foreground prose-headings:text-base sm:prose-headings:text-lg
-            prose-p:text-foreground/90 prose-p:text-sm sm:prose-p:text-base prose-p:leading-relaxed
-            prose-strong:text-foreground 
-            prose-li:text-foreground/90 prose-li:text-sm sm:prose-li:text-base
+        <div
+          className="mt-4 sm:mt-6 px-4 sm:px-0 prose prose-sm sm:prose-base md:prose-lg max-w-none
+            prose-headings:text-foreground prose-headings:font-bold prose-headings:leading-snug
+            prose-headings:text-base sm:prose-headings:text-lg md:prose-headings:text-xl
+            prose-p:text-foreground/90 prose-p:text-sm sm:prose-p:text-base md:prose-p:text-lg
+            prose-p:leading-7 sm:prose-p:leading-8 prose-p:my-3 sm:prose-p:my-4
+            prose-p:text-justify prose-p:word-break-words
+            prose-strong:text-foreground
+            prose-li:text-foreground/90 prose-li:text-sm sm:prose-li:text-base md:prose-li:text-lg
+            prose-li:leading-7 prose-li:my-1
             prose-img:rounded-lg prose-img:w-full
+            prose-a:text-accent prose-a:underline-offset-2
             [&>*]:break-words"
           dangerouslySetInnerHTML={{ __html: article.fullContent }}
         />
