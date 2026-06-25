@@ -5,7 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Calendar, Tag, Pin, Video, X } from "lucide-react";
+import { Calendar, Tag, Pin, Video, X, Clock, Share2 } from "lucide-react";
 import { Article } from "@/types/article";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { PostEngagement } from "@/components/PostEngagement";
@@ -20,18 +20,23 @@ interface NewsModalProps {
 
 const getYouTubeEmbedUrl = (url: string) => {
   const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s]+)/);
-  if (match) {
-    return `https://www.youtube.com/embed/${match[1]}?autoplay=0&rel=0`;
-  }
+  if (match) return `https://www.youtube.com/embed/${match[1]}?autoplay=0&rel=0`;
   return null;
+};
+
+const estimateReadMinutes = (text?: string) => {
+  if (!text) return 2;
+  const words = text.replace(/<[^>]+>/g, " ").trim().split(/\s+/).length;
+  return Math.max(1, Math.round(words / 220));
 };
 
 export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
   const { t } = useLanguage();
-  
+
   if (!article) return null;
 
   const youtubeUrl = article.videoUrl ? getYouTubeEmbedUrl(article.videoUrl) : null;
+  const readMin = estimateReadMinutes(article.fullContent || article.summary);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -49,104 +54,150 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
           modifiedTime={article.date ? new Date(article.date).toISOString() : undefined}
         />
       )}
-      <DialogContent className="glass-card w-[98vw] sm:w-[95vw] max-w-4xl max-h-[92vh] sm:max-h-[90vh] overflow-y-auto border-2 border-border p-0 sm:p-6 sm:pb-6 news-modal-safe-bottom">
-        {/* Mobile Close Button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onClose}
-          className="absolute right-2 top-2 z-50 sm:hidden bg-background/80 backdrop-blur-sm"
-        >
-          <X className="h-4 w-4" />
-        </Button>
 
-        <DialogHeader className="space-y-4 p-6 sm:p-0 news-modal-safe-x">
-          {/* Video or Image */}
-          {article.videoUrl ? (
-            <div className="relative w-full rounded-lg overflow-hidden sm:-mx-6 sm:-mt-6 mb-2">
-              {youtubeUrl ? (
-                <div className="aspect-video">
-                  <iframe
-                    src={youtubeUrl}
-                    className="w-full h-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    title={article.title}
-                  />
+      <DialogContent
+        className="w-[100vw] sm:w-[95vw] max-w-3xl
+          h-[100dvh] sm:h-auto sm:max-h-[92vh]
+          p-0 gap-0 overflow-hidden
+          border-0 sm:border sm:border-border/60
+          rounded-none sm:rounded-3xl
+          bg-card/95 backdrop-blur-xl
+          shadow-[0_24px_80px_-20px_hsl(var(--foreground)/0.35)]
+          flex flex-col"
+      >
+        {/* Sticky top bar */}
+        <div className="sticky top-0 z-30 flex items-center justify-between gap-2
+          px-3 sm:px-5 py-2.5 sm:py-3
+          bg-card/85 backdrop-blur-xl border-b border-border/60
+          pt-[max(0.625rem,env(safe-area-inset-top))]">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="rounded-full h-9 w-9 p-0 hover:bg-muted"
+            aria-label="Close"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+          <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground truncate max-w-[60%]">
+            {article.category}
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              if (navigator.share) navigator.share({ title: article.title, url: window.location.href }).catch(() => {});
+            }}
+            className="rounded-full h-9 w-9 p-0 hover:bg-muted"
+            aria-label="Share"
+          >
+            <Share2 className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Scrollable content */}
+        <div className="overflow-y-auto overscroll-contain flex-1 news-modal-safe-bottom">
+          <DialogHeader className="space-y-0 text-left">
+            {/* Hero media */}
+            {article.videoUrl ? (
+              <div className="relative w-full bg-black">
+                {youtubeUrl ? (
+                  <div className="aspect-video">
+                    <iframe
+                      src={youtubeUrl}
+                      className="w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      title={article.title}
+                    />
+                  </div>
+                ) : (
+                  <video controls className="w-full max-h-[55vh]" playsInline preload="metadata">
+                    <source src={article.videoUrl} type="video/mp4" />
+                  </video>
+                )}
+              </div>
+            ) : article.image ? (
+              <div className="relative w-full aspect-[16/10] sm:aspect-[16/9] overflow-hidden">
+                <img
+                  src={article.image}
+                  alt={`${article.title} — ${article.category}`}
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                {article.isPinned && (
+                  <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full
+                    text-[11px] font-semibold bg-accent text-accent-foreground flex items-center gap-1">
+                    <Pin className="w-3 h-3 fill-current" /> {t("pinned")}
+                  </span>
+                )}
+              </div>
+            ) : null}
+
+            {/* Header content */}
+            <div className="px-4 sm:px-8 pt-5 sm:pt-7 pb-4 sm:pb-5 space-y-4">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm text-muted-foreground">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full
+                  bg-accent/10 text-accent font-semibold">
+                  <Tag className="w-3 h-3" />
+                  {article.category}
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5" />
+                  <time>{article.date}</time>
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5" />
+                  {readMin} min read
+                </span>
+                {article.videoUrl && (
+                  <span className="inline-flex items-center gap-1.5 text-red-500 font-semibold">
+                    <Video className="w-3.5 h-3.5" /> {t("video")}
+                  </span>
+                )}
+              </div>
+
+              <DialogTitle className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground leading-[1.15] tracking-tight">
+                {article.title}
+              </DialogTitle>
+
+              <DialogDescription className="text-base sm:text-lg text-muted-foreground leading-relaxed">
+                {article.summary}
+              </DialogDescription>
+
+              {/* Author strip */}
+              <div className="flex items-center gap-3 pt-2 border-t border-border/60">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent to-primary
+                  flex items-center justify-center text-sm font-bold text-accent-foreground">
+                  AA
                 </div>
-              ) : (
-                <video 
-                  controls 
-                  className="w-full max-h-[50vh] sm:max-h-80"
-                  playsInline
-                  preload="metadata"
-                >
-                  <source src={article.videoUrl} type="video/mp4" />
-                  Your browser does not support the video tag.
-                </video>
-              )}
-            </div>
-          ) : article.image ? (
-            <div className="relative w-full h-48 sm:h-64 md:h-80 rounded-lg overflow-hidden sm:-mx-6 sm:-mt-6 mb-2">
-              <img
-                src={article.image}
-                alt={`${article.title} — ${article.category} news from Bhokraha Narsingh Municipality`}
-                loading="lazy"
-                decoding="async"
-                className="w-full h-full object-cover"
-              />
-            </div>
-          ) : null}
-
-          <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
-            <div className="flex items-center gap-1 sm:gap-2">
-              <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
-              <time>{article.date}</time>
-            </div>
-            <div className="flex items-center gap-1 sm:gap-2">
-              <Tag className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="font-semibold text-accent">{article.category}</span>
-            </div>
-            {article.isPinned && (
-              <div className="flex items-center gap-1 sm:gap-2 text-accent">
-                <Pin className="w-3 h-3 sm:w-4 sm:h-4 fill-accent" />
-                <span className="font-semibold">{t("pinned")}</span>
+                <div className="leading-tight">
+                  <div className="text-sm font-semibold text-foreground">Ajmal Akhtar Azad</div>
+                  <div className="text-[11px] sm:text-xs text-muted-foreground">Author · Bhokraha Narsingh</div>
+                </div>
               </div>
-            )}
-            {article.videoUrl && (
-              <div className="flex items-center gap-1 sm:gap-2 text-blue-500">
-                <Video className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="font-semibold">{t("video")}</span>
-              </div>
-            )}
-          </div>
+            </div>
+          </DialogHeader>
 
-          <DialogTitle className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground leading-tight">
-            {article.title}
-          </DialogTitle>
-
-          <DialogDescription className="text-sm sm:text-base md:text-lg text-muted-foreground italic">
-            {article.summary}
-          </DialogDescription>
-        </DialogHeader>
-
-        <div
-          className="news-article-content news-modal-safe-x mt-4 sm:mt-6 prose max-w-none"
-          dangerouslySetInnerHTML={{ __html: article.fullContent }}
-        />
-
-        {/* Engagement Section */}
-        <div className="mt-6 sm:mt-8 px-0 sm:px-0 pb-6 sm:pb-0 news-modal-safe-x">
-          <PostEngagement
-            postId={String(article.id)}
-            initialViews={article.views || 0}
-            initialLikes={article.likesCount || 0}
-            title={article.title}
-            summary={article.summary}
-            image={article.image}
-            variant="full"
-            showComments={true}
+          <article
+            className="news-article-content news-modal-safe-x prose max-w-none px-4 sm:px-8 pb-6"
+            dangerouslySetInnerHTML={{ __html: article.fullContent }}
           />
+
+          <div className="px-4 sm:px-8 pb-8 news-modal-safe-x">
+            <PostEngagement
+              postId={String(article.id)}
+              initialViews={article.views || 0}
+              initialLikes={article.likesCount || 0}
+              title={article.title}
+              summary={article.summary}
+              image={article.image}
+              variant="full"
+              showComments={true}
+            />
+          </div>
         </div>
       </DialogContent>
     </Dialog>
