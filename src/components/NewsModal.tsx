@@ -49,7 +49,7 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
           modifiedTime={article.date ? new Date(article.date).toISOString() : undefined}
         />
       )}
-      <DialogContent className="glass-card w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto border-2 border-border p-0 sm:p-6">
+      <DialogContent className="glass-card w-[98vw] sm:w-[95vw] max-w-4xl max-h-[92vh] sm:max-h-[90vh] overflow-y-auto border-2 border-border p-0 sm:p-6">
         {/* Mobile Close Button */}
         <Button
           variant="ghost"
@@ -60,7 +60,7 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
           <X className="h-4 w-4" />
         </Button>
 
-        <DialogHeader className="space-y-4 p-4 sm:p-0">
+        <DialogHeader className="space-y-4 p-5 sm:p-0">
           {/* Video or Image */}
           {article.videoUrl ? (
             <div className="relative w-full rounded-lg overflow-hidden sm:-mx-6 sm:-mt-6 mb-2">
@@ -130,19 +130,24 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
           </DialogDescription>
         </DialogHeader>
 
-        <div 
-          className="mt-4 sm:mt-6 px-4 sm:px-0 prose prose-sm sm:prose-lg max-w-none 
-            prose-headings:text-foreground prose-headings:text-base sm:prose-headings:text-lg
-            prose-p:text-foreground/90 prose-p:text-sm sm:prose-p:text-base prose-p:leading-relaxed
-            prose-strong:text-foreground 
-            prose-li:text-foreground/90 prose-li:text-sm sm:prose-li:text-base
+        <div
+          className="mt-4 sm:mt-6 px-5 sm:px-0 prose prose-sm sm:prose-base md:prose-lg max-w-none
+            prose-headings:text-foreground prose-headings:font-bold prose-headings:leading-snug
+            prose-headings:text-base sm:prose-headings:text-lg md:prose-headings:text-xl
+            prose-p:text-foreground/90 prose-p:text-sm sm:prose-p:text-base md:prose-p:text-lg
+            prose-p:leading-7 sm:prose-p:leading-8 prose-p:my-3 sm:prose-p:my-4
+            prose-p:text-justify prose-p:word-break-words
+            prose-strong:text-foreground
+            prose-li:text-foreground/90 prose-li:text-sm sm:prose-li:text-base md:prose-li:text-lg
+            prose-li:leading-7 prose-li:my-1
             prose-img:rounded-lg prose-img:w-full
+            prose-a:text-accent prose-a:underline-offset-2
             [&>*]:break-words"
           dangerouslySetInnerHTML={{ __html: article.fullContent }}
         />
 
         {/* Engagement Section */}
-        <div className="mt-6 sm:mt-8 px-4 sm:px-0 pb-4 sm:pb-0">
+        <div className="mt-6 sm:mt-8 px-5 sm:px-0 pb-6 sm:pb-0">
           <PostEngagement
             postId={String(article.id)}
             initialViews={article.views || 0}
