@@ -334,6 +334,140 @@ All colors MUST be HSL.
     animation: sportsScroll 40s linear infinite;
   }
 
+  /* ============================================================
+     NewsModal typography — responsive, safe-area aware, consistent
+     formatting for phones, tablets, and desktop.
+     ============================================================ */
+  .news-article-content {
+    color: hsl(var(--foreground) / 0.9);
+    font-size: 1rem;
+    line-height: 1.7;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+
+  .news-article-content h1,
+  .news-article-content h2,
+  .news-article-content h3,
+  .news-article-content h4,
+  .news-article-content h5,
+  .news-article-content h6 {
+    color: hsl(var(--foreground));
+    font-weight: 700;
+    line-height: 1.25;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .news-article-content h1 { font-size: 1.5rem; }
+  .news-article-content h2 { font-size: 1.35rem; }
+  .news-article-content h3 { font-size: 1.2rem; }
+  .news-article-content h4 { font-size: 1.1rem; }
+  .news-article-content h5 { font-size: 1rem; }
+  .news-article-content h6 { font-size: 0.95rem; }
+
+  .news-article-content p {
+    margin-bottom: 1rem;
+    text-align: justify;
+    text-align-last: left;
+  }
+
+  .news-article-content ul,
+  .news-article-content ol {
+    margin-bottom: 1.25rem;
+    padding-left: 1.5rem;
+  }
+
+  .news-article-content li {
+    margin-bottom: 0.5rem;
+    line-height: 1.7;
+  }
+
+  .news-article-content a {
+    color: hsl(var(--accent));
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .news-article-content blockquote {
+    border-left: 3px solid hsl(var(--accent));
+    padding-left: 1rem;
+    font-style: italic;
+    color: hsl(var(--muted-foreground));
+    margin: 1rem 0;
+  }
+
+  .news-article-content img,
+  .news-article-content figure,
+  .news-article-content video,
+  .news-article-content iframe {
+    border-radius: 0.75rem;
+    width: 100%;
+    height: auto;
+    margin: 1rem 0;
+  }
+
+  /* Phone */
+  @media (max-width: 640px) {
+    .news-article-content {
+      font-size: 0.9375rem;
+      line-height: 1.75;
+    }
+    .news-article-content h1 { font-size: 1.25rem; }
+    .news-article-content h2 { font-size: 1.15rem; }
+    .news-article-content h3 { font-size: 1.05rem; }
+    .news-article-content h4 { font-size: 1rem; }
+    .news-article-content h5 { font-size: 0.95rem; }
+    .news-article-content h6 { font-size: 0.9rem; }
+    .news-article-content p {
+      margin-bottom: 0.875rem;
+    }
+    .news-article-content ul,
+    .news-article-content ol {
+      padding-left: 1.25rem;
+    }
+    .news-article-content li {
+      margin-bottom: 0.4rem;
+    }
+  }
+
+  /* Tablet */
+  @media (min-width: 641px) and (max-width: 1023px) {
+    .news-article-content {
+      font-size: 1.05rem;
+    }
+    .news-article-content h1 { font-size: 1.75rem; }
+    .news-article-content h2 { font-size: 1.5rem; }
+    .news-article-content h3 { font-size: 1.25rem; }
+    .news-article-content h4 { font-size: 1.15rem; }
+  }
+
+  /* Desktop */
+  @media (min-width: 1024px) {
+    .news-article-content {
+      font-size: 1.125rem;
+    }
+    .news-article-content h1 { font-size: 2rem; }
+    .news-article-content h2 { font-size: 1.65rem; }
+    .news-article-content h3 { font-size: 1.35rem; }
+    .news-article-content h4 { font-size: 1.2rem; }
+  }
+
+  /* Safe-area aware horizontal padding for NewsModal */
+  .news-modal-safe-x {
+    padding-left: max(1.25rem, env(safe-area-inset-left));
+    padding-right: max(1.25rem, env(safe-area-inset-right));
+  }
+  @media (min-width: 640px) {
+    .news-modal-safe-x {
+      padding-left: 0;
+      padding-right: 0;
+    }
+  }
+  .news-modal-safe-bottom {
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+  }
+
   /* ====== PREMIUM ADMIN SCOPE - GLASSMORPHISM ====== */
   .admin-scope .bg-card {
     background: rgba(255, 255, 255, 0.72);
