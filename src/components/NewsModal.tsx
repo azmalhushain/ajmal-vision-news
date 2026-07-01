@@ -66,13 +66,11 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
     };
   }, [article, isOpen, language, translatePost]);
 
-  if (!article) return null;
+  const displayTitle = translated?.title || article?.title || "";
+  const displayContent = translated?.content || article?.fullContent || "";
+  const displaySummary = translated?.excerpt || article?.summary || "";
 
-  const displayTitle = translated?.title || article.title;
-  const displayContent = translated?.content || article.fullContent;
-  const displaySummary = translated?.excerpt || article.summary;
-
-  const youtubeUrl = article.videoUrl ? getYouTubeEmbedUrl(article.videoUrl) : null;
+  const youtubeUrl = article?.videoUrl ? getYouTubeEmbedUrl(article.videoUrl) : null;
   const readMin = estimateReadMinutes(displayContent || displaySummary);
 
   const seoDescription = useMemo(
