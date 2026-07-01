@@ -5,12 +5,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Calendar, Tag, Pin, Video, X, Clock, Share2 } from "lucide-react";
+import { Calendar, Tag, Pin, Video, X, Clock, Share2, Languages } from "lucide-react";
 import { Article } from "@/types/article";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useLanguage, LANGUAGE_META } from "@/contexts/LanguageContext";
 import { PostEngagement } from "@/components/PostEngagement";
 import { SEOHead } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
+import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface NewsModalProps {
   article: Article | null;
@@ -30,26 +32,84 @@ const estimateReadMinutes = (text?: string) => {
   return Math.max(1, Math.round(words / 220));
 };
 
+const stripHtml = (html?: string) =>
+  (html || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+
+const truncate = (s: string, n: number) =>
+  s.length > n ? s.slice(0, n - 1).trimEnd() + "…" : s;
+
 export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const { translatePost, isTranslating } = useTranslation();
+
+  const [translated, setTranslated] = useState<{ title: string; content: string; excerpt?: string } | null>(null);
+
+  useEffect(() => {
+    setTranslated(null);
+    if (!article || !isOpen) return;
+    let cancelled = false;
+    (async () => {
+      // Force translation for every selected language (including English — source may be Nepali/other).
+      const result = await translatePost(
+        String(article.id),
+        language,
+        article.title,
+        article.fullContent,
+        article.summary,
+        { force: true }
+      );
+      if (!cancelled) setTranslated(result);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [article, isOpen, language, translatePost]);
 
   if (!article) return null;
 
+  const displayTitle = translated?.title || article.title;
+  const displayContent = translated?.content || article.fullContent;
+  const displaySummary = translated?.excerpt || article.summary;
+
   const youtubeUrl = article.videoUrl ? getYouTubeEmbedUrl(article.videoUrl) : null;
-  const readMin = estimateReadMinutes(article.fullContent || article.summary);
+  const readMin = estimateReadMinutes(displayContent || displaySummary);
+
+  const seoDescription = useMemo(
+    () => truncate(stripHtml(displaySummary) || stripHtml(displayContent), 155),
+    [displaySummary, displayContent]
+  );
+  const seoTitle = useMemo(
+    () => truncate(`${displayTitle} — Ajmal Akhtar Azad`, 60),
+    [displayTitle]
+  );
+  const seoKeywords = useMemo(
+    () =>
+      [
+        article.category,
+        displayTitle,
+        "Bhokraha Narsingh",
+        "Ajmal Akhtar Azad",
+        "news",
+        LANGUAGE_META[language]?.label,
+      ]
+        .filter(Boolean)
+        .join(", "),
+    [article.category, displayTitle, language]
+  );
+
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       {isOpen && (
         <SEOHead
-          title={`${article.title} - Ajmal Akhtar Azad`}
-          description={article.summary}
+          title={seoTitle}
+          description={seoDescription}
           image={article.image || undefined}
-          imageAlt={`${article.title} — ${article.category}`}
+          imageAlt={`${displayTitle} — ${article.category}`}
           url={`/news/${article.id}`}
           type="article"
           category={article.category}
-          keywords={`${article.category}, ${article.title}, Bhokraha Narsingh, Ajmal Akhtar Azad, news`}
+          keywords={seoKeywords}
           publishedTime={article.date ? new Date(article.date).toISOString() : undefined}
           modifiedTime={article.date ? new Date(article.date).toISOString() : undefined}
         />
@@ -86,7 +146,7 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
             variant="ghost"
             size="sm"
             onClick={() => {
-              if (navigator.share) navigator.share({ title: article.title, url: window.location.href }).catch(() => {});
+              if (navigator.share) navigator.share({ title: displayTitle, text: seoDescription, url: window.location.href }).catch(() => {});
             }}
             className="rounded-full h-9 w-9 p-0 hover:bg-muted"
             aria-label="Share"
@@ -157,14 +217,26 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
                     <Video className="w-3.5 h-3.5" /> {t("video")}
                   </span>
                 )}
+                {isTranslating && (
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
+                    <Languages className="w-3 h-3 animate-pulse" />
+                    Translating to {LANGUAGE_META[language]?.native}…
+                  </span>
+                )}
+                {!isTranslating && translated && (
+                  <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+                    <Languages className="w-3 h-3" />
+                    {LANGUAGE_META[language]?.native}
+                  </span>
+                )}
               </div>
 
               <DialogTitle className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground leading-[1.15] tracking-tight">
-                {article.title}
+                {displayTitle}
               </DialogTitle>
 
               <DialogDescription className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-                {article.summary}
+                {displaySummary}
               </DialogDescription>
 
               {/* Author strip */}
@@ -183,7 +255,7 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
 
           <article
             className="news-article-content news-modal-safe-x prose max-w-none px-4 sm:px-8 pb-6"
-            dangerouslySetInnerHTML={{ __html: article.fullContent }}
+            dangerouslySetInnerHTML={{ __html: displayContent }}
           />
 
           <div className="px-4 sm:px-8 pb-8 news-modal-safe-x">
@@ -191,8 +263,8 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
               postId={String(article.id)}
               initialViews={article.views || 0}
               initialLikes={article.likesCount || 0}
-              title={article.title}
-              summary={article.summary}
+              title={displayTitle}
+              summary={displaySummary || ""}
               image={article.image}
               variant="full"
               showComments={true}

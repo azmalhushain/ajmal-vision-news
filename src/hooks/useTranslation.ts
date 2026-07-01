@@ -20,10 +20,11 @@ export const useTranslation = () => {
     targetLanguage: string,
     originalTitle: string,
     originalContent: string,
-    originalExcerpt?: string
+    originalExcerpt?: string,
+    options?: { force?: boolean }
   ) => {
-    // Return original if target is English
-    if (targetLanguage === "en") {
+    // Return original if target is English (unless forced — original may not be in English)
+    if (targetLanguage === "en" && !options?.force) {
       return {
         title: originalTitle,
         content: originalContent,
