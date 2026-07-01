@@ -217,14 +217,26 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
                     <Video className="w-3.5 h-3.5" /> {t("video")}
                   </span>
                 )}
+                {isTranslating && (
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
+                    <Languages className="w-3 h-3 animate-pulse" />
+                    Translating to {LANGUAGE_META[language]?.native}…
+                  </span>
+                )}
+                {!isTranslating && translated && (
+                  <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+                    <Languages className="w-3 h-3" />
+                    {LANGUAGE_META[language]?.native}
+                  </span>
+                )}
               </div>
 
               <DialogTitle className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground leading-[1.15] tracking-tight">
-                {article.title}
+                {displayTitle}
               </DialogTitle>
 
               <DialogDescription className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-                {article.summary}
+                {displaySummary}
               </DialogDescription>
 
               {/* Author strip */}
@@ -243,7 +255,7 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
 
           <article
             className="news-article-content news-modal-safe-x prose max-w-none px-4 sm:px-8 pb-6"
-            dangerouslySetInnerHTML={{ __html: article.fullContent }}
+            dangerouslySetInnerHTML={{ __html: displayContent }}
           />
 
           <div className="px-4 sm:px-8 pb-8 news-modal-safe-x">
@@ -251,8 +263,8 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
               postId={String(article.id)}
               initialViews={article.views || 0}
               initialLikes={article.likesCount || 0}
-              title={article.title}
-              summary={article.summary}
+              title={displayTitle}
+              summary={displaySummary || ""}
               image={article.image}
               variant="full"
               showComments={true}
