@@ -146,7 +146,7 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
             variant="ghost"
             size="sm"
             onClick={() => {
-              if (navigator.share) navigator.share({ title: article.title, url: window.location.href }).catch(() => {});
+              if (navigator.share) navigator.share({ title: displayTitle, text: seoDescription, url: window.location.href }).catch(() => {});
             }}
             className="rounded-full h-9 w-9 p-0 hover:bg-muted"
             aria-label="Share"
