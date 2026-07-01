@@ -13,6 +13,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
+import { Helmet } from "react-helmet-async";
 
 interface NewsModalProps {
   article: Article | null;
@@ -98,24 +99,67 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
   );
 
 
+  const siteUrl = "https://www.ajmalakhtar.com.np";
+  const articleUrl = `${siteUrl}/news/${article.id}`;
+  const isoDate = article.date ? new Date(article.date).toISOString() : new Date().toISOString();
+
+  const newsArticleSchema = useMemo(
+    () => ({
+      "@context": "https://schema.org",
+      "@type": "NewsArticle",
+      mainEntityOfPage: { "@type": "WebPage", "@id": articleUrl },
+      headline: truncate(displayTitle, 110),
+      description: seoDescription,
+      image: article.image ? [article.image] : undefined,
+      datePublished: isoDate,
+      dateModified: isoDate,
+      inLanguage: language,
+      articleSection: article.category,
+      articleBody: truncate(stripHtml(displayContent), 5000),
+      author: {
+        "@type": "Person",
+        name: "Ajmal Akhtar Azad",
+        jobTitle: "Mayor",
+        url: siteUrl,
+      },
+      publisher: {
+        "@type": "Organization",
+        name: "Ajmal Akhtar Azad",
+        logo: {
+          "@type": "ImageObject",
+          url: "https://storage.googleapis.com/gpt-engineer-file-uploads/6j4N84GNxsXn52PqWIVTQd9p8RI2/uploads/1764428477117-logo.jpg.png",
+        },
+      },
+    }),
+    [articleUrl, displayTitle, seoDescription, article.image, isoDate, language, article.category, displayContent]
+  );
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       {isOpen && (
-        <SEOHead
-          title={seoTitle}
-          description={seoDescription}
-          image={article.image || undefined}
-          imageAlt={`${displayTitle} — ${article.category}`}
-          url={`/news/${article.id}`}
-          type="article"
-          category={article.category}
-          keywords={seoKeywords}
-          publishedTime={article.date ? new Date(article.date).toISOString() : undefined}
-          modifiedTime={article.date ? new Date(article.date).toISOString() : undefined}
-        />
+        <>
+          <SEOHead
+            title={seoTitle}
+            description={seoDescription}
+            image={article.image || undefined}
+            imageAlt={`${displayTitle} — ${article.category}`}
+            url={`/news/${article.id}`}
+            type="article"
+            category={article.category}
+            keywords={seoKeywords}
+            publishedTime={isoDate}
+            modifiedTime={isoDate}
+          />
+          <Helmet>
+            <script type="application/ld+json">
+              {JSON.stringify(newsArticleSchema)}
+            </script>
+          </Helmet>
+        </>
       )}
 
       <DialogContent
+        aria-describedby={undefined}
         className="w-[100vw] sm:w-[95vw] max-w-3xl
           h-[100dvh] sm:h-auto sm:max-h-[92vh]
           p-0 gap-0 overflow-hidden
@@ -123,7 +167,14 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
           rounded-none sm:rounded-3xl
           bg-card/95 backdrop-blur-xl
           shadow-[0_24px_80px_-20px_hsl(var(--foreground)/0.35)]
-          flex flex-col"
+          flex flex-col
+          duration-300 ease-out
+          data-[state=open]:animate-in data-[state=closed]:animate-out
+          data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0
+          data-[state=open]:slide-in-from-bottom-8 data-[state=closed]:slide-out-to-bottom-8
+          sm:data-[state=open]:slide-in-from-bottom-4 sm:data-[state=closed]:slide-out-to-bottom-4
+          data-[state=open]:zoom-in-95 data-[state=closed]:zoom-out-95
+          focus:outline-none"
       >
         {/* Sticky top bar */}
         <div className="sticky top-0 z-30 flex items-center justify-between gap-2
