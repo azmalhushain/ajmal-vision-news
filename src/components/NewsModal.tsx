@@ -13,6 +13,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
+import { Helmet } from "react-helmet-async";
 
 interface NewsModalProps {
   article: Article | null;
