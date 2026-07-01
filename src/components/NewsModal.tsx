@@ -66,13 +66,11 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
     };
   }, [article, isOpen, language, translatePost]);
 
-  if (!article) return null;
+  const displayTitle = translated?.title || article?.title || "";
+  const displayContent = translated?.content || article?.fullContent || "";
+  const displaySummary = translated?.excerpt || article?.summary || "";
 
-  const displayTitle = translated?.title || article.title;
-  const displayContent = translated?.content || article.fullContent;
-  const displaySummary = translated?.excerpt || article.summary;
-
-  const youtubeUrl = article.videoUrl ? getYouTubeEmbedUrl(article.videoUrl) : null;
+  const youtubeUrl = article?.videoUrl ? getYouTubeEmbedUrl(article.videoUrl) : null;
   const readMin = estimateReadMinutes(displayContent || displaySummary);
 
   const seoDescription = useMemo(
@@ -86,7 +84,7 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
   const seoKeywords = useMemo(
     () =>
       [
-        article.category,
+        article?.category,
         displayTitle,
         "Bhokraha Narsingh",
         "Ajmal Akhtar Azad",
@@ -95,13 +93,13 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
       ]
         .filter(Boolean)
         .join(", "),
-    [article.category, displayTitle, language]
+    [article?.category, displayTitle, language]
   );
 
 
   const siteUrl = "https://www.ajmalakhtar.com.np";
-  const articleUrl = `${siteUrl}/news/${article.id}`;
-  const isoDate = article.date ? new Date(article.date).toISOString() : new Date().toISOString();
+  const articleUrl = `${siteUrl}/news/${article?.id ?? ""}`;
+  const isoDate = article?.date ? new Date(article.date).toISOString() : new Date().toISOString();
 
   const newsArticleSchema = useMemo(
     () => ({
@@ -110,11 +108,11 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
       mainEntityOfPage: { "@type": "WebPage", "@id": articleUrl },
       headline: truncate(displayTitle, 110),
       description: seoDescription,
-      image: article.image ? [article.image] : undefined,
+      image: article?.image ? [article.image] : undefined,
       datePublished: isoDate,
       dateModified: isoDate,
       inLanguage: language,
-      articleSection: article.category,
+      articleSection: article?.category,
       articleBody: truncate(stripHtml(displayContent), 5000),
       author: {
         "@type": "Person",
@@ -131,8 +129,11 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
         },
       },
     }),
-    [articleUrl, displayTitle, seoDescription, article.image, isoDate, language, article.category, displayContent]
+    [articleUrl, displayTitle, seoDescription, article?.image, isoDate, language, article?.category, displayContent]
   );
+
+  if (!article) return null;
+
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
