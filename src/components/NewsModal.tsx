@@ -102,14 +102,14 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       {isOpen && (
         <SEOHead
-          title={`${article.title} - Ajmal Akhtar Azad`}
-          description={article.summary}
+          title={seoTitle}
+          description={seoDescription}
           image={article.image || undefined}
-          imageAlt={`${article.title} — ${article.category}`}
+          imageAlt={`${displayTitle} — ${article.category}`}
           url={`/news/${article.id}`}
           type="article"
           category={article.category}
-          keywords={`${article.category}, ${article.title}, Bhokraha Narsingh, Ajmal Akhtar Azad, news`}
+          keywords={seoKeywords}
           publishedTime={article.date ? new Date(article.date).toISOString() : undefined}
           modifiedTime={article.date ? new Date(article.date).toISOString() : undefined}
         />
