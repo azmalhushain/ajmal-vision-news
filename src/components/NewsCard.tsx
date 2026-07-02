@@ -95,7 +95,7 @@ export const NewsCard = ({ article, onClick }: NewsCardProps) => {
       </div>
 
       {/* Body */}
-      <div className="flex-1 flex flex-col px-2 pt-3 sm:px-3 sm:pt-4 pb-2 sm:pb-3 min-w-0">
+      <div className="flex-1 flex flex-col px-1.5 pt-2.5 sm:px-3 sm:pt-4 pb-1.5 sm:pb-3 min-w-0">
         <div className="flex items-center justify-between gap-2 mb-2 sm:mb-3">
           <div className="flex items-center gap-2 text-muted-foreground min-w-0">
             <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-accent to-primary
