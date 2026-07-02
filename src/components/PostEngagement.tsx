@@ -252,28 +252,30 @@ export const PostEngagement = ({
   return (
     <div className="space-y-4">
       {/* Engagement Stats */}
-      <div className="flex items-center gap-6 py-4 border-y border-border">
-        <button
-          onClick={handleLike}
-          className={`flex items-center gap-2 transition-all hover:scale-105 ${
-            isLiked ? "text-red-500" : "text-muted-foreground hover:text-red-500"
-          }`}
-        >
-          <Heart className={`w-5 h-5 ${isLiked ? "fill-current" : ""}`} />
-          <span className="font-medium">{likes} {t("likes")}</span>
-        </button>
-        <button
-          onClick={() => setShowCommentForm(!showCommentForm)}
-          className="flex items-center gap-2 text-muted-foreground transition-all hover:scale-105 hover:text-accent"
-        >
-          <MessageCircle className="w-5 h-5" />
-          <span className="font-medium">{commentsCount} {t("comments")}</span>
-        </button>
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Eye className="w-5 h-5" />
-          <span className="font-medium">{views} {t("views")}</span>
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 py-4 border-y border-border">
+        <div className="flex items-center gap-5 sm:gap-6 flex-wrap">
+          <button
+            onClick={handleLike}
+            className={`flex items-center gap-2 transition-all hover:scale-105 ${
+              isLiked ? "text-red-500" : "text-muted-foreground hover:text-red-500"
+            }`}
+          >
+            <Heart className={`w-5 h-5 ${isLiked ? "fill-current" : ""}`} />
+            <span className="font-medium text-sm sm:text-base">{likes} {t("likes")}</span>
+          </button>
+          <button
+            onClick={() => setShowCommentForm(!showCommentForm)}
+            className="flex items-center gap-2 text-muted-foreground transition-all hover:scale-105 hover:text-accent"
+          >
+            <MessageCircle className="w-5 h-5" />
+            <span className="font-medium text-sm sm:text-base">{commentsCount} {t("comments")}</span>
+          </button>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Eye className="w-5 h-5" />
+            <span className="font-medium text-sm sm:text-base">{views} {t("views")}</span>
+          </div>
         </div>
-        <div className="ml-auto">
+        <div className="sm:ml-auto">
           <ShareButtons
             url={`/news/${postId}`}
             title={title}
@@ -284,6 +286,7 @@ export const PostEngagement = ({
           />
         </div>
       </div>
+
 
       {/* Comment Form */}
       {showCommentForm && (
