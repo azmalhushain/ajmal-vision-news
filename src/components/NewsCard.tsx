@@ -146,28 +146,29 @@ export const NewsCard = ({ article, onClick }: NewsCardProps) => {
 
 
         {/* Footer */}
-        <div className="mt-3 sm:mt-4 pt-3 flex items-center justify-between gap-2 border-t border-border/60">
-          <div className="flex items-center gap-3 text-muted-foreground text-[11px] sm:text-xs">
+        <div className="mt-2.5 sm:mt-4 pt-2.5 sm:pt-3 flex items-center justify-between gap-2 border-t border-border/60">
+          <div className="flex items-center gap-2 sm:gap-3 text-muted-foreground text-[10px] sm:text-xs">
             <span className="flex items-center gap-1">
-              <Heart className="w-3.5 h-3.5" />
+              <Heart className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
               {article.likesCount || 0}
             </span>
             <span className="flex items-center gap-1">
-              <Eye className="w-3.5 h-3.5" />
+              <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
               {article.views || 0}
             </span>
           </div>
           <Button
             onClick={onClick}
             size="sm"
-            className="h-8 sm:h-9 rounded-full px-3 sm:px-4 text-[11px] sm:text-xs font-semibold
+            className="h-7 sm:h-9 rounded-full px-2.5 sm:px-4 text-[10px] sm:text-xs font-semibold
               bg-foreground text-background hover:bg-accent hover:text-accent-foreground
               transition-all group/btn"
           >
             {article.videoUrl ? t("watchVideo") : t("readMore")}
-            <ArrowUpRight className="w-3.5 h-3.5 ml-1 transition-transform group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5" />
+            <ArrowUpRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 ml-0.5 sm:ml-1 transition-transform group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5" />
           </Button>
         </div>
+
       </div>
     </article>
   );
