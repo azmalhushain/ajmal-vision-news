@@ -26,15 +26,16 @@ export const NewsCard = ({ article, onClick }: NewsCardProps) => {
 
   return (
     <article
-      className="group relative h-full w-full min-w-0 flex flex-col rounded-2xl sm:rounded-3xl
+      className="group relative h-full w-full min-w-0 max-w-full flex flex-col rounded-2xl sm:rounded-3xl
         bg-card/80 backdrop-blur-xl border border-border/60
         shadow-[0_4px_24px_-12px_hsl(var(--foreground)/0.18)]
         hover:shadow-[0_18px_44px_-18px_hsl(var(--accent)/0.45)]
         hover:border-accent/40 hover:-translate-y-1
-        transition-all duration-500 ease-out overflow-hidden p-2 sm:p-3"
+        transition-all duration-500 ease-out overflow-hidden p-1.5 xs:p-2 sm:p-3"
       itemScope
       itemType="https://schema.org/NewsArticle"
     >
+
       <meta itemProp="headline" content={article.title} />
       <meta itemProp="description" content={article.summary} />
       <meta itemProp="image" content={shareImage} />
