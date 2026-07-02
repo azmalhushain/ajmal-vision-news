@@ -208,7 +208,7 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
         </div>
 
         {/* Scrollable content */}
-        <div className="overflow-y-auto overscroll-contain flex-1 news-modal-safe-bottom">
+        <div className="overflow-y-auto news-modal-scroll overscroll-contain flex-1 news-modal-safe-bottom">
           <DialogHeader className="space-y-0 text-left">
             {/* Hero media */}
             {article.videoUrl ? (
