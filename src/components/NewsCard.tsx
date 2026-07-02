@@ -130,11 +130,12 @@ export const NewsCard = ({ article, onClick }: NewsCardProps) => {
         <h3
           onClick={onClick}
           itemProp="headline"
-          className="text-base sm:text-lg md:text-xl font-bold text-foreground leading-snug
-            mb-2 line-clamp-2 cursor-pointer group-hover:text-accent transition-colors"
+          className="text-sm sm:text-lg md:text-xl font-bold text-foreground leading-snug
+            mb-1.5 sm:mb-2 line-clamp-2 cursor-pointer group-hover:text-accent transition-colors break-words"
         >
           {article.title}
         </h3>
+
 
         <p
           className="text-xs sm:text-sm text-muted-foreground line-clamp-2 sm:line-clamp-3 flex-1"
