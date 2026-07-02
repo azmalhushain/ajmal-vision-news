@@ -138,11 +138,12 @@ export const NewsCard = ({ article, onClick }: NewsCardProps) => {
 
 
         <p
-          className="text-xs sm:text-sm text-muted-foreground line-clamp-2 sm:line-clamp-3 flex-1"
+          className="text-[11px] sm:text-sm text-muted-foreground line-clamp-2 sm:line-clamp-3 flex-1 break-words"
           itemProp="description"
         >
           {article.summary}
         </p>
+
 
         {/* Footer */}
         <div className="mt-3 sm:mt-4 pt-3 flex items-center justify-between gap-2 border-t border-border/60">
