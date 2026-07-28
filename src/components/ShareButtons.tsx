@@ -117,11 +117,14 @@ export const ShareButtons = ({
     <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
       <SheetContent
         side="bottom"
-        className="rounded-t-3xl border-t border-border/60 bg-card/95 backdrop-blur-xl p-0
-          max-h-[85vh] overflow-y-auto
+        className="rounded-t-[1.75rem] border-t border-border/60 bg-card/95 backdrop-blur-2xl p-0
+          max-h-[88vh] overflow-y-auto news-modal-safe-bottom
+          shadow-[0_-20px_60px_-25px_hsl(var(--foreground)/0.55)]
           data-[state=open]:animate-in data-[state=closed]:animate-out
-          data-[state=open]:slide-in-from-bottom data-[state=closed]:slide-out-to-bottom
-          duration-300"
+          data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0
+          data-[state=open]:slide-in-from-bottom-8 data-[state=closed]:slide-out-to-bottom-8
+          data-[state=open]:duration-300 data-[state=closed]:duration-200
+          ease-out"
       >
         <div className="mx-auto mt-2 mb-1 h-1.5 w-12 rounded-full bg-muted-foreground/30" />
         <SheetHeader className="px-5 pt-2 pb-3 text-left">
@@ -256,18 +259,33 @@ export const ShareButtons = ({
 
   return (
     <>
-      {/* Mobile: single pill that opens preview sheet */}
-      <button
-        onClick={() => setSheetOpen(true)}
-        className="sm:hidden inline-flex items-center gap-2 rounded-full px-4 py-2
-          bg-gradient-to-r from-accent to-primary text-accent-foreground
-          text-xs font-semibold shadow-[0_8px_24px_-10px_hsl(var(--accent)/0.6)]
-          transition-transform active:scale-95 hover:scale-[1.02]"
-        aria-label="Share this article"
-      >
-        <Share2 className="h-3.5 w-3.5" />
-        Share
-      </button>
+      {/* Mobile: single clean row of icons (all tap targets 40px, even spacing) */}
+      <div className="sm:hidden flex w-full items-center justify-between gap-1.5">
+        {inlineSocials.map((s) => (
+          <button
+            key={s.key}
+            onClick={() => setSheetOpen(true)}
+            title={s.label}
+            aria-label={s.label}
+            className={`flex-1 min-w-0 h-10 max-w-[3rem] inline-flex items-center justify-center
+              rounded-xl border border-border/50 bg-background/60 backdrop-blur
+              text-muted-foreground share-icon-btn ${s.cls}
+              transition-all duration-200 active:scale-90`}
+          >
+            {s.icon}
+          </button>
+        ))}
+        <button
+          onClick={() => setSheetOpen(true)}
+          aria-label="More share options"
+          className="flex-1 min-w-0 h-10 max-w-[3rem] inline-flex items-center justify-center rounded-xl
+            bg-gradient-to-br from-accent to-primary text-accent-foreground
+            shadow-[0_6px_18px_-8px_hsl(var(--accent)/0.6)]
+            transition-all duration-200 hover:-translate-y-0.5 active:scale-90"
+        >
+          <Share2 className={iconSize} />
+        </button>
+      </div>
 
       {/* Desktop / tablet: inline row */}
       <div className="hidden sm:flex items-center flex-wrap gap-2">
@@ -286,6 +304,7 @@ export const ShareButtons = ({
           </Button>
         ))}
       </div>
+
 
       {previewSheet}
     </>
