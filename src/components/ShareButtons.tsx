@@ -117,7 +117,7 @@ export const ShareButtons = ({
   // Any icon click on mobile opens the sheet preview
   const handleIconClick = (p: Platform) => {
     if (isMobile()) {
-      setSheetOpen(true);
+      openSheet(p);
     } else {
       handleAction(p);
     }
@@ -263,7 +263,7 @@ export const ShareButtons = ({
           size="icon"
           className={`${buttonSize} rounded-full share-icon-btn hover:bg-accent/10 hover:text-accent sm:hidden`}
           aria-label="Share this article"
-          onClick={() => setSheetOpen(true)}
+          onClick={() => openSheet()}
         >
           <Share2 className={iconSize} />
         </Button>
@@ -287,7 +287,7 @@ export const ShareButtons = ({
         {inlineSocials.map((s) => (
           <button
             key={s.key}
-            onClick={() => setSheetOpen(true)}
+            onClick={() => openSheet()}
             title={s.label}
             aria-label={s.label}
             className={`flex-1 min-w-0 h-10 max-w-[3rem] inline-flex items-center justify-center
@@ -299,7 +299,7 @@ export const ShareButtons = ({
           </button>
         ))}
         <button
-          onClick={() => setSheetOpen(true)}
+          onClick={() => openSheet()}
           aria-label="More share options"
           className="flex-1 min-w-0 h-10 max-w-[3rem] inline-flex items-center justify-center rounded-xl
             bg-gradient-to-br from-accent to-primary text-accent-foreground
