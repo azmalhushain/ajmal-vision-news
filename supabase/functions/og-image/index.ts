@@ -20,7 +20,7 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
     
-    const siteUrl = "https://ajmal-vision-news.lovable.app";
+    const siteUrl = (Deno.env.get("SITE_URL") || "https://www.ajmalakhtar.com.np").replace(/\/$/, "");
     const defaultImage = "https://storage.googleapis.com/gpt-engineer-file-uploads/6j4N84GNxsXn52PqWIVTQd9p8RI2/social-images/social-1764428453124-image1.jpg";
     const siteName = "Ajmal Akhtar Azad";
     
@@ -42,7 +42,7 @@ serve(async (req) => {
         title = post.title;
         description = post.excerpt || post.content?.substring(0, 160) || description;
         image = post.image_url || defaultImage;
-        pageUrl = `${siteUrl}/news?post=${postId}`;
+        pageUrl = `${siteUrl}/news?post=${encodeURIComponent(postId)}`;
         type = "article";
       }
     } else if (page) {
@@ -86,6 +86,19 @@ serve(async (req) => {
         pageUrl = pageMeta[page].url;
       }
     }
+
+    // Escape values so quotes/angle brackets can't break the meta tags
+    const esc = (v: string) =>
+      String(v ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+
+    title = esc(title.replace(/<[^>]+>/g, " ").trim());
+    description = esc(description.replace(/<[^>]+>/g, " ").trim().slice(0, 300));
+    image = esc(image);
+    pageUrl = esc(pageUrl);
 
     // Return HTML with proper OG meta tags for crawlers
     const html = `<!DOCTYPE html>
