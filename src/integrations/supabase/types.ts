@@ -1245,6 +1245,45 @@ export type Database = {
           },
         ]
       }
+      share_events: {
+        Row: {
+          action: string
+          content_id: string | null
+          content_type: string
+          created_at: string
+          device: string | null
+          id: string
+          page_path: string | null
+          platform: string
+          share_url: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action?: string
+          content_id?: string | null
+          content_type?: string
+          created_at?: string
+          device?: string | null
+          id?: string
+          page_path?: string | null
+          platform: string
+          share_url?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          content_id?: string | null
+          content_type?: string
+          created_at?: string
+          device?: string | null
+          id?: string
+          page_path?: string | null
+          platform?: string
+          share_url?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       site_features: {
         Row: {
           enabled: boolean
