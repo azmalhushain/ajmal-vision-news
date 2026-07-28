@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Article } from "@/types/article";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { CardSkeleton } from "@/components/LoadingSkeleton";
 import { Loader2, Languages } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -37,6 +37,66 @@ export const NewsSection = ({ showAll = false, category = "All", query = "" }: N
   const { t, language } = useLanguage();
   const { translatePost } = useTranslation();
   const prevLanguageRef = useRef(language);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const deepLinkId = searchParams.get("post");
+
+  const openArticle = (article: Article) => {
+    setSelectedArticle(article);
+    const next = new URLSearchParams(searchParams);
+    next.set("post", String(article.id));
+    setSearchParams(next, { replace: false });
+  };
+
+  const closeArticle = () => {
+    setSelectedArticle(null);
+    const next = new URLSearchParams(searchParams);
+    next.delete("post");
+    setSearchParams(next, { replace: true });
+  };
+
+  // Deep link: /news?post=<id> opens the exact article
+  useEffect(() => {
+    if (!deepLinkId) return;
+    if (selectedArticle && String(selectedArticle.id) === deepLinkId) return;
+
+    const local = articles.find((a) => String(a.id) === deepLinkId);
+    if (local) {
+      setSelectedArticle(local);
+      return;
+    }
+
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("posts")
+        .select("*")
+        .eq("id", deepLinkId)
+        .eq("status", "published")
+        .maybeSingle();
+      if (cancelled || !data) return;
+      setSelectedArticle({
+        id: data.id,
+        title: data.title,
+        date: new Date(data.created_at).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        }),
+        summary: data.excerpt || "",
+        image: data.image_url || "",
+        fullContent: data.content,
+        category: data.category || "News",
+        videoUrl: data.video_url,
+        isPinned: data.is_pinned || false,
+        views: data.views || 0,
+        likesCount: data.likes_count || 0,
+      } as Article);
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deepLinkId, articles]);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 100);
@@ -235,7 +295,7 @@ export const NewsSection = ({ showAll = false, category = "All", query = "" }: N
                   )}
                   <NewsCard
                     article={article}
-                    onClick={() => setSelectedArticle(article)}
+                    onClick={() => openArticle(article)}
                   />
                 </div>
               ))}
@@ -277,7 +337,7 @@ export const NewsSection = ({ showAll = false, category = "All", query = "" }: N
       <NewsModal
         article={selectedArticle}
         isOpen={!!selectedArticle}
-        onClose={() => setSelectedArticle(null)}
+        onClose={closeArticle}
       />
     </section>
   );
