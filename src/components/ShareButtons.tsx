@@ -287,7 +287,7 @@ export const ShareButtons = ({
         {inlineSocials.map((s) => (
           <button
             key={s.key}
-            onClick={() => openSheet()}
+            onClick={() => openSheet(s.key)}
             title={s.label}
             aria-label={s.label}
             className={`flex-1 min-w-0 h-10 max-w-[3rem] inline-flex items-center justify-center
