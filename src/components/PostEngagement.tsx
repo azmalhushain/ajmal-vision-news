@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ShareButtons } from "@/components/ShareButtons";
+import { newsPostUrl } from "@/lib/share";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface PostEngagementProps {
@@ -238,7 +239,8 @@ export const PostEngagement = ({
           <span>{views}</span>
         </div>
         <ShareButtons
-          url={`/news/${postId}`}
+          url={newsPostUrl(postId)}
+          postId={postId}
           title={title}
           description={summary}
           image={image}
@@ -277,7 +279,8 @@ export const PostEngagement = ({
         </div>
         <div className="sm:ml-auto">
           <ShareButtons
-            url={`/news/${postId}`}
+            url={newsPostUrl(postId)}
+            postId={postId}
             title={title}
             description={summary}
             image={image}

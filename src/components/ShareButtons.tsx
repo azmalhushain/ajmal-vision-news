@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useToast } from "@/hooks/use-toast";
+import { toAbsoluteUrl, trackShare, type SharePlatform } from "@/lib/share";
 
 interface ShareButtonsProps {
   url: string;
@@ -18,9 +19,12 @@ interface ShareButtonsProps {
   variant?: "inline" | "dropdown";
   size?: "sm" | "md" | "lg";
   postId?: string;
+  /** For analytics: post | gallery | podcast | player ... */
+  contentType?: string;
+  contentId?: string;
 }
 
-type Platform = "facebook" | "twitter" | "linkedin" | "whatsapp" | "telegram" | "copy" | "native";
+type Platform = SharePlatform;
 
 export const ShareButtons = ({
   url,
@@ -30,37 +34,49 @@ export const ShareButtons = ({
   variant = "inline",
   size = "md",
   postId,
+  contentType = postId ? "post" : "page",
+  contentId,
 }: ShareButtonsProps) => {
   const { toast } = useToast();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const siteUrl = "https://ajmalazad.lovable.app";
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://kpswxkuzfnafsqeqaunt.supabase.co";
 
-  const getShareUrl = () => {
-    if (postId) return `${supabaseUrl}/functions/v1/og-image?post=${postId}`;
-    return url.startsWith("http") ? url : `${siteUrl}${url}`;
-  };
+  // Canonical, absolute link to the exact content (always same-origin as the visitor).
+  const fullUrl = toAbsoluteUrl(url);
 
-  const shareUrl = getShareUrl();
-  const fullUrl = url.startsWith("http") ? url : `${siteUrl}${url}`;
+  // Crawler-friendly proxy that serves per-post OG tags then redirects to the post.
+  const shareUrl = postId
+    ? `${supabaseUrl}/functions/v1/og-image?post=${encodeURIComponent(postId)}`
+    : fullUrl;
+
+  const analyticsId = contentId ?? postId ?? null;
+
   const encodedShareUrl = encodeURIComponent(shareUrl);
   const encodedTitle = encodeURIComponent(title);
   const encodedDescription = encodeURIComponent(description);
+  const whatsappText = encodeURIComponent(
+    [title, description, shareUrl].filter(Boolean).join("\n\n"),
+  );
 
   const shareLinks: Record<Exclude<Platform, "copy" | "native">, string> = {
-    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedShareUrl}&quote=${encodedTitle}`,
+    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedShareUrl}`,
     twitter: `https://twitter.com/intent/tweet?url=${encodedShareUrl}&text=${encodedTitle}&via=AjmalAkhtarAzad`,
-    linkedin: `https://www.linkedin.com/shareArticle?mini=true&url=${encodedShareUrl}&title=${encodedTitle}&summary=${encodedDescription}`,
-    whatsapp: `https://wa.me/?text=${encodedTitle}%0A%0A${encodedDescription}%0A%0A${encodedShareUrl}`,
+    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedShareUrl}`,
+    whatsapp: `https://api.whatsapp.com/send?text=${whatsappText}`,
     telegram: `https://t.me/share/url?url=${encodedShareUrl}&text=${encodedTitle}`,
   };
 
+  const logShare = (platform: Platform | "sheet", action: "share_open" | "share_click") =>
+    trackShare({ platform, action, contentType, contentId: analyticsId, shareUrl });
+
   const openShare = (platform: Exclude<Platform, "copy" | "native">) => {
+    logShare(platform, "share_click");
     window.open(shareLinks[platform], "_blank", "width=600,height=500,noopener,noreferrer");
   };
 
   const handleCopyLink = async () => {
+    logShare("copy", "share_click");
     try {
       await navigator.clipboard.writeText(fullUrl);
       setCopied(true);
@@ -72,6 +88,7 @@ export const ShareButtons = ({
   };
 
   const handleNativeShare = async () => {
+    logShare("native", "share_click");
     if (navigator.share) {
       try {
         await navigator.share({ title, text: description, url: fullUrl });
@@ -84,6 +101,11 @@ export const ShareButtons = ({
   const isMobile = () =>
     typeof window !== "undefined" && window.matchMedia("(max-width: 639px)").matches;
 
+  const openSheet = (from: Platform | "sheet" = "sheet") => {
+    logShare(from, "share_open");
+    setSheetOpen(true);
+  };
+
   const handleAction = (p: Platform) => {
     if (p === "copy") return handleCopyLink();
     if (p === "native") return handleNativeShare();
@@ -91,10 +113,11 @@ export const ShareButtons = ({
     setSheetOpen(false);
   };
 
+
   // Any icon click on mobile opens the sheet preview
   const handleIconClick = (p: Platform) => {
     if (isMobile()) {
-      setSheetOpen(true);
+      openSheet(p);
     } else {
       handleAction(p);
     }
@@ -240,7 +263,7 @@ export const ShareButtons = ({
           size="icon"
           className={`${buttonSize} rounded-full share-icon-btn hover:bg-accent/10 hover:text-accent sm:hidden`}
           aria-label="Share this article"
-          onClick={() => setSheetOpen(true)}
+          onClick={() => openSheet()}
         >
           <Share2 className={iconSize} />
         </Button>
@@ -264,7 +287,7 @@ export const ShareButtons = ({
         {inlineSocials.map((s) => (
           <button
             key={s.key}
-            onClick={() => setSheetOpen(true)}
+            onClick={() => openSheet(s.key)}
             title={s.label}
             aria-label={s.label}
             className={`flex-1 min-w-0 h-10 max-w-[3rem] inline-flex items-center justify-center
@@ -276,7 +299,7 @@ export const ShareButtons = ({
           </button>
         ))}
         <button
-          onClick={() => setSheetOpen(true)}
+          onClick={() => openSheet()}
           aria-label="More share options"
           className="flex-1 min-w-0 h-10 max-w-[3rem] inline-flex items-center justify-center rounded-xl
             bg-gradient-to-br from-accent to-primary text-accent-foreground
