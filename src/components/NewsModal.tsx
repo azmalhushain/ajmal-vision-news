@@ -9,6 +9,7 @@ import { Calendar, Tag, Pin, Video, X, Clock, Share2, Languages } from "lucide-r
 import { Article } from "@/types/article";
 import { useLanguage, LANGUAGE_META } from "@/contexts/LanguageContext";
 import { PostEngagement } from "@/components/PostEngagement";
+import { newsPostUrl } from "@/lib/share";
 import { SEOHead } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { useEffect, useMemo, useState } from "react";
@@ -144,7 +145,7 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
             description={seoDescription}
             image={article.image || undefined}
             imageAlt={`${displayTitle} — ${article.category}`}
-            url={`/news/${article.id}`}
+            url={newsPostUrl(article.id)}
             type="article"
             category={article.category}
             keywords={seoKeywords}

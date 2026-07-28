@@ -3,6 +3,7 @@ import { Calendar, Pin, Video, Heart, Eye, Clock, ArrowUpRight } from "lucide-re
 import { Article } from "@/types/article";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ShareButtons } from "@/components/ShareButtons";
+import { newsPostUrl } from "@/lib/share";
 
 interface NewsCardProps {
   article: Article;
@@ -18,7 +19,7 @@ const estimateReadMinutes = (text?: string) => {
 export const NewsCard = ({ article, onClick }: NewsCardProps) => {
   const { t } = useLanguage();
 
-  const shareUrl = `/news#${article.id}`;
+  const shareUrl = newsPostUrl(article.id);
   const shareImage =
     article.image ||
     "https://storage.googleapis.com/gpt-engineer-file-uploads/6j4N84GNxsXn52PqWIVTQd9p8RI2/social-images/social-1764428453124-image1.jpg";
@@ -118,6 +119,7 @@ export const NewsCard = ({ article, onClick }: NewsCardProps) => {
           </div>
           <ShareButtons
             url={shareUrl}
+            postId={String(article.id)}
             title={article.title}
             description={article.summary}
             image={shareImage}
