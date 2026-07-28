@@ -117,11 +117,14 @@ export const ShareButtons = ({
     <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
       <SheetContent
         side="bottom"
-        className="rounded-t-3xl border-t border-border/60 bg-card/95 backdrop-blur-xl p-0
-          max-h-[85vh] overflow-y-auto
+        className="rounded-t-[1.75rem] border-t border-border/60 bg-card/95 backdrop-blur-2xl p-0
+          max-h-[88vh] overflow-y-auto news-modal-safe-bottom
+          shadow-[0_-20px_60px_-25px_hsl(var(--foreground)/0.55)]
           data-[state=open]:animate-in data-[state=closed]:animate-out
-          data-[state=open]:slide-in-from-bottom data-[state=closed]:slide-out-to-bottom
-          duration-300"
+          data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0
+          data-[state=open]:slide-in-from-bottom-8 data-[state=closed]:slide-out-to-bottom-8
+          data-[state=open]:duration-300 data-[state=closed]:duration-200
+          ease-out"
       >
         <div className="mx-auto mt-2 mb-1 h-1.5 w-12 rounded-full bg-muted-foreground/30" />
         <SheetHeader className="px-5 pt-2 pb-3 text-left">
