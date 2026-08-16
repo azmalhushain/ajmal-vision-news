@@ -56,7 +56,9 @@ describe("ShareButtons url encoding", () => {
 
     const encoded = target.slice(prefix.length).split("&")[0];
     // no raw unsafe characters leaked into the query string
-    expect(encoded).not.toMatch(/[ "<>#%{}|\\^~[\]`]/);
+    expect(encoded).not.toMatch(/[ "<>{}|\\^~[\]`]/);
+    // every % is part of a valid escape sequence
+    expect(encoded).not.toMatch(/%(?![0-9A-Fa-f]{2})/);
     expect(decodeURIComponent(encoded)).toContain(expectedProxy);
   });
 
