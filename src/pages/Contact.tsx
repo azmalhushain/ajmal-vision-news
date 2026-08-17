@@ -9,6 +9,7 @@ import { Footer } from "@/components/Footer";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { PageTransition } from "@/components/PageTransition";
 import { SEOHead } from "@/components/SEOHead";
+import { Helmet } from "react-helmet-async";
 import ogContact from "@/assets/og-contact.jpg";
 import { PageLoadingSkeleton } from "@/components/LoadingSkeleton";
 import { motion } from "framer-motion";
@@ -153,6 +154,27 @@ const Contact = () => {
         imageAlt="Glowing map pin and envelope — Contact"
         keywords="Contact Mayor, Bhokraha Narsingh Municipality office, Ajmal Akhtar Azad, Sunsari"
       />
+      <Helmet>
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "GovernmentOffice",
+            name: "Office of Mayor Ajmal Akhtar Azad — Bhokraha Narsingh Municipality",
+            url: "https://www.ajmalakhtar.com.np/contact",
+            address: {
+              "@type": "PostalAddress",
+              streetAddress: content.office_address || "Municipal Office",
+              addressLocality: "Bhokraha Narsingh",
+              addressRegion: "Sunsari, Koshi Province",
+              addressCountry: "NP",
+            },
+            telephone: (content.phone_numbers || "").split(/[\n,]/)[0]?.trim() || undefined,
+            email: (content.email_addresses || "").split(/[\n,]/)[0]?.trim() || undefined,
+            openingHours: content.office_hours || undefined,
+            areaServed: "Bhokraha Narsingh Municipality",
+          })}
+        </script>
+      </Helmet>
       <div className="min-h-screen pt-24">
         {/* Hero Section */}
         <section className="py-20 bg-gradient-to-b from-background to-secondary">

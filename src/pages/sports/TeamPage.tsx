@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Footer } from "@/components/Footer";
 import { PageTransition } from "@/components/PageTransition";
 import { SEOHead } from "@/components/SEOHead";
+import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -110,6 +111,19 @@ export default function TeamPage() {
         description={team.description?.slice(0, 150) || `Follow ${team.name}: full squad, upcoming fixtures and recent results.`}
         image={team.logo_url}
       />
+      <Helmet>
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "SportsTeam",
+            name: team.name,
+            sport: "Cricket",
+            description: team.description || undefined,
+            logo: team.logo_url || undefined,
+            url: `https://www.ajmalakhtar.com.np/sports/team/${team.slug}`,
+          })}
+        </script>
+      </Helmet>
       <div className="sports-theme min-h-screen bg-[hsl(var(--sports-bg))] text-white">
         {/* Hero */}
         <div
