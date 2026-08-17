@@ -1,1 +1,37 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#0b0b0f"/><text x="32" y="43" font-family="Poppins,Arial,sans-serif" font-size="30" font-weight="700" fill="#ffffff" text-anchor="middle">A</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b0b0f"/>
+      <stop offset="1" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0" y1="0" x2="0.7" y2="1">
+      <stop offset="0" stop-color="#60a5fa"/>
+      <stop offset="0.55" stop-color="#3b82f6"/>
+      <stop offset="1" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <linearGradient id="stroke" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3b82f6" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#3b82f6" stop-opacity="0.25"/>
+    </linearGradient>
+    <filter id="soft" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3.2"/>
+    </filter>
+    <filter id="glint" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.1"/>
+    </filter>
+  </defs>
+
+  <!-- base card -->
+  <rect width="64" height="64" rx="15" fill="url(#bg)"/>
+  <!-- subtle glass highlight -->
+  <rect x="3" y="3" width="58" height="58" rx="13" fill="none" stroke="url(#stroke)" stroke-width="1.4"/>
+
+  <!-- soft blue glow behind monogram -->
+  <circle cx="32" cy="27" r="16" fill="url(#glow)" opacity="0.5" filter="url(#soft)"/>
+
+  <!-- A monogram, bold Poppins feel -->
+  <text x="32" y="45" font-family="Poppins, 'Segoe UI', Arial, sans-serif" font-size="34" font-weight="800" fill="#ffffff" text-anchor="middle" letter-spacing="-1">A</text>
+
+  <!-- top-left glint on the letter -->
+  <circle cx="24" cy="22" r="2.1" fill="#ffffff" opacity="0.75" filter="url(#glint)"/>
+</svg>
