@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Footer } from "@/components/Footer";
 import { PageTransition } from "@/components/PageTransition";
 import { SEOHead } from "@/components/SEOHead";
+import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -114,6 +115,21 @@ export default function PlayerProfile() {
         description={player.bio?.slice(0, 150) || `${player.name}, ${player.role}${team ? ` for ${team.name}` : ""}`}
         image={player.photo_url || team?.logo_url}
       />
+      <Helmet>
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Athlete",
+            name: player.name,
+            description: player.bio || undefined,
+            image: player.photo_url || undefined,
+            jobTitle: player.role || undefined,
+            sport: "Cricket",
+            memberOf: team ? { "@type": "SportsTeam", name: team.name, sport: "Cricket" } : undefined,
+            url: `https://www.ajmalakhtar.com.np/sports/player/${player.slug || player.id}`,
+          })}
+        </script>
+      </Helmet>
       <div className="sports-theme min-h-screen bg-[hsl(var(--sports-bg))] text-white">
         {/* Hero */}
         <div

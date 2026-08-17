@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import { SEOHead } from "@/components/SEOHead";
 
 type AuthStep = "login" | "signup" | "verify-email-otp" | "forgot-password" | "reset-sent" | "phone-login" | "phone-verify";
 
@@ -338,6 +339,13 @@ const Auth = () => {
   );
 
   return (
+    <>
+    <SEOHead
+      title="Sign In or Create an Account"
+      description="Sign in or create an account to comment, save articles and follow updates from Mayor Ajmal Akhtar Azad's office."
+      url="/auth"
+      noIndex
+    />
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/20 via-background to-secondary/20 p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -662,6 +670,7 @@ const Auth = () => {
         </div>
       </motion.div>
     </div>
+    </>
   );
 };
 
