@@ -6,6 +6,7 @@ import { ArrowLeft, Radio, MapPin, Calendar, Play } from "lucide-react";
 import { Footer } from "@/components/Footer";
 import { PageTransition } from "@/components/PageTransition";
 import { SEOHead } from "@/components/SEOHead";
+import { Helmet } from "react-helmet-async";
 import { formatOvers, youtubeEmbed } from "@/lib/sportsHelpers";
 
 const db: any = supabase;
@@ -56,6 +57,31 @@ const MatchCenter = () => {
         url={`/sports/match/${match.id}`}
         image={match.poster_url}
       />
+      <Helmet>
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "SportsEvent",
+            name: title,
+            sport: "Cricket",
+            startDate: match.match_date || match.start_time || undefined,
+            eventStatus:
+              match.status === "completed"
+                ? "https://schema.org/EventScheduled"
+                : "https://schema.org/EventScheduled",
+            location: match.venue
+              ? { "@type": "Place", name: match.venue, address: match.venue }
+              : undefined,
+            image: match.poster_url || undefined,
+            url: `https://www.ajmalakhtar.com.np/sports/match/${match.id}`,
+            competitor: [a, b].filter(Boolean).map((t: any) => ({
+              "@type": "SportsTeam",
+              name: t.name,
+              sport: "Cricket",
+            })),
+          })}
+        </script>
+      </Helmet>
       <div className="min-h-screen pt-20 sm:pt-24">
         <div className="container mx-auto px-4 py-4">
           <Link to="/sports" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-accent mb-4">
