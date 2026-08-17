@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { User, MapPin, Phone, Mail, Save, LogOut, Camera, Loader2 } from "lucide-react";
 import { Footer } from "@/components/Footer";
 import { PageTransition } from "@/components/PageTransition";
+import { SEOHead } from "@/components/SEOHead";
 
 interface Profile {
   id: string;
@@ -139,6 +140,12 @@ const UserProfile = () => {
 
   return (
     <PageTransition>
+      <SEOHead
+        title="Your Profile — Account Settings"
+        description="Manage your account details, contact information and profile photo for the official site of Mayor Ajmal Akhtar Azad."
+        url="/profile"
+        noIndex
+      />
       <div className="min-h-screen pt-24 pb-12 bg-background">
         <div className="container mx-auto px-4 max-w-2xl">
           <motion.div
