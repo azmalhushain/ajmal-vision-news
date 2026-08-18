@@ -1,0 +1,1 @@
+update public.site_features set enabled = true, updated_at = now() where key = 'sports';
