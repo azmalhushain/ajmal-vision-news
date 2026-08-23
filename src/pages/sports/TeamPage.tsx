@@ -68,17 +68,25 @@ export default function TeamPage() {
   const toggleFollow = async () => {
     if (!team) return;
     const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return toast({
+        title: "Login required",
+        description: "Please sign in to follow teams.",
+        variant: "destructive",
+      });
+    }
     if (following) {
-      let q = db.from("team_followers").delete().eq("team_id", team.id);
-      q = user ? q.eq("user_id", user.id) : q.eq("session_id", sessionId);
-      const { error } = await q;
+      const { error } = await db
+        .from("team_followers")
+        .delete()
+        .eq("team_id", team.id)
+        .eq("user_id", user.id);
       if (error) return toast({ title: "Error", description: error.message, variant: "destructive" });
       setFollowing(false); setFollowers(f => Math.max(0, f - 1));
     } else {
-      const row = user
-        ? { team_id: team.id, user_id: user.id }
-        : { team_id: team.id, session_id: sessionId };
-      const { error } = await db.from("team_followers").insert(row);
+      const { error } = await db
+        .from("team_followers")
+        .insert({ team_id: team.id, user_id: user.id });
       if (error) return toast({ title: "Error", description: error.message, variant: "destructive" });
       setFollowing(true); setFollowers(f => f + 1);
       toast({ title: `Following ${team.name}` });
