@@ -163,8 +163,9 @@ Deno.serve(async (req) => {
 
     return json({ ok: false, error: `Unknown action: ${action}` }, 400);
   } catch (e: any) {
-    console.error("seo-insights error:", e);
-    return json({ ok: false, error: e.message || String(e) }, 500);
+    const status = e instanceof HttpError ? e.status : 500;
+    if (status >= 500) console.error("seo-insights error:", e);
+    return json({ ok: false, error: e.message || String(e) }, status);
   }
 });
 
