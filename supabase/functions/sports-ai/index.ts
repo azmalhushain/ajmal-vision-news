@@ -1,6 +1,7 @@
 // AI helper for sports: caption suggestions, post-match summaries,
 // and ball-by-ball score recomputation. Uses Lovable AI Gateway.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { HttpError, requireAdmin } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -32,6 +33,8 @@ async function callAI(model: string, messages: any[], json = false) {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
+    // All actions here write privileged sports data or spend AI credits.
+    await requireAdmin(req);
     const { action, payload } = await req.json();
     const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
@@ -145,7 +148,8 @@ Deno.serve(async (req) => {
 
     return new Response(JSON.stringify({ error: "Unknown action" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e: any) {
-    console.error("sports-ai error:", e);
-    return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const status = e instanceof HttpError ? e.status : 500;
+    if (status >= 500) console.error("sports-ai error:", e);
+    return new Response(JSON.stringify({ error: e.message }), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });
