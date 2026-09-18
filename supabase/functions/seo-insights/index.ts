@@ -1,5 +1,6 @@
 // SEO Insights edge function — proxies Google Search Console + Semrush via Lovable connector gateway
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+import { HttpError, requireAdmin } from "../_shared/auth.ts";
 
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 const GSC_KEY = Deno.env.get("GOOGLE_SEARCH_CONSOLE_API_KEY");
@@ -50,6 +51,8 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
+    // Private search analytics + paid API quota: admins only.
+    await requireAdmin(req);
     const { action, siteUrl, domain, database = "us", days = 28, dimensions = ["date"], rowLimit = 25 } = await req.json();
 
     // ────────────── GOOGLE SEARCH CONSOLE ──────────────
@@ -160,8 +163,9 @@ Deno.serve(async (req) => {
 
     return json({ ok: false, error: `Unknown action: ${action}` }, 400);
   } catch (e: any) {
-    console.error("seo-insights error:", e);
-    return json({ ok: false, error: e.message || String(e) }, 500);
+    const status = e instanceof HttpError ? e.status : 500;
+    if (status >= 500) console.error("seo-insights error:", e);
+    return json({ ok: false, error: e.message || String(e) }, status);
   }
 });
 

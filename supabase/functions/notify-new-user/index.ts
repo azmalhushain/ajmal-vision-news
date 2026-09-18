@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { esc, serviceClient } from "../_shared/auth.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
@@ -8,24 +8,40 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface NewUserPayload {
-  user_id: string;
-  email: string;
-  full_name: string;
-}
-
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { user_id, email, full_name }: NewUserPayload = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const userId = typeof body.user_id === "string" ? body.user_id : "";
+    if (!/^[0-9a-f-]{36}$/i.test(userId)) {
+      return new Response(JSON.stringify({ error: "Invalid request" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
 
-    // Get admin notification emails from database
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabase = serviceClient();
+
+    // Only notify for users that genuinely exist; ignore any client-supplied details.
+    const { data: authUser } = await supabase.auth.admin.getUserById(userId);
+    if (!authUser?.user) {
+      return new Response(JSON.stringify({ error: "Unknown user" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", userId)
+      .maybeSingle();
+
+    const email = esc(authUser.user.email || "Not provided", 200);
+    const fullName = esc(profile?.full_name || authUser.user.user_metadata?.full_name || "Not provided", 160);
 
     const { data: notifications } = await supabase
       .from("admin_notifications")
@@ -35,7 +51,7 @@ const handler = async (req: Request): Promise<Response> => {
     if (!notifications || notifications.length === 0) {
       return new Response(
         JSON.stringify({ message: "No admin emails configured for notifications" }),
-        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } },
       );
     }
 
@@ -56,15 +72,11 @@ const handler = async (req: Request): Promise<Response> => {
           <h1 style="color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px;">New User Registration</h1>
           <p style="font-size: 16px; color: #555;">A new user has registered on your website:</p>
           <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <p><strong>Name:</strong> ${full_name || "Not provided"}</p>
+            <p><strong>Name:</strong> ${fullName}</p>
             <p><strong>Email:</strong> ${email}</p>
-            <p><strong>User ID:</strong> ${user_id}</p>
             <p><strong>Registered At:</strong> ${new Date().toLocaleString()}</p>
           </div>
-          <p style="font-size: 14px; color: #888;">
-            This user has been assigned the default "user" role. You can manage their role in the admin dashboard.
-          </p>
-          <a href="${Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.lovable.app')}/admin/users" 
+          <a href="https://ajmalazad.lovable.app/admin/users"
              style="display: inline-block; background: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin-top: 10px;">
             Manage Users
           </a>
@@ -73,19 +85,17 @@ const handler = async (req: Request): Promise<Response> => {
       }),
     });
 
-    const emailResult = await emailResponse.json();
-    console.log("Email sent successfully:", emailResult);
-
-    return new Response(
-      JSON.stringify({ success: true, emailResult }),
-      { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
-    );
-  } catch (error: any) {
+    const ok = emailResponse.ok;
+    return new Response(JSON.stringify({ success: ok }), {
+      status: ok ? 200 : 502,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
+  } catch (error) {
     console.error("Error in notify-new-user function:", error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
-    );
+    return new Response(JSON.stringify({ error: "Unable to send notification" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
   }
 };
 

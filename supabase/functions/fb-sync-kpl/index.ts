@@ -1,10 +1,12 @@
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { HttpError, requireAdmin } from "../_shared/auth.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
+    await requireAdmin(req);
     const PAGE_ID = Deno.env.get("FB_PAGE_ID");
     const TOKEN = Deno.env.get("FB_PAGE_ACCESS_TOKEN");
     if (!PAGE_ID || !TOKEN) throw new Error("Missing FB_PAGE_ID or FB_PAGE_ACCESS_TOKEN");
@@ -40,8 +42,9 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
+    const status = e instanceof HttpError ? e.status : 500;
     return new Response(JSON.stringify({ ok: false, error: (e as Error).message }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
