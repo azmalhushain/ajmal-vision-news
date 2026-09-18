@@ -51,6 +51,8 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
+    // Private search analytics + paid API quota: admins only.
+    await requireAdmin(req);
     const { action, siteUrl, domain, database = "us", days = 28, dimensions = ["date"], rowLimit = 25 } = await req.json();
 
     // ────────────── GOOGLE SEARCH CONSOLE ──────────────
