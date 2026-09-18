@@ -1,5 +1,6 @@
 // Imports KPL teams and fixtures from kplt20.org via Firecrawl + Lovable AI extraction.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { HttpError, requireAdmin } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -45,6 +46,7 @@ const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").repla
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
+    await requireAdmin(req);
     const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
     // Ensure tournament exists
@@ -118,7 +120,8 @@ Deno.serve(async (req) => {
 
     return Response.json({ ok: true, teamsCreated, matchesCreated, errors }, { headers: corsHeaders });
   } catch (e: any) {
-    console.error("kpl-import error:", e);
-    return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const status = e instanceof HttpError ? e.status : 500;
+    if (status >= 500) console.error("kpl-import error:", e);
+    return new Response(JSON.stringify({ error: e.message }), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });
