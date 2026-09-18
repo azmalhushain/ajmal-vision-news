@@ -1,5 +1,6 @@
 // SEO Insights edge function — proxies Google Search Console + Semrush via Lovable connector gateway
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+import { HttpError, requireAdmin } from "../_shared/auth.ts";
 
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 const GSC_KEY = Deno.env.get("GOOGLE_SEARCH_CONSOLE_API_KEY");
