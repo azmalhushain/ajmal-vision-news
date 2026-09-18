@@ -1,165 +1,136 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { esc, HttpError, requireAdmin, serviceClient } from "../_shared/auth.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const ADMIN_EMAIL = "ajmalazad119@gmail.com";
+const SITE = "https://ajmalazad.lovable.app";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface EventPayload {
-  event_type: "comment" | "newsletter" | "new_user" | "new_post" | "contact";
-  data: Record<string, any>;
+const PUBLIC_EVENTS = ["comment", "newsletter", "contact"] as const;
+const ADMIN_EVENTS = ["new_user", "new_post", "newsletter_blast"] as const;
+
+const isEmail = (v: unknown) => typeof v === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) && v.length < 255;
+const isUuid = (v: unknown) => typeof v === "string" && /^[0-9a-f-]{36}$/i.test(v);
+
+const wrap = (title: string, accent: string, inner: string, cta?: { href: string; label: string }) => `
+  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <h1 style="color: #333; border-bottom: 2px solid ${accent}; padding-bottom: 10px;">${title}</h1>
+    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid ${accent};">
+      ${inner}
+      <p style="font-size: 12px; color: #888;"><strong>Time:</strong> ${new Date().toLocaleString()}</p>
+    </div>
+    ${cta ? `<a href="${cta.href}" style="display: inline-block; background: ${accent}; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">${cta.label}</a>` : ""}
+  </div>
+`;
+
+/**
+ * Builds the email only from records verified to exist in the database, so a
+ * caller cannot fabricate notification content.
+ */
+async function buildEmail(eventType: string, data: Record<string, unknown>) {
+  const sb = serviceClient();
+
+  if (eventType === "comment") {
+    if (!isUuid(data.post_id)) throw new HttpError(400, "Invalid request");
+    const { data: comment } = await sb
+      .from("comments")
+      .select("content, author_name")
+      .eq("post_id", data.post_id as string)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (!comment) throw new HttpError(404, "No matching comment found");
+    const { data: post } = await sb.from("posts").select("title").eq("id", data.post_id as string).maybeSingle();
+    return {
+      subject: `New Comment on: ${esc(post?.title || "post", 120)}`,
+      html: wrap("New Comment Submitted", "#10b981", `
+        <p><strong>Post:</strong> ${esc(post?.title || "Untitled", 200)}</p>
+        <p><strong>Author:</strong> ${esc(comment.author_name || "Anonymous", 120)}</p>
+        <p style="background: white; padding: 15px; border-radius: 4px; font-style: italic;">"${esc(comment.content)}"</p>
+      `, { href: `${SITE}/admin/comments`, label: "Review Comments" }),
+    };
+  }
+
+  if (eventType === "newsletter") {
+    if (!isEmail(data.email)) throw new HttpError(400, "Invalid request");
+    const { data: sub } = await sb
+      .from("newsletter_subscribers")
+      .select("email")
+      .eq("email", data.email as string)
+      .maybeSingle();
+    if (!sub) throw new HttpError(404, "No matching subscriber found");
+    return {
+      subject: `New Newsletter Subscriber: ${esc(sub.email, 120)}`,
+      html: wrap("New Newsletter Subscriber", "#3b82f6",
+        `<p><strong>Email:</strong> ${esc(sub.email, 200)}</p>`,
+        { href: `${SITE}/admin/newsletter`, label: "View Subscribers" }),
+    };
+  }
+
+  if (eventType === "contact") {
+    if (!isEmail(data.email)) throw new HttpError(400, "Invalid request");
+    const { data: msg } = await sb
+      .from("contact_messages")
+      .select("name, email, message, subject")
+      .eq("email", data.email as string)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (!msg) throw new HttpError(404, "No matching message found");
+    return {
+      subject: `New Contact Form Submission from ${esc(msg.name || "visitor", 80)}`,
+      html: wrap("New Contact Message", "#ef4444", `
+        <p><strong>Name:</strong> ${esc(msg.name, 120)}</p>
+        <p><strong>Email:</strong> ${esc(msg.email, 200)}</p>
+        <p><strong>Subject:</strong> ${esc((msg as Record<string, unknown>).subject ?? "No subject", 200)}</p>
+        <p style="background: white; padding: 15px; border-radius: 4px;">${esc(msg.message, 4000)}</p>
+      `),
+    };
+  }
+
+  // Admin-only events: content is trusted but still escaped.
+  if (eventType === "new_post" || eventType === "newsletter_blast") {
+    return {
+      subject: esc((data.subject as string) || `New Post: ${data.post_title ?? ""}`, 200),
+      html: wrap(eventType === "new_post" ? "New Post Published" : "Newsletter Sent", "#f59e0b", `
+        <p><strong>Title:</strong> ${esc(data.post_title ?? data.title ?? "-", 200)}</p>
+        <p>${esc(data.message ?? data.post_excerpt ?? "", 4000)}</p>
+      `, { href: `${SITE}/admin/posts`, label: "View Posts" }),
+    };
+  }
+
+  // new_user
+  return {
+    subject: "New User Registration",
+    html: wrap("New User Registered", "#8b5cf6", `
+      <p><strong>Email:</strong> ${esc(data.email ?? "-", 200)}</p>
+      <p><strong>Name:</strong> ${esc(data.full_name ?? "Not provided", 160)}</p>
+    `, { href: `${SITE}/admin/users`, label: "View Users" }),
+  };
 }
 
-const getEmailContent = (eventType: string, data: Record<string, any>) => {
-  const timestamp = new Date().toLocaleString();
-  
-  switch (eventType) {
-    case "comment":
-      return {
-        subject: `New Comment on: ${data.post_title}`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h1 style="color: #333; border-bottom: 2px solid #10b981; padding-bottom: 10px;">
-              🗨️ New Comment Submitted
-            </h1>
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
-              <p><strong>Post:</strong> ${data.post_title}</p>
-              <p><strong>Author:</strong> ${data.author_name}</p>
-              <p><strong>Comment:</strong></p>
-              <p style="background: white; padding: 15px; border-radius: 4px; font-style: italic;">"${data.content}"</p>
-              <p style="font-size: 12px; color: #888;"><strong>Time:</strong> ${timestamp}</p>
-            </div>
-            <a href="https://kpswxkuzfnafsqeqaunt.lovable.app/admin/comments" 
-               style="display: inline-block; background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">
-              Review Comments
-            </a>
-          </div>
-        `,
-      };
-    
-    case "newsletter":
-      return {
-        subject: `New Newsletter Subscriber: ${data.email}`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h1 style="color: #333; border-bottom: 2px solid #3b82f6; padding-bottom: 10px;">
-              📧 New Newsletter Subscriber
-            </h1>
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3b82f6;">
-              <p><strong>Email:</strong> ${data.email}</p>
-              <p style="font-size: 12px; color: #888;"><strong>Subscribed at:</strong> ${timestamp}</p>
-            </div>
-            <a href="https://kpswxkuzfnafsqeqaunt.lovable.app/admin/newsletter" 
-               style="display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">
-              View Subscribers
-            </a>
-          </div>
-        `,
-      };
-    
-    case "new_user":
-      return {
-        subject: `New User Registration: ${data.email}`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h1 style="color: #333; border-bottom: 2px solid #8b5cf6; padding-bottom: 10px;">
-              👤 New User Registered
-            </h1>
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #8b5cf6;">
-              <p><strong>Email:</strong> ${data.email}</p>
-              <p><strong>Name:</strong> ${data.full_name || "Not provided"}</p>
-              <p style="font-size: 12px; color: #888;"><strong>Registered at:</strong> ${timestamp}</p>
-            </div>
-            <a href="https://kpswxkuzfnafsqeqaunt.lovable.app/admin/users" 
-               style="display: inline-block; background: #8b5cf6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">
-              View Users
-            </a>
-          </div>
-        `,
-      };
-    
-    case "new_post":
-      return {
-        subject: `New Post Published: ${data.title}`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h1 style="color: #333; border-bottom: 2px solid #f59e0b; padding-bottom: 10px;">
-              📝 New Post Published
-            </h1>
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
-              <p><strong>Title:</strong> ${data.title}</p>
-              <p><strong>Category:</strong> ${data.category || "General"}</p>
-              <p><strong>Status:</strong> ${data.status}</p>
-              <p style="font-size: 12px; color: #888;"><strong>Created at:</strong> ${timestamp}</p>
-            </div>
-            <a href="https://kpswxkuzfnafsqeqaunt.lovable.app/admin/posts" 
-               style="display: inline-block; background: #f59e0b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">
-              View Posts
-            </a>
-          </div>
-        `,
-      };
-    
-    case "contact":
-      return {
-        subject: `New Contact Form Submission from ${data.name}`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h1 style="color: #333; border-bottom: 2px solid #ef4444; padding-bottom: 10px;">
-              📬 New Contact Message
-            </h1>
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ef4444;">
-              <p><strong>Name:</strong> ${data.name}</p>
-              <p><strong>Email:</strong> ${data.email}</p>
-              <p><strong>Subject:</strong> ${data.subject || "No subject"}</p>
-              <p><strong>Message:</strong></p>
-              <p style="background: white; padding: 15px; border-radius: 4px;">${data.message}</p>
-              <p style="font-size: 12px; color: #888;"><strong>Received at:</strong> ${timestamp}</p>
-            </div>
-          </div>
-        `,
-      };
-    
-    default:
-      return {
-        subject: `Website Event: ${eventType}`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h1 style="color: #333;">Website Event</h1>
-            <p><strong>Event Type:</strong> ${eventType}</p>
-            <p><strong>Data:</strong></p>
-            <pre style="background: #f8f9fa; padding: 15px; border-radius: 8px;">${JSON.stringify(data, null, 2)}</pre>
-            <p style="font-size: 12px; color: #888;"><strong>Time:</strong> ${timestamp}</p>
-          </div>
-        `,
-      };
-  }
-};
-
 const handler = async (req: Request): Promise<Response> => {
-  console.log("notify-events function called");
-  
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { event_type, data }: EventPayload = await req.json();
-    
-    console.log("Received event notification:", { event_type, data });
+    const body = await req.json().catch(() => ({}));
+    const eventType = String(body.event_type ?? "");
+    const data = (body.data && typeof body.data === "object" ? body.data : {}) as Record<string, unknown>;
 
-    if (!RESEND_API_KEY) {
-      console.error("RESEND_API_KEY not configured");
-      return new Response(
-        JSON.stringify({ error: "Email service not configured" }),
-        { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
-    }
+    const isPublic = (PUBLIC_EVENTS as readonly string[]).includes(eventType);
+    const isAdminEvent = (ADMIN_EVENTS as readonly string[]).includes(eventType);
+    if (!isPublic && !isAdminEvent) throw new HttpError(400, "Unsupported event type");
+    if (isAdminEvent) await requireAdmin(req);
 
-    const { subject, html } = getEmailContent(event_type, data);
+    if (!RESEND_API_KEY) throw new HttpError(500, "Email service not configured");
+
+    const { subject, html } = await buildEmail(eventType, data);
 
     const emailResponse = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -175,19 +146,19 @@ const handler = async (req: Request): Promise<Response> => {
       }),
     });
 
-    const emailResult = await emailResponse.json();
-    console.log("Email sent result:", emailResult);
-
-    return new Response(
-      JSON.stringify({ success: true, emailResult }),
-      { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
-    );
-  } catch (error: any) {
-    console.error("Error in notify-events function:", error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
-    );
+    const ok = emailResponse.ok;
+    return new Response(JSON.stringify({ success: ok }), {
+      status: ok ? 200 : 502,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
+  } catch (error) {
+    const status = error instanceof HttpError ? error.status : 500;
+    const message = error instanceof HttpError ? error.message : "Unable to send notification";
+    if (status >= 500) console.error("notify-events error:", error);
+    return new Response(JSON.stringify({ error: message }), {
+      status,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
   }
 };
 
