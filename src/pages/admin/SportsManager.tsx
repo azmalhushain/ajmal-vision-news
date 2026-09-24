@@ -953,18 +953,19 @@ const SportsManager = () => {
           <h1 className="text-2xl font-bold flex items-center gap-2"><Trophy className="h-6 w-6 text-primary" /> Sports / KPL</h1>
           <p className="text-sm text-muted-foreground">{current?.name} · {current?.season}</p>
         </div>
-        <div className="flex gap-2 flex-wrap">
-          <Button
-            size="sm"
-            variant={sportsEnabled ? "destructive" : "default"}
-            onClick={openToggleConfirm}
-          >
-            {sportsEnabled ? (
-              <><EyeOff className="h-4 w-4 mr-1" /> Remove Sports from frontend</>
-            ) : (
-              <><Eye className="h-4 w-4 mr-1" /> Show Sports on frontend</>
-            )}
-          </Button>
+        <div className="flex gap-2 flex-wrap items-center">
+          <div className="flex items-center gap-3 rounded-md border bg-card px-3 py-2">
+            <div className="space-y-0.5">
+              <Label htmlFor="sports-section-toggle" className="text-sm font-semibold">Sports section</Label>
+              <p className="text-xs text-muted-foreground">{sportsEnabled ? "Visible on the website" : "Hidden from the website"}</p>
+            </div>
+            <Switch
+              id="sports-section-toggle"
+              checked={sportsEnabled}
+              onCheckedChange={openToggleConfirm}
+              aria-label={`${sportsEnabled ? "Turn off" : "Turn on"} the Sports section`}
+            />
+          </div>
 
           <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
             <DialogContent className="max-w-md">
