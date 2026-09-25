@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const SITE_URL = "https://www.ajmalakhtar.com.np";
+const SITE_URL = "https://ajmalakhtar.com.np";
 
 function escapeXml(str: string): string {
   return String(str ?? "")
@@ -69,7 +69,7 @@ serve(async (req) => {
 
     // News posts (with Google News + image extensions)
     for (const post of postsRes.data || []) {
-      const lastMod = post.updated_at?.split("T")[0];
+      const lastMod = (post.updated_at || post.created_at)?.split("T")[0];
       sitemap += `  <url>
     <loc>${SITE_URL}/news?post=${post.id}</loc>
     ${lastMod ? `<lastmod>${lastMod}</lastmod>` : ""}
@@ -132,7 +132,7 @@ serve(async (req) => {
 
     // Sports news (rendered inside /sports)
     for (const sn of sportsNewsRes.data || []) {
-      const lastMod = sn.updated_at?.split("T")[0];
+      const lastMod = (sn.updated_at || sn.published_at)?.split("T")[0];
       sitemap += `  <url>
     <loc>${SITE_URL}/sports?news=${sn.id}</loc>
     ${lastMod ? `<lastmod>${lastMod}</lastmod>` : ""}
