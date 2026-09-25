@@ -115,5 +115,5 @@ Disallow: /auth
 Disallow: /reset-password
 
 # --- Discovery ---
-Sitemap: https://www.ajmalakhtar.com.np/sitemap.xml
-Host: https://www.ajmalakhtar.com.np
+Sitemap: https://ajmalakhtar.com.np/sitemap.xml
+Host: https://ajmalakhtar.com.np

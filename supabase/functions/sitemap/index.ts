@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const SITE_URL = "https://www.ajmalakhtar.com.np";
+const SITE_URL = "https://ajmalakhtar.com.np";
 
 function escapeXml(str: string): string {
   return String(str ?? "")
@@ -28,8 +28,6 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_ANON_KEY")!,
     );
 
-    const today = new Date().toISOString().split("T")[0];
-
     const staticPages = [
       { url: "", priority: "1.0", changefreq: "daily" },
       { url: "/news", priority: "0.9", changefreq: "daily" },
@@ -41,7 +39,7 @@ serve(async (req) => {
       { url: "/contact", priority: "0.6", changefreq: "monthly" },
     ];
 
-    const [postsRes, matchesRes, teamsRes, playersRes, sportsNewsRes] = await Promise.all([
+    const [postsRes, matchesRes, teamsRes, playersRes, sportsNewsRes, galleryRes] = await Promise.all([
       supabase.from("posts").select("id, title, updated_at, created_at, category, featured_image")
         .eq("status", "published").order("created_at", { ascending: false }),
       supabase.from("matches").select("id, scheduled_at, updated_at, status").order("scheduled_at", { ascending: false }),
@@ -49,6 +47,8 @@ serve(async (req) => {
       supabase.from("players").select("slug, updated_at").eq("is_active", true),
       supabase.from("sports_news").select("id, title, published_at, updated_at")
         .eq("status", "published").order("published_at", { ascending: false }),
+      supabase.from("gallery_images").select("image_url, title, alt_text")
+        .eq("is_active", true).order("display_order"),
     ]);
 
     let sitemap = `<?xml version="1.0" encoding="UTF-8"?>
@@ -61,7 +61,6 @@ serve(async (req) => {
     for (const page of staticPages) {
       sitemap += `  <url>
     <loc>${SITE_URL}${page.url}</loc>
-    <lastmod>${today}</lastmod>
     <changefreq>${page.changefreq}</changefreq>
     <priority>${page.priority}</priority>
   </url>
@@ -70,10 +69,10 @@ serve(async (req) => {
 
     // News posts (with Google News + image extensions)
     for (const post of postsRes.data || []) {
-      const lastMod = (post.updated_at || post.created_at).split("T")[0];
+      const lastMod = (post.updated_at || post.created_at)?.split("T")[0];
       sitemap += `  <url>
     <loc>${SITE_URL}/news?post=${post.id}</loc>
-    <lastmod>${lastMod}</lastmod>
+    ${lastMod ? `<lastmod>${lastMod}</lastmod>` : ""}
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
     <news:news>
@@ -94,11 +93,11 @@ serve(async (req) => {
 
     // Sports — matches
     for (const m of matchesRes.data || []) {
-      const lastMod = (m.updated_at || m.scheduled_at || new Date().toISOString()).split("T")[0];
+      const lastMod = m.updated_at?.split("T")[0];
       const live = m.status === "live";
       sitemap += `  <url>
     <loc>${SITE_URL}/sports/match/${m.id}</loc>
-    <lastmod>${lastMod}</lastmod>
+    ${lastMod ? `<lastmod>${lastMod}</lastmod>` : ""}
     <changefreq>${live ? "always" : "weekly"}</changefreq>
     <priority>${live ? "0.9" : "0.7"}</priority>
   </url>
@@ -108,10 +107,10 @@ serve(async (req) => {
     // Sports — teams
     for (const t of teamsRes.data || []) {
       if (!t.slug) continue;
-      const lastMod = (t.updated_at || new Date().toISOString()).split("T")[0];
+      const lastMod = t.updated_at?.split("T")[0];
       sitemap += `  <url>
     <loc>${SITE_URL}/sports/team/${t.slug}</loc>
-    <lastmod>${lastMod}</lastmod>
+    ${lastMod ? `<lastmod>${lastMod}</lastmod>` : ""}
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -121,10 +120,10 @@ serve(async (req) => {
     // Sports — players
     for (const p of playersRes.data || []) {
       if (!p.slug) continue;
-      const lastMod = (p.updated_at || new Date().toISOString()).split("T")[0];
+      const lastMod = p.updated_at?.split("T")[0];
       sitemap += `  <url>
     <loc>${SITE_URL}/sports/player/${p.slug}</loc>
-    <lastmod>${lastMod}</lastmod>
+    ${lastMod ? `<lastmod>${lastMod}</lastmod>` : ""}
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -133,14 +132,28 @@ serve(async (req) => {
 
     // Sports news (rendered inside /sports)
     for (const sn of sportsNewsRes.data || []) {
-      const lastMod = (sn.updated_at || sn.published_at || new Date().toISOString()).split("T")[0];
+      const lastMod = (sn.updated_at || sn.published_at)?.split("T")[0];
       sitemap += `  <url>
     <loc>${SITE_URL}/sports?news=${sn.id}</loc>
-    <lastmod>${lastMod}</lastmod>
+    ${lastMod ? `<lastmod>${lastMod}</lastmod>` : ""}
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
 `;
+    }
+
+    // Make active gallery media discoverable to image search without fabricating
+    // per-image page URLs; the gallery page is the canonical landing page.
+    if (galleryRes.data?.length) {
+      const galleryImages = galleryRes.data.map((image) => `
+      <image:image>
+        <image:loc>${escapeXml(image.image_url)}</image:loc>
+        <image:title>${escapeXml(image.alt_text || image.title)}</image:title>
+      </image:image>`).join("");
+      sitemap = sitemap.replace(
+        `    <loc>${SITE_URL}/gallery</loc>`,
+        `    <loc>${SITE_URL}/gallery</loc>${galleryImages}`,
+      );
     }
 
     sitemap += `</urlset>`;
