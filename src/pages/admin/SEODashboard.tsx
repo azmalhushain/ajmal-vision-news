@@ -413,7 +413,7 @@ const SEODashboard = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="pages">
+        <TabsContent value="pages" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -430,6 +430,7 @@ const SEODashboard = () => {
               />
             </CardContent>
           </Card>
+          <BounceRateCard />
         </TabsContent>
 
         <TabsContent value="audience" className="space-y-4">
@@ -672,6 +673,76 @@ const RowList = ({
         </motion.div>
       ))}
     </div>
+  );
+};
+
+const BounceRateCard = () => {
+  const [rows, setRows] = useState<Array<{ path: string; sessions: number; bounceRate: number }>>([]);
+  const [loadingBounce, setLoadingBounce] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      const { data } = await supabase
+        .from("page_sessions")
+        .select("landing_path, page_views, engaged");
+      if (data) {
+        const byPath = new Map<string, { total: number; bounced: number }>();
+        for (const s of data) {
+          const entry = byPath.get(s.landing_path) || { total: 0, bounced: 0 };
+          entry.total += 1;
+          if (!s.engaged && s.page_views <= 1) entry.bounced += 1;
+          byPath.set(s.landing_path, entry);
+        }
+        setRows(
+          [...byPath.entries()]
+            .map(([path, v]) => ({ path, sessions: v.total, bounceRate: (v.bounced / v.total) * 100 }))
+            .sort((a, b) => b.sessions - a.sessions)
+            .slice(0, 15),
+        );
+      }
+      setLoadingBounce(false);
+    };
+    void load();
+  }, []);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <MousePointerClick className="h-5 w-5 text-emerald-500" />
+          Estimated Bounce Rate by Landing Page
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {loadingBounce ? (
+          <Skeleton className="h-40 w-full" />
+        ) : rows.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No engagement data yet — it builds up as visitors browse the site. A session counts as a bounce when the visitor leaves without scrolling, staying 10+ seconds, or opening another page.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {rows.map((r, i) => (
+              <motion.div
+                key={r.path}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.03 }}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border/40 bg-background/40 backdrop-blur p-3"
+              >
+                <div className="text-sm font-semibold truncate min-w-0 flex-1">{r.path}</div>
+                <div className="flex items-center gap-4 text-xs tabular-nums">
+                  <span><span className="text-muted-foreground">Sessions</span> <strong>{fmt(r.sessions)}</strong></span>
+                  <Badge variant={r.bounceRate <= 50 ? "default" : "outline"} className="tabular-nums">
+                    {r.bounceRate.toFixed(1)}% bounce
+                  </Badge>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 
