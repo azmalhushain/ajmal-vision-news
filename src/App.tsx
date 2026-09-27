@@ -47,6 +47,7 @@ import UserProfile from "./pages/UserProfile";
 import SubscriberPreferences from "./pages/SubscriberPreferences";
 import SportsManager from "./pages/admin/SportsManager";
 import SEODashboard from "./pages/admin/SEODashboard";
+import ContentCalendar from "./pages/admin/ContentCalendar";
 import Sports from "./pages/Sports";
 import MatchCenter from "./pages/sports/MatchCenter";
 import PlayerProfile from "./pages/sports/PlayerProfile";
@@ -105,6 +106,7 @@ const AnimatedRoutes = () => {
           <Route path="users" element={<Users />} />
           <Route path="analytics" element={<Analytics />} />
           <Route path="seo" element={<SEODashboard />} />
+          <Route path="calendar" element={<ContentCalendar />} />
           <Route path="engagement" element={<EngagementDashboard />} />
           <Route path="settings" element={<Settings />} />
           <Route path="sports" element={<SportsManager />} />
