@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, FileText, Users, BarChart3, Settings, Home, Eye, Grid3x3,
   Info, Image, Phone, PanelBottom, Mic, MessageCircle, Heart, Mail, Send,
-  Newspaper, TrendingUp, FlaskConical, Trophy, Search,
+  Newspaper, TrendingUp, FlaskConical, Trophy, Search, CalendarDays,
 } from "lucide-react";
 
 export interface MenuItem { icon: React.ElementType; label: string; path: string; description?: string; }
@@ -15,6 +15,7 @@ export const menuSections: MenuSection[] = [
     { icon: TrendingUp, label: "Engagement", path: "/admin/engagement", description: "Reader interactions" },
   ]},
   { title: "Content", items: [
+    { icon: CalendarDays, label: "Calendar", path: "/admin/calendar", description: "Plan & schedule" },
     { icon: FileText, label: "Posts", path: "/admin/posts", description: "Articles & news" },
     { icon: Mic, label: "Podcasts", path: "/admin/podcasts", description: "Audio & video shows" },
     { icon: Image, label: "Gallery", path: "/admin/gallery", description: "Photo library" },
