@@ -54,12 +54,14 @@ import PlayerProfile from "./pages/sports/PlayerProfile";
 import TeamPage from "./pages/sports/TeamPage";
 import { LiveScoreTicker } from "./components/sports/LiveScoreTicker";
 import { useSiteFeature } from "@/hooks/useSiteFeature";
+import { useSessionEngagement } from "@/hooks/useSessionEngagement";
 
 const queryClient = new QueryClient();
 
 const AnimatedRoutes = () => {
   const location = useLocation();
   const { enabled: sportsEnabled } = useSiteFeature("sports", true);
+  useSessionEngagement();
   
   return (
     <AnimatePresence mode="wait">
