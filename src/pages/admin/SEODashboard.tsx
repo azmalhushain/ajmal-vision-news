@@ -683,11 +683,12 @@ const BounceRateCard = () => {
   useEffect(() => {
     const load = async () => {
       const { data } = await supabase
-        .from("page_sessions")
+        .from("page_sessions" as never)
         .select("landing_path, page_views, engaged");
-      if (data) {
+      const sessions = (data || []) as unknown as Array<{ landing_path: string; page_views: number; engaged: boolean }>;
+      if (sessions.length) {
         const byPath = new Map<string, { total: number; bounced: number }>();
-        for (const s of data) {
+        for (const s of sessions) {
           const entry = byPath.get(s.landing_path) || { total: 0, bounced: 0 };
           entry.total += 1;
           if (!s.engaged && s.page_views <= 1) entry.bounced += 1;
