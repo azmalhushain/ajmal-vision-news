@@ -39,7 +39,7 @@ export const useSessionEngagement = () => {
     const timer = setTimeout(markEngaged, 10_000);
     window.addEventListener("scroll", scrollHandler, { passive: true });
 
-    void supabase.from("page_sessions").insert({
+    void supabase.from("page_sessions" as never).insert({
       session_id: sessionId,
       landing_path: landingPath,
       page_views: 1,
@@ -48,8 +48,8 @@ export const useSessionEngagement = () => {
 
     const flush = () => {
       void supabase
-        .from("page_sessions")
-        .update({ page_views: views.current, engaged: engaged.current, updated_at: new Date().toISOString() })
+        .from("page_sessions" as never)
+        .update({ page_views: views.current, engaged: engaged.current, updated_at: new Date().toISOString() } as never)
         .eq("session_id", sessionId);
     };
     window.addEventListener("beforeunload", flush);
