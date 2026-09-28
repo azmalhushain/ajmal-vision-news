@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { trackPageView } from "@/lib/analytics";
 
 const SESSION_KEY = "pp_session_id";
 
@@ -64,8 +65,10 @@ export const useSessionEngagement = () => {
     };
   }, []);
 
-  // Count subsequent in-app navigations as extra page views (not bounces).
+  // Count subsequent in-app navigations as extra page views (not bounces),
+  // and send a GA page_view for each route change.
   useEffect(() => {
+    trackPageView(location.pathname);
     if (!started.current) return;
     views.current += 1;
     engaged.current = true;
