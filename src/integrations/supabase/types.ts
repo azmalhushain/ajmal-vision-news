@@ -371,6 +371,8 @@ export type Database = {
           image_url: string
           is_active: boolean | null
           is_pinned: boolean | null
+          scheduled_publish_at: string | null
+          status: string
           title: string
           updated_at: string | null
           width: number | null
@@ -386,6 +388,8 @@ export type Database = {
           image_url: string
           is_active?: boolean | null
           is_pinned?: boolean | null
+          scheduled_publish_at?: string | null
+          status?: string
           title: string
           updated_at?: string | null
           width?: number | null
@@ -401,6 +405,8 @@ export type Database = {
           image_url?: string
           is_active?: boolean | null
           is_pinned?: boolean | null
+          scheduled_publish_at?: string | null
+          status?: string
           title?: string
           updated_at?: string | null
           width?: number | null
@@ -756,6 +762,36 @@ export type Database = {
         }
         Relationships: []
       }
+      page_sessions: {
+        Row: {
+          created_at: string
+          engaged: boolean
+          id: string
+          landing_path: string
+          page_views: number
+          session_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          engaged?: boolean
+          id?: string
+          landing_path: string
+          page_views?: number
+          session_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          engaged?: boolean
+          id?: string
+          landing_path?: string
+          page_views?: number
+          session_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       players: {
         Row: {
           batting_style: string | null
@@ -839,6 +875,8 @@ export type Database = {
           is_active: boolean | null
           is_pinned: boolean | null
           media_type: string | null
+          scheduled_publish_at: string | null
+          status: string
           title: string
           updated_at: string
           video_url: string | null
@@ -854,6 +892,8 @@ export type Database = {
           is_active?: boolean | null
           is_pinned?: boolean | null
           media_type?: string | null
+          scheduled_publish_at?: string | null
+          status?: string
           title: string
           updated_at?: string
           video_url?: string | null
@@ -869,6 +909,8 @@ export type Database = {
           is_active?: boolean | null
           is_pinned?: boolean | null
           media_type?: string | null
+          scheduled_publish_at?: string | null
+          status?: string
           title?: string
           updated_at?: string
           video_url?: string | null

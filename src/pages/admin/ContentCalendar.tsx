@@ -59,9 +59,9 @@ const ContentCalendar = () => {
       const [postsRes, podcastsRes, galleryRes] = await Promise.all([
         supabase
           .from("posts")
-          .select("id, title, status, created_at, published_at, scheduled_publish_at")
-          .or(`scheduled_publish_at.gte.${from},published_at.gte.${from},created_at.gte.${from}`)
-          .or(`scheduled_publish_at.lte.${to},published_at.lte.${to},created_at.lte.${to}`),
+          .select("id, title, status, created_at, scheduled_publish_at")
+          .or(`scheduled_publish_at.gte.${from},created_at.gte.${from}`)
+          .or(`scheduled_publish_at.lte.${to},created_at.lte.${to}`),
         supabase
           .from("podcasts")
           .select("id, title, status, created_at, scheduled_publish_at")
@@ -77,7 +77,7 @@ const ContentCalendar = () => {
       const out: CalendarItem[] = [];
 
       for (const p of postsRes.data ?? []) {
-        const raw = p.scheduled_publish_at || p.published_at || p.created_at;
+        const raw = p.scheduled_publish_at || p.created_at;
         if (!raw) continue;
         out.push({
           id: p.id, type: "post", title: p.title || "Untitled post",
