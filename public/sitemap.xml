@@ -1,12 +1,401 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Static fallback routes. Dynamic posts and image sitemap entries are served by the sitemap edge function. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
-  <url><loc>https://ajmalakhtar.com.np/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
-  <url><loc>https://ajmalakhtar.com.np/about</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://ajmalakhtar.com.np/vision</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://ajmalakhtar.com.np/news</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
-  <url><loc>https://ajmalakhtar.com.np/podcasts</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://ajmalakhtar.com.np/gallery</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://ajmalakhtar.com.np/sports</loc><changefreq>hourly</changefreq><priority>0.95</priority></url>
-  <url><loc>https://ajmalakhtar.com.np/contact</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url>
+    <loc>https://ajmalakhtar.com.np/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://ajmalakhtar.com.np/about</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ajmalakhtar.com.np/vision</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ajmalakhtar.com.np/news</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://ajmalakhtar.com.np/podcasts</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ajmalakhtar.com.np/gallery</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1778558005744-qjhpo0.jpg</image:loc>
+      <image:title>Prestigious KPL3 trophy ready for the upcoming cricket league champions</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1778558003599-zetdyd.jpg</image:loc>
+      <image:title>KPL Season 3 trophy ceremony highlighting upcoming cricket competition</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1778558002262-897nsi.jpg</image:loc>
+      <image:title>KPL Season 3 Official Trophy Reveal Ceremony with organizers and guests</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1778558001037-nnd6gj.jpg</image:loc>
+      <image:title>Official trophy of Koshi Pride League Season 3 cricket championship</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1778557999575-4i9wu2.jpg</image:loc>
+      <image:title>KPL3 7</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1778557998064-i0v2ur.jpg</image:loc>
+      <image:title>KPL3 8</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1778557996734-7m7gb8.jpg</image:loc>
+      <image:title>KPL3 9</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1778557994484-czkw7n.jpg</image:loc>
+      <image:title>kpl3 10</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1778557992057-0k74d5.jpg</image:loc>
+      <image:title>kpl3 11</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1778508599705.jpg</image:loc>
+      <image:title>KPL 3</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1778508566409.jpg</image:loc>
+      <image:title>KPL SEASON 3 TROPHY </image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1778508534434.jpg</image:loc>
+      <image:title>KPL3</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1778508513685.jpg</image:loc>
+      <image:title>KPL3 </image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1778508492192.jpg</image:loc>
+      <image:title>KPL3</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1778508473298.jpg</image:loc>
+      <image:title>KPL3</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1778508440808.jpg</image:loc>
+      <image:title>KPL</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1778508408633.jpg</image:loc>
+      <image:title>KPL3 </image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1778508382293.jpg</image:loc>
+      <image:title>KPL3 TROPHY REVEAL </image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764256762291.jpeg</image:loc>
+      <image:title>NPL-2 </image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764256655013.jpeg</image:loc>
+      <image:title>Karam Puja</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764256621194.jpeg</image:loc>
+      <image:title>Karam Puja</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764256591671.jpeg</image:loc>
+      <image:title>At the Girls School for Annual Program</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764256555058.jpeg</image:loc>
+      <image:title>At the Girls School for Annual Program</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764256526544.jpeg</image:loc>
+      <image:title>At the Girls School for Annual Program</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764256488533.jpeg</image:loc>
+      <image:title>At the Girls School for Annual Program</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764256463349.jpeg</image:loc>
+      <image:title>Karam Puja </image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764256422372.jpeg</image:loc>
+      <image:title>Flooded Hospital</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764256403346.jpeg</image:loc>
+      <image:title>Food Distribution to the flooded families</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764256384492.jpeg</image:loc>
+      <image:title>Food Distribution to the flooded families</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764256359141.jpeg</image:loc>
+      <image:title>Food Distribution to the flooded families</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764256310948.jpeg</image:loc>
+      <image:title>Food Distribution to the flooded families</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764256256516.jpeg</image:loc>
+      <image:title>Observing the Damage cause by Rain</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764256220154.jpeg</image:loc>
+      <image:title>With Public </image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764256197983.jpeg</image:loc>
+      <image:title>Flooded Village</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764256161316.jpeg</image:loc>
+      <image:title>Flooded Village </image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764256141127.jpeg</image:loc>
+      <image:title>Dangal Event</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764256120545.jpeg</image:loc>
+      <image:title>Dangal</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764256086258.jpeg</image:loc>
+      <image:title>Dangal Mela </image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764255989024.jpeg</image:loc>
+      <image:title>Wishes  </image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764255969661.jpeg</image:loc>
+      <image:title>Flood</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764255936758.jpeg</image:loc>
+      <image:title>Flood </image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764255872728.jpeg</image:loc>
+      <image:title>Picture with Staff </image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764255833561.jpeg</image:loc>
+      <image:title>Cleaning Office</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764255791378.jpeg</image:loc>
+      <image:title>Cleaning Office</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764255768073.jpeg</image:loc>
+      <image:title>Cleaning Office</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764255736663.jpeg</image:loc>
+      <image:title>Cleaning Office</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764255705282.jpeg</image:loc>
+      <image:title>Damaged Gaupalika After a Protest</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764255674760.jpeg</image:loc>
+      <image:title>Damaged Gaupalika After a Protest</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764255634124.jpeg</image:loc>
+      <image:title>Damaged Gaupalika After a Protest</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764255609901.jpeg</image:loc>
+      <image:title> After a Protest</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764255529249.jpeg</image:loc>
+      <image:title>Damaged Gaupalika After a Protest</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764255510694.jpeg</image:loc>
+      <image:title>Seeking Public Opinions </image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764255455248.jpeg</image:loc>
+      <image:title>Seeking Public Opinions </image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764255402697.jpg</image:loc>
+      <image:title>Festival Gathering </image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764255308083.jpg</image:loc>
+      <image:title>Festival </image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764255263758.jpg</image:loc>
+      <image:title>Festival Gathering </image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764255157546.jpg</image:loc>
+      <image:title>Festive Gathering</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764255090980.jpeg</image:loc>
+      <image:title>Re-designing Akaha Bazaar</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764254929437.jpeg</image:loc>
+      <image:title>Welcoming Guest In Jamia Islamia </image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764254896626.jpeg</image:loc>
+      <image:title>Ambulance Handover </image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764254877791.jpeg</image:loc>
+      <image:title>Ambulance</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764254850350.jpeg</image:loc>
+      <image:title>Ambulance </image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764248125711.jpg</image:loc>
+      <image:title>बुद्धिजीवी र सर्वसाधारणसँग भेटघाट गर्दै</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764248103303.jpg</image:loc>
+      <image:title>बुद्धिजीवी र सर्वसाधारणसँग भेटघाट गर्दै</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764248081766.jpg</image:loc>
+      <image:title>बुद्धिजीवी र सर्वसाधारणसँग भेटघाट गर्दै</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764247339215.jpg</image:loc>
+      <image:title>Ambulance Contact Information</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kpswxkuzfnafsqeqaunt.supabase.co/storage/v1/object/public/post-images/gallery-1764246224446.jpeg</image:loc>
+      <image:title>Camp</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://ajmalakhtar.com.np/sports</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://ajmalakhtar.com.np/contact</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://ajmalakhtar.com.np/news?post=08d5ebaf-4375-4907-b6de-417a107dc92b</loc>
+    <lastmod>2025-12-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ajmalakhtar.com.np/news?post=1424b0f4-52a7-404c-8221-be014a877779</loc>
+    <lastmod>2025-12-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ajmalakhtar.com.np/news?post=49fd6eb5-bc69-41fc-a9b2-3bc8e56eb86a</loc>
+    <lastmod>2025-12-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ajmalakhtar.com.np/news?post=4b8694d4-5dfa-40e1-8fe5-d1d12758b664</loc>
+    <lastmod>2025-12-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ajmalakhtar.com.np/news?post=2d756e67-f962-47b5-9e6b-a4d9c10ed67e</loc>
+    <lastmod>2025-12-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ajmalakhtar.com.np/news?post=3ae74008-0cd1-426a-ae7e-b8e95beb26dc</loc>
+    <lastmod>2026-01-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ajmalakhtar.com.np/news?post=4ebcb282-58f1-410d-a0ca-be4183ca5d53</loc>
+    <lastmod>2025-12-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ajmalakhtar.com.np/news?post=b89b2271-06a4-4760-8b55-6bec1bda98a7</loc>
+    <lastmod>2026-05-11</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ajmalakhtar.com.np/news?post=d16e2434-7415-4504-8299-c960a142386a</loc>
+    <lastmod>2026-05-11</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ajmalakhtar.com.np/news?post=f61e02f6-581d-4d39-8458-a3440b83b7da</loc>
+    <lastmod>2026-06-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ajmalakhtar.com.np/news?post=436eaebe-73e3-4f50-9d80-df2821fd7c55</loc>
+    <lastmod>2026-07-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ajmalakhtar.com.np/news?post=efd49fb2-fe55-44d3-84ae-3ec0aafd5682</loc>
+    <lastmod>2026-06-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ajmalakhtar.com.np/news?post=700dc7c7-16d6-49fa-b819-865a73ead0b8</loc>
+    <lastmod>2026-07-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ajmalakhtar.com.np/news?post=74a59bd4-efe2-4139-bdf4-c12c3642e35c</loc>
+    <lastmod>2026-08-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ajmalakhtar.com.np/news?post=dcbdf4a9-57c3-4f51-aaf8-2511471725dd</loc>
+    <lastmod>2026-08-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
 </urlset>
