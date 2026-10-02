@@ -8,3 +8,4 @@
 - [x] Sitemap rebuilt with 23 URLs (all 15 published posts) + 67 gallery images (public/sitemap.xml).
 - [ ] Publish the site so the enriched sitemap goes live — publish card declined twice; needs user approval.
 - [ ] Submit the sitemap to Google — approval card declined; re-run after publish.
+- [ ] Add section-specific editor permissions, enforce them in database policies and admin routes, and show a persisted who/what/when content history on the dashboard.
