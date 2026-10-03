@@ -56,6 +56,42 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_audit_logs: {
+        Row: {
+          action: string
+          actor_id: string | null
+          actor_name: string
+          changed_fields: string[]
+          created_at: string
+          id: string
+          item_label: string
+          record_id: string
+          table_name: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          actor_name?: string
+          changed_fields?: string[]
+          created_at?: string
+          id?: string
+          item_label?: string
+          record_id: string
+          table_name: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          actor_name?: string
+          changed_fields?: string[]
+          created_at?: string
+          id?: string
+          item_label?: string
+          record_id?: string
+          table_name?: string
+        }
+        Relationships: []
+      }
       admin_notifications: {
         Row: {
           admin_email: string
@@ -1807,6 +1843,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_section_permissions: {
+        Row: {
+          created_at: string
+          permission_level: string
+          section: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          permission_level?: string
+          section: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          permission_level?: string
+          section?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       vision_content: {
         Row: {
           created_at: string | null
@@ -1869,6 +1929,8 @@ export type Database = {
         }
         Returns: boolean
       }
+      has_section_access: { Args: { _section: string }; Returns: boolean }
+      has_section_edit: { Args: { _section: string }; Returns: boolean }
       increment_ab_test_counter: {
         Args: { column_name: string; test_id: string }
         Returns: undefined
