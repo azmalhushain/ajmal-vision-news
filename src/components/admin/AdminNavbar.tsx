@@ -10,15 +10,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { AdminNotifications } from "./AdminNotifications";
 import { AdminCommandPalette } from "./AdminCommandPalette";
-import { findCurrentMenuItem } from "./adminMenu";
+import { findCurrentMenuItem, MenuSection, menuSections } from "./adminMenu";
 
 interface AdminNavbarProps {
   user: User;
   onLogout: () => void;
   onMenuClick?: () => void;
+  sections?: MenuSection[];
 }
 
-const AdminNavbar = ({ user, onLogout, onMenuClick }: AdminNavbarProps) => {
+const AdminNavbar = ({ user, onLogout, onMenuClick, sections = menuSections }: AdminNavbarProps) => {
   const { pathname } = useLocation();
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -164,6 +165,7 @@ const AdminNavbar = ({ user, onLogout, onMenuClick }: AdminNavbarProps) => {
         onOpenChange={setPaletteOpen}
         onToggleTheme={toggleTheme}
         isDarkMode={isDarkMode}
+        sections={sections}
       />
     </>
   );

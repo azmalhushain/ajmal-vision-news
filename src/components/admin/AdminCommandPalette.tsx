@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator,
 } from "@/components/ui/command";
-import { menuSections } from "./adminMenu";
+import { MenuSection, menuSections } from "./adminMenu";
 import { ExternalLink, LogOut, Moon, Sun } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -12,9 +12,10 @@ interface Props {
   onOpenChange: (o: boolean) => void;
   onToggleTheme: () => void;
   isDarkMode: boolean;
+  sections?: MenuSection[];
 }
 
-export const AdminCommandPalette = ({ open, onOpenChange, onToggleTheme, isDarkMode }: Props) => {
+export const AdminCommandPalette = ({ open, onOpenChange, onToggleTheme, isDarkMode, sections = menuSections }: Props) => {
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -35,7 +36,7 @@ export const AdminCommandPalette = ({ open, onOpenChange, onToggleTheme, isDarkM
       <CommandInput placeholder="Jump to anything — pages, actions, settings…" />
       <CommandList className="max-h-[60vh]">
         <CommandEmpty>No results found.</CommandEmpty>
-        {menuSections.map(section => (
+        {sections.map(section => (
           <CommandGroup key={section.title} heading={section.title}>
             {section.items.map(item => (
               <CommandItem

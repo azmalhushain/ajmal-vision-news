@@ -2,15 +2,16 @@ import { Link, useLocation } from "react-router-dom";
 import { X, Sparkles, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { menuSections } from "./adminMenu";
+import { MenuSection, menuSections } from "./adminMenu";
 import { useEffect } from "react";
 
 interface MobileSidebarProps {
   isOpen: boolean;
   onClose: () => void;
+  sections?: MenuSection[];
 }
 
-const MobileSidebar = ({ isOpen, onClose }: MobileSidebarProps) => {
+const MobileSidebar = ({ isOpen, onClose, sections = menuSections }: MobileSidebarProps) => {
   const location = useLocation();
 
   // Lock body scroll while open
@@ -71,7 +72,7 @@ const MobileSidebar = ({ isOpen, onClose }: MobileSidebarProps) => {
 
               {/* Nav */}
               <nav className="flex-1 p-3 overflow-y-auto scrollbar-thin space-y-5">
-                {menuSections.map((section, sectionIndex) => (
+                {sections.map((section, sectionIndex) => (
                   <motion.div
                     key={section.title}
                     initial={{ opacity: 0, x: -12 }}
