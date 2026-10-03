@@ -4,7 +4,7 @@ import {
   Newspaper, TrendingUp, FlaskConical, Trophy, Search, CalendarDays,
 } from "lucide-react";
 
-export interface MenuItem { icon: React.ElementType; label: string; path: string; description?: string; }
+export interface MenuItem { icon: React.ElementType; label: string; path: string; description?: string; permissionKey?: string; }
 export interface MenuSection { title: string; items: MenuItem[]; }
 
 export const menuSections: MenuSection[] = [
@@ -16,12 +16,12 @@ export const menuSections: MenuSection[] = [
   ]},
   { title: "Content", items: [
     { icon: CalendarDays, label: "Calendar", path: "/admin/calendar", description: "Plan & schedule" },
-    { icon: FileText, label: "Posts", path: "/admin/posts", description: "Articles & news" },
-    { icon: Mic, label: "Podcasts", path: "/admin/podcasts", description: "Audio & video shows" },
-    { icon: Image, label: "Gallery", path: "/admin/gallery", description: "Photo library" },
+    { icon: FileText, label: "Posts", path: "/admin/posts", description: "Articles & news", permissionKey: "posts" },
+    { icon: Mic, label: "Podcasts", path: "/admin/podcasts", description: "Audio & video shows", permissionKey: "podcasts" },
+    { icon: Image, label: "Gallery", path: "/admin/gallery", description: "Photo library", permissionKey: "gallery" },
   ]},
   { title: "Sports / KPL", items: [
-    { icon: Trophy, label: "KPL3 Manager", path: "/admin/sports", description: "Tournament control" },
+    { icon: Trophy, label: "KPL3 Manager", path: "/admin/sports", description: "Tournament control", permissionKey: "sports" },
   ]},
   { title: "Engagement", items: [
     { icon: MessageCircle, label: "Comments", path: "/admin/comments", description: "Moderate discussion" },
@@ -33,12 +33,12 @@ export const menuSections: MenuSection[] = [
     { icon: Phone, label: "Contact Messages", path: "/admin/contact-messages", description: "Inbox" },
   ]},
   { title: "Page Sections", items: [
-    { icon: Home, label: "Hero Section", path: "/admin/hero" },
-    { icon: Eye, label: "Vision Section", path: "/admin/vision" },
-    { icon: Grid3x3, label: "Development Areas", path: "/admin/development-areas" },
-    { icon: Info, label: "About Page", path: "/admin/about" },
-    { icon: Phone, label: "Contact Page", path: "/admin/contact" },
-    { icon: PanelBottom, label: "Footer", path: "/admin/footer" },
+    { icon: Home, label: "Hero Section", path: "/admin/hero", permissionKey: "hero" },
+    { icon: Eye, label: "Vision Section", path: "/admin/vision", permissionKey: "vision" },
+    { icon: Grid3x3, label: "Development Areas", path: "/admin/development-areas", permissionKey: "development-areas" },
+    { icon: Info, label: "About Page", path: "/admin/about", permissionKey: "about" },
+    { icon: Phone, label: "Contact Page", path: "/admin/contact", permissionKey: "contact" },
+    { icon: PanelBottom, label: "Footer", path: "/admin/footer", permissionKey: "footer" },
   ]},
   { title: "Administration", items: [
     { icon: Users, label: "Users", path: "/admin/users", description: "Roles & accounts" },
@@ -46,6 +46,47 @@ export const menuSections: MenuSection[] = [
     { icon: Settings, label: "Settings", path: "/admin/settings" },
   ]},
 ];
+
+export const assignableSections = [
+  { key: "posts", label: "Posts & news" },
+  { key: "podcasts", label: "Podcasts" },
+  { key: "gallery", label: "Gallery" },
+  { key: "sports", label: "Sports / KPL" },
+  { key: "hero", label: "Hero section" },
+  { key: "vision", label: "Vision section" },
+  { key: "development-areas", label: "Development areas" },
+  { key: "about", label: "About page" },
+  { key: "contact", label: "Contact page" },
+  { key: "footer", label: "Footer" },
+] as const;
+
+const contentPermissions = ["posts", "podcasts", "gallery"];
+
+export const getSectionPermissionForPath = (pathname: string): string | undefined => {
+  if (pathname === "/admin/calendar") return "content-calendar";
+  return menuSections.flatMap((section) => section.items)
+    .find((item) => item.path === pathname)?.permissionKey;
+};
+
+export const canAccessAdminPath = (pathname: string, permissions: string[]): boolean => {
+  if (pathname === "/admin") return false;
+  const key = getSectionPermissionForPath(pathname);
+  if (key === "content-calendar") return contentPermissions.some((permission) => permissions.includes(permission));
+  return Boolean(key && permissions.includes(key));
+};
+
+export const filterMenuSections = (permissions: string[]): MenuSection[] => {
+  const hasContentAccess = contentPermissions.some((permission) => permissions.includes(permission));
+  return menuSections
+    .map((section) => ({
+      ...section,
+      items: section.items.filter((item) => {
+        if (item.path === "/admin/calendar") return hasContentAccess;
+        return Boolean(item.permissionKey && permissions.includes(item.permissionKey));
+      }),
+    }))
+    .filter((section) => section.items.length > 0);
+};
 
 export const findCurrentMenuItem = (pathname: string): MenuItem | undefined => {
   for (const s of menuSections) {

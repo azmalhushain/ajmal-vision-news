@@ -1,9 +1,13 @@
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Eye, Sparkles } from "lucide-react";
-import { menuSections } from "./adminMenu";
+import { MenuSection, menuSections } from "./adminMenu";
 
-const AdminSidebar = () => {
+interface AdminSidebarProps {
+  sections?: MenuSection[];
+}
+
+const AdminSidebar = ({ sections = menuSections }: AdminSidebarProps) => {
   const location = useLocation();
 
   return (
@@ -34,7 +38,7 @@ const AdminSidebar = () => {
 
         {/* Nav */}
         <nav className="flex-1 p-3 space-y-5 overflow-y-auto scrollbar-thin">
-          {menuSections.map((section, sectionIndex) => (
+          {sections.map((section, sectionIndex) => (
             <motion.div
               key={section.title}
               initial={{ opacity: 0, y: 8 }}
