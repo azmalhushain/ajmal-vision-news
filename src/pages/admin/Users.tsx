@@ -256,7 +256,7 @@ const Users = () => {
         .select("section")
         .eq("user_id", accessUser.id);
       if (listError) throw listError;
-      const selected = new Set(nextGrants.map((grant) => grant.section));
+      const selected = new Set<string>(nextGrants.map((grant) => grant.section));
       const revoked = (currentGrants || []).map((grant) => grant.section).filter((section) => !selected.has(section));
       if (revoked.length) {
         const { error } = await supabase
