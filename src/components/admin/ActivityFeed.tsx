@@ -2,175 +2,56 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageSquare, Mail, FileText, User } from "lucide-react";
+import { History, Pencil, Plus, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import type { Tables } from "@/integrations/supabase/types";
 
-interface ActivityItem {
-  id: string;
-  type: "comment" | "subscriber" | "post" | "user";
-  title: string;
-  description: string;
-  timestamp: string;
-  icon: typeof MessageSquare;
-  color: string;
-}
+type AuditEntry = Tables<"admin_audit_logs">;
+
+const sectionLabels: Record<string, string> = {
+  posts: "Posts & news", gallery_images: "Gallery", podcasts: "Podcasts",
+  hero_content: "Hero section", vision_content: "Vision section", development_areas: "Development areas",
+  about_content: "About page", contact_content: "Contact page", footer_content: "Footer",
+  teams: "Sports teams", players: "Players", matches: "Matches", tournaments: "Tournaments",
+  sports_media: "Sports media", match_innings: "Match innings", match_events: "Match events",
+  points_overrides: "Points table", sports_news: "Sports news",
+};
+
+const actionLabels: Record<AuditEntry["action"], string> = {
+  INSERT: "created", UPDATE: "updated", DELETE: "removed",
+};
 
 export const ActivityFeed = () => {
-  const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [activities, setActivities] = useState<AuditEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchActivities();
-
-    // Set up real-time subscriptions
-    const commentsChannel = supabase
-      .channel("activity-comments")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "post_comments" },
-        (payload) => {
-          const newComment = payload.new as any;
-          addActivity({
-            id: `comment-${newComment.id}`,
-            type: "comment",
-            title: "New Comment",
-            description: `${newComment.author_name} left a comment`,
-            timestamp: newComment.created_at,
-            icon: MessageSquare,
-            color: "text-pink-500 bg-pink-500/10",
-          });
-        }
-      )
-      .subscribe();
-
-    const subscribersChannel = supabase
-      .channel("activity-subscribers")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "newsletter_subscribers" },
-        (payload) => {
-          const newSub = payload.new as any;
-          addActivity({
-            id: `sub-${newSub.id}`,
-            type: "subscriber",
-            title: "New Subscriber",
-            description: `${newSub.email} subscribed to newsletter`,
-            timestamp: newSub.subscribed_at,
-            icon: Mail,
-            color: "text-blue-500 bg-blue-500/10",
-          });
-        }
-      )
-      .subscribe();
-
-    const postsChannel = supabase
-      .channel("activity-posts")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "posts" },
-        (payload) => {
-          const newPost = payload.new as any;
-          addActivity({
-            id: `post-${newPost.id}`,
-            type: "post",
-            title: "New Post",
-            description: `"${newPost.title}" was created`,
-            timestamp: newPost.created_at,
-            icon: FileText,
-            color: "text-orange-500 bg-orange-500/10",
-          });
-        }
-      )
-      .subscribe();
-
+    let active = true;
+    const load = async () => {
+      const { data, error } = await supabase
+        .from("admin_audit_logs")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(30);
+      if (active) {
+        if (error) console.error("Could not load admin change history:", error);
+        setActivities(data || []);
+        setLoading(false);
+      }
+    };
+    void load();
+    const refresh = window.setInterval(() => void load(), 30000);
     return () => {
-      supabase.removeChannel(commentsChannel);
-      supabase.removeChannel(subscribersChannel);
-      supabase.removeChannel(postsChannel);
+      active = false;
+      window.clearInterval(refresh);
     };
   }, []);
-
-  const addActivity = (activity: ActivityItem) => {
-    setActivities((prev) => [activity, ...prev].slice(0, 20));
-  };
-
-  const fetchActivities = async () => {
-    try {
-      const [commentsRes, subscribersRes, postsRes] = await Promise.all([
-        supabase
-          .from("post_comments")
-          .select("id, author_name, created_at")
-          .order("created_at", { ascending: false })
-          .limit(5),
-        supabase
-          .from("newsletter_subscribers")
-          .select("id, email, subscribed_at")
-          .order("subscribed_at", { ascending: false })
-          .limit(5),
-        supabase
-          .from("posts")
-          .select("id, title, created_at")
-          .order("created_at", { ascending: false })
-          .limit(5),
-      ]);
-
-      const allActivities: ActivityItem[] = [];
-
-      commentsRes.data?.forEach((comment) => {
-        allActivities.push({
-          id: `comment-${comment.id}`,
-          type: "comment",
-          title: "Comment",
-          description: `${comment.author_name} left a comment`,
-          timestamp: comment.created_at,
-          icon: MessageSquare,
-          color: "text-pink-500 bg-pink-500/10",
-        });
-      });
-
-      subscribersRes.data?.forEach((sub) => {
-        allActivities.push({
-          id: `sub-${sub.id}`,
-          type: "subscriber",
-          title: "Subscriber",
-          description: `${sub.email} subscribed`,
-          timestamp: sub.subscribed_at,
-          icon: Mail,
-          color: "text-blue-500 bg-blue-500/10",
-        });
-      });
-
-      postsRes.data?.forEach((post) => {
-        allActivities.push({
-          id: `post-${post.id}`,
-          type: "post",
-          title: "Post",
-          description: `"${post.title}" created`,
-          timestamp: post.created_at,
-          icon: FileText,
-          color: "text-orange-500 bg-orange-500/10",
-        });
-      });
-
-      // Sort by timestamp
-      allActivities.sort(
-        (a, b) =>
-          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      );
-
-      setActivities(allActivities.slice(0, 15));
-    } catch (error) {
-      console.error("Error fetching activities:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (loading) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
+          <CardTitle>Content change history</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -193,39 +74,42 @@ export const ActivityFeed = () => {
     <Card className="h-full">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <FileText className="h-5 w-5 text-primary" />
-          Recent Activity
+          <History className="h-5 w-5 text-primary" />
+          Content change history
         </CardTitle>
       </CardHeader>
       <CardContent>
         <ScrollArea className="h-[350px] pr-4">
           {activities.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">
-              No recent activity
+              No content changes yet
             </p>
           ) : (
             <div className="space-y-4">
               {activities.map((activity) => {
-                const Icon = activity.icon;
+                const Icon = activity.action === "INSERT" ? Plus : activity.action === "DELETE" ? Trash2 : Pencil;
+                const changed = activity.changed_fields.filter((field) => !["created_at", "updated_at"].includes(field));
                 return (
                   <div
                     key={activity.id}
                     className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors"
                   >
-                    <div className={`p-2 rounded-full ${activity.color}`}>
+                    <div className="p-2 rounded-full bg-primary/10 text-primary">
                       <Icon className="h-4 w-4" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-foreground">
-                        {activity.title}
+                        {activity.actor_name} {actionLabels[activity.action]} {sectionLabels[activity.table_name] || activity.table_name}
                       </p>
                       <p className="text-xs text-muted-foreground truncate">
-                        {activity.description}
+                        {activity.item_label}{changed.length ? ` · ${changed.slice(0, 4).join(", ")}${changed.length > 4 ? ` +${changed.length - 4}` : ""}` : ""}
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {formatDistanceToNow(new Date(activity.timestamp), {
+                        {formatDistanceToNow(new Date(activity.created_at), {
                           addSuffix: true,
                         })}
+                        <span className="mx-1">·</span>
+                        {new Date(activity.created_at).toLocaleString()}
                       </p>
                     </div>
                   </div>
