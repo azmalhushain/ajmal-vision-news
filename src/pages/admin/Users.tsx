@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { User, Mail, Plus, Trash2, Calendar, Clock, Shield, CheckCircle, XCircle, Eye, EyeOff, Phone, MapPin, FileText } from "lucide-react";
+import { User, Mail, Plus, Trash2, Calendar, Clock, Shield, CheckCircle, XCircle, Eye, EyeOff, Phone, MapPin, FileText, KeyRound } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { assignableSections } from "@/components/admin/adminMenu";
+
+type AccessLevel = "none" | "view" | "edit";
 
 interface UserData {
   id: string;
@@ -48,6 +51,10 @@ const Users = () => {
   const [creating, setCreating] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
+  const [accessUser, setAccessUser] = useState<UserData | null>(null);
+  const [permissionDraft, setPermissionDraft] = useState<Record<string, AccessLevel>>({});
+  const [loadingAccess, setLoadingAccess] = useState(false);
+  const [savingAccess, setSavingAccess] = useState(false);
 
   const [newUser, setNewUser] = useState({
     email: "",
@@ -196,6 +203,80 @@ const Users = () => {
     } else {
       toast({ title: "User role removed!" });
       fetchUsers();
+    }
+  };
+
+  const openSectionAccess = async (user: UserData) => {
+    setAccessUser(user);
+    setLoadingAccess(true);
+    const { data, error } = await supabase
+      .from("user_section_permissions")
+      .select("section, permission_level")
+      .eq("user_id", user.id);
+
+    if (error) {
+      toast({ title: "Could not load section access", description: error.message, variant: "destructive" });
+      setAccessUser(null);
+      setLoadingAccess(false);
+      return;
+    }
+
+    const draft: Record<string, AccessLevel> = {};
+    for (const section of assignableSections) draft[section.key] = "none";
+    data?.forEach((grant) => {
+      if (grant.section in draft && (grant.permission_level === "view" || grant.permission_level === "edit")) {
+        draft[grant.section] = grant.permission_level;
+      }
+    });
+    setPermissionDraft(draft);
+    setLoadingAccess(false);
+  };
+
+  const handleSaveSectionAccess = async () => {
+    if (!accessUser) return;
+    setSavingAccess(true);
+    try {
+      const nextGrants = assignableSections
+        .filter(({ key }) => permissionDraft[key] !== "none")
+        .map(({ key }) => ({
+          user_id: accessUser.id,
+          section: key,
+          permission_level: permissionDraft[key] === "view" ? "view" as const : "edit" as const,
+        }));
+
+      if (nextGrants.length) {
+        const { error } = await supabase
+          .from("user_section_permissions")
+          .upsert(nextGrants, { onConflict: "user_id,section" });
+        if (error) throw error;
+      }
+
+      const { data: currentGrants, error: listError } = await supabase
+        .from("user_section_permissions")
+        .select("section")
+        .eq("user_id", accessUser.id);
+      if (listError) throw listError;
+      const selected = new Set(nextGrants.map((grant) => grant.section));
+      const revoked = (currentGrants || []).map((grant) => grant.section).filter((section) => !selected.has(section));
+      if (revoked.length) {
+        const { error } = await supabase
+          .from("user_section_permissions")
+          .delete()
+          .eq("user_id", accessUser.id)
+          .in("section", revoked);
+        if (error) throw error;
+      }
+
+      toast({ title: "Section access updated", description: `Access for ${accessUser.full_name} has been saved.` });
+      setAccessUser(null);
+    } catch (error) {
+      toast({
+        title: "Could not save section access",
+        description: error instanceof Error ? error.message : "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSavingAccess(false);
     }
   };
 
@@ -455,6 +536,46 @@ const Users = () => {
         </DialogContent>
       </Dialog>
 
+      <Dialog open={!!accessUser} onOpenChange={(open) => !open && setAccessUser(null)}>
+        <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Section access</DialogTitle>
+            <p className="text-sm text-muted-foreground">Choose which areas {accessUser?.full_name || "this user"} can open.</p>
+          </DialogHeader>
+          {loadingAccess ? (
+            <div className="py-10 text-center text-sm text-muted-foreground">Loading access…</div>
+          ) : (
+            <div className="divide-y rounded-md border">
+              {assignableSections.map((section) => (
+                <div key={section.key} className="grid grid-cols-[1fr_9rem] items-center gap-3 px-4 py-3">
+                  <div className="min-w-0">
+                    <p className="font-medium text-sm">{section.label}</p>
+                    <p className="text-xs text-muted-foreground">Access to this admin area</p>
+                  </div>
+                  <select
+                    aria-label={`${section.label} access`}
+                    value={permissionDraft[section.key] || "none"}
+                    onChange={(event) => setPermissionDraft((current) => ({ ...current, [section.key]: event.target.value as AccessLevel }))}
+                    className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+                  >
+                    <option value="none">No access</option>
+                    <option value="view">View only</option>
+                    <option value="edit">Can edit</option>
+                  </select>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => setAccessUser(null)} disabled={savingAccess}>Cancel</Button>
+            <Button onClick={handleSaveSectionAccess} disabled={loadingAccess || savingAccess}>
+              <KeyRound className="mr-2 h-4 w-4" />
+              {savingAccess ? "Saving…" : "Save access"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -524,6 +645,15 @@ const Users = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => void openSectionAccess(user)}
+                          title="Manage section access"
+                          aria-label={`Manage section access for ${user.full_name}`}
+                        >
+                          <KeyRound className="h-4 w-4" />
+                        </Button>
                         <Button
                           variant="ghost"
                           size="icon"
