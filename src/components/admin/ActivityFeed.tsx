@@ -40,10 +40,17 @@ export const ActivityFeed = () => {
       }
     };
     void load();
+    const channel = supabase
+      .channel("admin-content-change-history")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "admin_audit_logs" }, () => {
+        void load();
+      })
+      .subscribe();
     const refresh = window.setInterval(() => void load(), 30000);
     return () => {
       active = false;
       window.clearInterval(refresh);
+      void supabase.removeChannel(channel);
     };
   }, []);
 
