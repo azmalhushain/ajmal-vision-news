@@ -1,4 +1,4 @@
-const BOT_USER_AGENT = /bot|crawler|spider|facebookexternalhit|facebot|whatsapp|telegrambot|linkedinbot|discordbot|twitterbot|slackbot|skypeuripreview|google-inspectiontool|bingpreview|applebot/i;
+const BOT_USER_AGENT = /bot|crawler|spider|facebookexternalhit|facebot|messenger|whatsapp|telegrambot|linkedinbot|discordbot|twitterbot|slackbot|skypeuripreview|google-inspectiontool|bingpreview|applebot/i;
 const POST_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 interface NetlifyContext {
@@ -38,7 +38,7 @@ export default async (request: Request, context: NetlifyContext): Promise<Respon
   });
 
   const headers = new Headers();
-  for (const name of ["content-type", "content-language", "cache-control", "x-content-type-options"]) {
+  for (const name of ["content-type", "content-language", "cache-control", "vary", "x-content-type-options"]) {
     const value = metadataResponse.headers.get(name);
     if (value) headers.set(name, value);
   }

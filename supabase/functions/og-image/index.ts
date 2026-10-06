@@ -9,7 +9,7 @@ const canonicalOrigin = "https://www.ajmalakhtar.com.np";
 const defaultImage = `${canonicalOrigin}/og-news.jpg`;
 const siteName = "Ajmal Akhtar Azad";
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const CRAWLER_PATTERN = /bot|crawler|spider|facebookexternalhit|facebot|whatsapp|telegrambot|linkedinbot|discordbot|twitterbot|slackbot|skypeuripreview|google-inspectiontool|bingpreview|applebot/i;
+const CRAWLER_PATTERN = /bot|crawler|spider|facebookexternalhit|facebot|messenger|whatsapp|telegrambot|linkedinbot|discordbot|twitterbot|slackbot|skypeuripreview|google-inspectiontool|bingpreview|applebot/i;
 
 const escapeHtml = (value: string) => value
   .replace(/&/g, "&amp;")
@@ -144,6 +144,7 @@ serve(async (req) => {
         "Content-Type": "text/html; charset=utf-8",
         "Content-Language": language,
         "Cache-Control": "public, max-age=300, s-maxage=300",
+        "Vary": "User-Agent",
         "X-Content-Type-Options": "nosniff",
       },
     });
