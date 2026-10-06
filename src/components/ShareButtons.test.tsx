@@ -40,7 +40,7 @@ describe("ShareButtons url encoding", () => {
     openSpy = vi.spyOn(window, "open").mockImplementation(() => null);
   });
 
-  const expectedProxy = `/functions/v1/og-image?post=${encodeURIComponent(POST_ID)}`;
+  const expectedPostUrl = `https://www.ajmalakhtar.com.np/news?post=${encodeURIComponent(POST_ID)}`;
 
   it.each([
     ["Share on Facebook", "https://www.facebook.com/sharer/sharer.php?u="],
@@ -59,7 +59,7 @@ describe("ShareButtons url encoding", () => {
     expect(encoded).not.toMatch(/[ "<>{}|\\^~[\]`]/);
     // every % is part of a valid escape sequence
     expect(encoded).not.toMatch(/%(?![0-9A-Fa-f]{2})/);
-    expect(decodeURIComponent(encoded)).toContain(expectedProxy);
+    expect(decodeURIComponent(encoded)).toContain(expectedPostUrl);
   });
 
   it("encodes the title and message body for whatsapp", () => {
@@ -71,7 +71,7 @@ describe("ShareButtons url encoding", () => {
     expect(target.startsWith("https://api.whatsapp.com/send?text=")).toBe(true);
     const text = decodeURIComponent(target.replace("https://api.whatsapp.com/send?text=", ""));
     expect(text).toContain(TITLE);
-    expect(text).toContain(expectedProxy);
+    expect(text).toContain(expectedPostUrl);
   });
 
   it("logs a share_events row with the platform and post id", async () => {
@@ -87,6 +87,6 @@ describe("ShareButtons url encoding", () => {
       content_type: "post",
       content_id: POST_ID,
     });
-    expect(insertMock.mock.calls[0][0].share_url).toContain(encodeURIComponent(POST_ID));
+    expect(insertMock.mock.calls[0][0].share_url).toBe(expectedPostUrl);
   });
 });

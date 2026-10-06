@@ -9,7 +9,7 @@ import { Calendar, Tag, Pin, Video, X, Clock, Share2, Languages } from "lucide-r
 import { Article } from "@/types/article";
 import { useLanguage, LANGUAGE_META } from "@/contexts/LanguageContext";
 import { PostEngagement } from "@/components/PostEngagement";
-import { newsPostUrl } from "@/lib/share";
+import { canonicalNewsPostUrl, newsPostUrl, socialImageUrl } from "@/lib/share";
 import { SEOHead } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { useEffect, useMemo, useState } from "react";
@@ -99,7 +99,7 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
 
 
   const siteUrl = "https://www.ajmalakhtar.com.np";
-  const articleUrl = `${siteUrl}/news/${article?.id ?? ""}`;
+  const articleUrl = article ? canonicalNewsPostUrl(article.id) : siteUrl;
   const isoDate = article?.date ? new Date(article.date).toISOString() : new Date().toISOString();
 
   const newsArticleSchema = useMemo(
@@ -143,7 +143,7 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
           <SEOHead
             title={seoTitle}
             description={seoDescription}
-            image={article.image || undefined}
+            image={socialImageUrl(article.image)}
             imageAlt={`${displayTitle} — ${article.category}`}
             url={newsPostUrl(article.id)}
             type="article"
@@ -199,7 +199,7 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
             variant="ghost"
             size="sm"
             onClick={() => {
-              if (navigator.share) navigator.share({ title: displayTitle, text: seoDescription, url: window.location.href }).catch(() => {});
+              if (navigator.share) navigator.share({ title: displayTitle, text: seoDescription, url: canonicalNewsPostUrl(article.id) }).catch(() => {});
             }}
             className="rounded-full h-9 w-9 p-0 hover:bg-muted"
             aria-label="Share"

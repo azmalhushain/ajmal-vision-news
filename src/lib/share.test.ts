@@ -10,7 +10,7 @@ vi.mock("@/integrations/supabase/client", () => ({
   },
 }));
 
-import { newsPostUrl, toAbsoluteUrl, trackShare } from "@/lib/share";
+import { canonicalNewsPostUrl, newsPostUrl, socialImageUrl, toAbsoluteUrl, trackShare } from "@/lib/share";
 
 describe("share url helpers", () => {
   it("encodes post ids with unsafe characters", () => {
@@ -20,6 +20,18 @@ describe("share url helpers", () => {
   it("keeps plain uuid ids intact", () => {
     const id = "8f1c2b1e-9a4d-4f0b-9d6c-1a2b3c4d5e6f";
     expect(newsPostUrl(id)).toBe(`/news?post=${id}`);
+  });
+
+  it("uses the canonical site URL for post shares", () => {
+    expect(canonicalNewsPostUrl("post-42")).toBe("https://www.ajmalakhtar.com.np/news?post=post-42");
+  });
+
+  it("requests a 1200 by 630 share crop from public storage", () => {
+    const url = socialImageUrl("https://project.supabase.co/storage/v1/object/public/post-images/photo.jpg");
+    expect(url).toContain("/storage/v1/render/image/public/post-images/photo.jpg");
+    expect(url).toContain("width=1200");
+    expect(url).toContain("height=630");
+    expect(url).toContain("resize=cover");
   });
 
   it("builds same-origin absolute urls", () => {
@@ -41,7 +53,7 @@ describe("trackShare", () => {
       action: "share_click",
       contentType: "post",
       contentId: "post-42",
-      shareUrl: "https://example.test/functions/v1/og-image?post=post-42",
+      shareUrl: "https://www.ajmalakhtar.com.np/news?post=post-42",
     });
 
     await vi.waitFor(() => expect(insertMock).toHaveBeenCalled());
@@ -53,7 +65,7 @@ describe("trackShare", () => {
         action: "share_click",
         content_type: "post",
         content_id: "post-42",
-        share_url: "https://example.test/functions/v1/og-image?post=post-42",
+        share_url: "https://www.ajmalakhtar.com.np/news?post=post-42",
         user_id: "user-1",
       }),
     );
