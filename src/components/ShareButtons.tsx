@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useToast } from "@/hooks/use-toast";
-import { toAbsoluteUrl, trackShare, type SharePlatform } from "@/lib/share";
+import { canonicalNewsPostUrl, toAbsoluteUrl, trackShare, type SharePlatform } from "@/lib/share";
 
 interface ShareButtonsProps {
   url: string;
@@ -40,15 +40,10 @@ export const ShareButtons = ({
   const { toast } = useToast();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://kpswxkuzfnafsqeqaunt.supabase.co";
-
-  // Canonical, absolute link to the exact content (always same-origin as the visitor).
-  const fullUrl = toAbsoluteUrl(url);
-
-  // Crawler-friendly proxy that serves per-post OG tags then redirects to the post.
-  const shareUrl = postId
-    ? `${supabaseUrl}/functions/v1/og-image?post=${encodeURIComponent(postId)}`
-    : fullUrl;
+  // News shares always use the public canonical page; the hosting edge handler
+  // supplies crawler metadata without changing the URL users see or share.
+  const fullUrl = postId ? canonicalNewsPostUrl(postId) : toAbsoluteUrl(url);
+  const shareUrl = fullUrl;
 
   const analyticsId = contentId ?? postId ?? null;
 

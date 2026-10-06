@@ -5,152 +5,151 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+const canonicalOrigin = "https://www.ajmalakhtar.com.np";
+const defaultImage = `${canonicalOrigin}/og-news.jpg`;
+const siteName = "Ajmal Akhtar Azad";
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const CRAWLER_PATTERN = /bot|crawler|spider|facebookexternalhit|facebot|messenger|whatsapp|telegrambot|linkedinbot|discordbot|twitterbot|slackbot|skypeuripreview|google-inspectiontool|bingpreview|applebot/i;
+
+const escapeHtml = (value: string) => value
+  .replace(/&/g, "&amp;")
+  .replace(/</g, "&lt;")
+  .replace(/>/g, "&gt;")
+  .replace(/"/g, "&quot;")
+  .replace(/'/g, "&#39;");
+
+const plainText = (value: string | null | undefined, maxLength: number) => {
+  const text = (value || "")
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;|&#160;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+  return Array.from(text).slice(0, maxLength).join("");
+};
+
+const transformedImageUrl = (source: string | null) => {
+  if (!source) return defaultImage;
+  try {
+    const image = new URL(source);
+    const storageObjectPath = "/storage/v1/object/public/";
+    if (image.pathname.includes(storageObjectPath)) {
+      image.pathname = image.pathname.replace(storageObjectPath, "/storage/v1/render/image/public/");
+      image.searchParams.set("width", "1200");
+      image.searchParams.set("height", "630");
+      image.searchParams.set("resize", "cover");
+      image.searchParams.set("quality", "85");
+    }
+    return image.toString();
+  } catch {
+    return source;
+  }
+};
+
+const errorResponse = (status: number, message: string) => new Response(message, {
+  status,
+  headers: { ...corsHeaders, "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" },
+});
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method !== "GET" && req.method !== "HEAD") return errorResponse(405, "Method not allowed");
+
+  const requestUrl = new URL(req.url);
+  const postId = requestUrl.searchParams.get("post");
+  if (!postId || !UUID_PATTERN.test(postId)) return errorResponse(400, "A valid post ID is required");
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY");
+  if (!supabaseUrl || !supabaseKey) {
+    console.error("News metadata is unavailable because the public database configuration is missing.");
+    return errorResponse(500, "News metadata is temporarily unavailable");
   }
 
   try {
-    const url = new URL(req.url);
-    const postId = url.searchParams.get("post");
-    const page = url.searchParams.get("page");
-    
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    
-    const siteUrl = (Deno.env.get("SITE_URL") || "https://www.ajmalakhtar.com.np").replace(/\/$/, "");
-    const defaultImage = "https://storage.googleapis.com/gpt-engineer-file-uploads/6j4N84GNxsXn52PqWIVTQd9p8RI2/social-images/social-1764428453124-image1.jpg";
-    const siteName = "Ajmal Akhtar Azad";
-    
-    let title = "Ajmal Akhtar Azad - Mayor of Bhokraha Narsingh Municipality";
-    let description = "Official website of Mayor Ajmal Akhtar Azad - Bhokraha Narsingh Municipality. Together for development, dignity, and democracy.";
-    let image = defaultImage;
-    let pageUrl = siteUrl;
-    let type = "website";
+    const client = createClient(supabaseUrl, supabaseKey);
+    const { data: post, error } = await client
+      .from("posts")
+      .select("title, excerpt, content, image_url, status")
+      .eq("id", postId)
+      .maybeSingle();
 
-    if (postId) {
-      // Fetch post details
-      const { data: post } = await supabase
-        .from("posts")
-        .select("title, excerpt, content, image_url, created_at, category")
-        .eq("id", postId)
-        .single();
+    if (error) {
+      console.error("Could not load shared news post:", error.message);
+      return errorResponse(502, "Could not load this news post");
+    }
+    if (!post || post.status !== "published") return errorResponse(404, "News post not found");
 
-      if (post) {
-        title = post.title;
-        description = post.excerpt || post.content?.substring(0, 160) || description;
-        image = post.image_url || defaultImage;
-        pageUrl = `${siteUrl}/news?post=${encodeURIComponent(postId)}`;
-        type = "article";
-      }
-    } else if (page) {
-      // Static page meta
-      const pageMeta: Record<string, { title: string; description: string; url: string }> = {
-        news: {
-          title: "News & Updates - Ajmal Akhtar Azad",
-          description: "Stay informed about our development initiatives and community programs in Bhokraha Narsingh Municipality.",
-          url: `${siteUrl}/news`,
-        },
-        about: {
-          title: "About - Ajmal Akhtar Azad",
-          description: "Learn about Mayor Ajmal Akhtar Azad and his vision for Bhokraha Narsingh Municipality.",
-          url: `${siteUrl}/about`,
-        },
-        vision: {
-          title: "Vision - Ajmal Akhtar Azad",
-          description: "Our vision for a prosperous and developed Bhokraha Narsingh Municipality.",
-          url: `${siteUrl}/vision`,
-        },
-        gallery: {
-          title: "Gallery - Ajmal Akhtar Azad",
-          description: "Photo gallery showcasing development activities and community events.",
-          url: `${siteUrl}/gallery`,
-        },
-        podcasts: {
-          title: "Podcasts - Ajmal Akhtar Azad",
-          description: "Listen to podcasts and interviews from Mayor Ajmal Akhtar Azad.",
-          url: `${siteUrl}/podcasts`,
-        },
-        contact: {
-          title: "Contact - Ajmal Akhtar Azad",
-          description: "Get in touch with the Mayor's office. We're here to serve the community.",
-          url: `${siteUrl}/contact`,
-        },
-      };
+    const postUrl = `${canonicalOrigin}/news?post=${encodeURIComponent(postId)}`;
+    const userAgent = req.headers.get("user-agent") || "";
 
-      if (pageMeta[page]) {
-        title = pageMeta[page].title;
-        description = pageMeta[page].description;
-        pageUrl = pageMeta[page].url;
-      }
+    // Direct visits to the helper endpoint always land on the actual post.
+    // Crawlers receive metadata instead; the News page itself remains canonical.
+    if (!CRAWLER_PATTERN.test(userAgent)) {
+      return new Response(null, {
+        status: 302,
+        headers: {
+          ...corsHeaders,
+          Location: postUrl,
+          "Cache-Control": "public, max-age=300",
+        },
+      });
     }
 
-    // Escape values so quotes/angle brackets can't break the meta tags
-    const esc = (v: string) =>
-      String(v ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
-
-    title = esc(title.replace(/<[^>]+>/g, " ").trim());
-    description = esc(description.replace(/<[^>]+>/g, " ").trim().slice(0, 300));
-    image = esc(image);
-    pageUrl = esc(pageUrl);
-
-    // Return HTML with proper OG meta tags for crawlers
-    const html = `<!DOCTYPE html>
-<html lang="en">
+    const title = plainText(post.title, 200) || siteName;
+    const description = plainText(post.excerpt || post.content, 300) || "News and updates from Ajmal Akhtar Azad.";
+    const image = transformedImageUrl(post.image_url);
+    const language = /[\u0900-\u097F]/u.test(title) ? "ne" : "en";
+    const eTitle = escapeHtml(title);
+    const eDescription = escapeHtml(description);
+    const eImage = escapeHtml(image);
+    const ePostUrl = escapeHtml(postUrl);
+    const html = `<!doctype html>
+<html lang="${language}">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${title}</title>
-  <meta name="description" content="${description}">
-  
-  <!-- Open Graph / Facebook -->
-  <meta property="og:type" content="${type}">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${eTitle}</title>
+  <meta name="description" content="${eDescription}">
+  <link rel="canonical" href="${ePostUrl}">
+  <meta property="og:type" content="article">
   <meta property="og:site_name" content="${siteName}">
-  <meta property="og:url" content="${pageUrl}">
-  <meta property="og:title" content="${title}">
-  <meta property="og:description" content="${description}">
-  <meta property="og:image" content="${image}">
+  <meta property="og:url" content="${ePostUrl}">
+  <meta property="og:title" content="${eTitle}">
+  <meta property="og:description" content="${eDescription}">
+  <meta property="og:image" content="${eImage}">
+  <meta property="og:image:secure_url" content="${eImage}">
+  <meta property="og:image:type" content="image/jpeg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="${title}">
-  <meta property="og:locale" content="en_US">
-  
-  <!-- Twitter Card -->
+  <meta property="og:image:alt" content="${eTitle}">
+  <meta property="og:locale" content="${language === "ne" ? "ne_NP" : "en_US"}">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:site" content="@AjmalAkhtarAzad">
-  <meta name="twitter:creator" content="@AjmalAkhtarAzad">
-  <meta name="twitter:title" content="${title}">
-  <meta name="twitter:description" content="${description}">
-  <meta name="twitter:image" content="${image}">
-  <meta name="twitter:image:alt" content="${title}">
-  
-  <!-- Redirect to actual page -->
-  <meta http-equiv="refresh" content="0;url=${pageUrl}">
-  <link rel="canonical" href="${pageUrl}">
+  <meta name="twitter:title" content="${eTitle}">
+  <meta name="twitter:description" content="${eDescription}">
+  <meta name="twitter:image" content="${eImage}">
+  <meta name="twitter:image:alt" content="${eTitle}">
 </head>
-<body>
-  <p>Redirecting to <a href="${pageUrl}">${title}</a>...</p>
-</body>
+<body><p>${eTitle}</p></body>
 </html>`;
 
-    return new Response(html, {
+    return new Response(req.method === "HEAD" ? null : html, {
+      status: 200,
       headers: {
         ...corsHeaders,
         "Content-Type": "text/html; charset=utf-8",
-        "Cache-Control": "public, max-age=3600",
+        "Content-Language": language,
+        "Cache-Control": "public, max-age=300, s-maxage=300",
+        "Vary": "User-Agent",
+        "X-Content-Type-Options": "nosniff",
       },
     });
-  } catch (error: any) {
-    console.error("OG Image error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+  } catch (error) {
+    console.error("News metadata generation failed:", error);
+    return errorResponse(500, "News metadata is temporarily unavailable");
   }
 });

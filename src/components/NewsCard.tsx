@@ -3,7 +3,7 @@ import { Calendar, Pin, Video, Heart, Eye, Clock, ArrowUpRight } from "lucide-re
 import { Article } from "@/types/article";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ShareButtons } from "@/components/ShareButtons";
-import { newsPostUrl } from "@/lib/share";
+import { newsPostUrl, socialImageUrl } from "@/lib/share";
 
 interface NewsCardProps {
   article: Article;
@@ -20,9 +20,7 @@ export const NewsCard = ({ article, onClick }: NewsCardProps) => {
   const { t } = useLanguage();
 
   const shareUrl = newsPostUrl(article.id);
-  const shareImage =
-    article.image ||
-    "https://storage.googleapis.com/gpt-engineer-file-uploads/6j4N84GNxsXn52PqWIVTQd9p8RI2/social-images/social-1764428453124-image1.jpg";
+  const shareImage = socialImageUrl(article.image);
   const readMin = estimateReadMinutes(article.fullContent || article.summary);
 
   return (

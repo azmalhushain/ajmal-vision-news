@@ -3,6 +3,29 @@ import { supabase } from "@/integrations/supabase/client";
 /** Canonical production domain, used only when there is no browser origin. */
 export const SITE_URL = "https://www.ajmalakhtar.com.np";
 
+/** Public, canonical URL used in every share action for a News post. */
+export const canonicalNewsPostUrl = (postId: string | number): string =>
+  `${SITE_URL}${newsPostUrl(postId)}`;
+
+/** Ask public Supabase Storage for a share-sized crop of a stored post image. */
+export const socialImageUrl = (imageUrl?: string | null): string | undefined => {
+  if (!imageUrl) return undefined;
+  try {
+    const image = new URL(imageUrl);
+    const objectPath = "/storage/v1/object/public/";
+    if (image.pathname.includes(objectPath)) {
+      image.pathname = image.pathname.replace(objectPath, "/storage/v1/render/image/public/");
+      image.searchParams.set("width", "1200");
+      image.searchParams.set("height", "630");
+      image.searchParams.set("resize", "cover");
+      image.searchParams.set("quality", "85");
+    }
+    return image.toString();
+  } catch {
+    return imageUrl;
+  }
+};
+
 export const getOrigin = (): string => {
   if (typeof window !== "undefined" && window.location?.origin) {
     return window.location.origin;
