@@ -2,6 +2,11 @@
   command = "npm run build"
   publish = "dist"
 
+# Serve server-rendered post metadata to social crawlers at canonical News URLs.
+[[edge_functions]]
+  function = "news-share-metadata"
+  path = "/news"
+
 # RSS feed proxied to the rss-feed edge function (must come BEFORE SPA fallback)
 [[redirects]]
   from = "/rss.xml"
