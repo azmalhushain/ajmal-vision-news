@@ -1,5 +1,7 @@
 const BOT_USER_AGENT = /bot|crawler|spider|facebookexternalhit|facebot|messenger|whatsapp|telegrambot|linkedinbot|discordbot|twitterbot|slackbot|skypeuripreview|google-inspectiontool|bingpreview|applebot/i;
 const POST_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const DEFAULT_PROJECT_URL = "https://kpswxkuzfnafsqeqaunt.supabase.co";
+const DEFAULT_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtwc3d4a3V6Zm5hZnNxZXFhdW50Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM3ODQ1NjIsImV4cCI6MjA3OTM2MDU2Mn0.QaOiq8IW6brtKuBC98Y1qLaHYfwZy5rES0taxeBtFUw";
 
 interface NetlifyContext {
   next: () => Promise<Response>;
@@ -15,15 +17,10 @@ export default async (request: Request, context: NetlifyContext): Promise<Respon
     return context.next();
   }
 
-  const projectUrl = Netlify.env.get("VITE_SUPABASE_URL") || Netlify.env.get("SUPABASE_URL");
-  const publishableKey = Netlify.env.get("VITE_SUPABASE_PUBLISHABLE_KEY") || Netlify.env.get("SUPABASE_ANON_KEY");
-  if (!projectUrl || !publishableKey) {
-    console.error("News share metadata proxy is missing its public connection settings.");
-    return new Response("News metadata is temporarily unavailable", {
-      status: 503,
-      headers: { "Content-Type": "text/plain; charset=utf-8" },
-    });
-  }
+  // Public (publishable) values are safe to embed; hosting env vars are not
+  // always available to edge handlers at runtime.
+  const projectUrl = Netlify.env.get("VITE_SUPABASE_URL") || Netlify.env.get("SUPABASE_URL") || DEFAULT_PROJECT_URL;
+  const publishableKey = Netlify.env.get("VITE_SUPABASE_PUBLISHABLE_KEY") || Netlify.env.get("SUPABASE_ANON_KEY") || DEFAULT_PUBLISHABLE_KEY;
 
   const metadataUrl = new URL("/functions/v1/og-image", projectUrl);
   metadataUrl.searchParams.set("post", postId);
