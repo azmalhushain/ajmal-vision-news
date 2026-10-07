@@ -42,6 +42,9 @@ export default async (request: Request, context: NetlifyContext): Promise<Respon
     const value = metadataResponse.headers.get(name);
     if (value) headers.set(name, value);
   }
+  // Some function gateways normalize HTML bodies to text/plain; publish it as
+  // HTML at the canonical News URL so social crawlers parse the metadata.
+  if (metadataResponse.ok) headers.set("Content-Type", "text/html; charset=utf-8");
   return new Response(request.method === "HEAD" ? null : metadataResponse.body, {
     status: metadataResponse.status,
     headers,
