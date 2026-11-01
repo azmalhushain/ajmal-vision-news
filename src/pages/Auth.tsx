@@ -241,22 +241,12 @@ const Auth = () => {
         throw new Error(data.error || "OTP verification failed");
       }
 
-      // After phone verification, sign in using Supabase phone auth
-      // Note: This requires phone auth to be enabled in Supabase
-      const { data: authData, error: authError } = await supabase.auth.signInWithOtp({
-        phone: formattedPhone,
+      if (!data.token_hash) throw new Error("Could not start your session. Please try again.");
+      const { error: authError } = await supabase.auth.verifyOtp({
+        token_hash: data.token_hash,
+        type: "magiclink",
       });
-
-      if (authError) {
-        // If Supabase phone auth is not enabled, show success but inform user
-        toast({ 
-          title: "Phone Verified!", 
-          description: "Phone authentication is not fully configured. Please use email login.",
-        });
-        setStep("login");
-        setOtpCode("");
-        return;
-      }
+      if (authError) throw authError;
 
       toast({ title: "Welcome!", description: "You've successfully logged in via phone." });
       navigate("/");
