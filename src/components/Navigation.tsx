@@ -24,6 +24,7 @@ export const Navigation = () => {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [panelLabel, setPanelLabel] = useState("Admin Panel");
   const location = useLocation();
   const navigate = useNavigate();
   const { language, setLanguage, t } = useLanguage();
@@ -74,9 +75,10 @@ export const Navigation = () => {
       .from("user_roles")
       .select("role")
       .eq("user_id", userId)
-      .eq("role", "admin")
-      .maybeSingle();
-    setIsAdmin(!!data);
+      .in("role", ["admin", "moderator"]);
+    const roles = (data ?? []).map((r) => r.role);
+    setIsAdmin(roles.length > 0);
+    setPanelLabel(roles.includes("admin") ? "Admin Panel" : "Moderator Login");
   };
 
   const handleLogout = async () => {
@@ -195,7 +197,7 @@ export const Navigation = () => {
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild>
                         <Link to="/admin" className="flex items-center gap-2 text-accent">
-                          <Shield className="h-4 w-4" /> Admin Panel
+                          <Shield className="h-4 w-4" /> {panelLabel}
                         </Link>
                       </DropdownMenuItem>
                     </>
@@ -267,7 +269,7 @@ export const Navigation = () => {
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild>
                         <Link to="/admin" className="flex items-center gap-2 text-accent">
-                          <Shield className="h-4 w-4" /> Admin Panel
+                          <Shield className="h-4 w-4" /> {panelLabel}
                         </Link>
                       </DropdownMenuItem>
                     </>
@@ -334,7 +336,7 @@ export const Navigation = () => {
                       to="/admin"
                       className="flex items-center gap-2 text-base font-semibold uppercase tracking-wider transition-colors hover:text-accent text-accent"
                     >
-                      <Shield className="h-4 w-4" /> Admin Panel
+                      <Shield className="h-4 w-4" /> {panelLabel}
                     </Link>
                   </li>
                 )}
