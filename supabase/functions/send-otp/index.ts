@@ -174,8 +174,33 @@ serve(async (req) => {
       // Delete used OTP
       await supabase.from("otp_codes").delete().eq("id", storedOtp.id);
 
+      let tokenHash: string | null = null;
+      if (type === "phone") {
+        // Phone users get a stable internal address so a real session can be issued.
+        const digits = String(phone).replace(/[^\d]/g, "");
+        const loginEmail = `phone-${digits}@phone.ajmalakhtar.com.np`;
+        const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+          type: "magiclink",
+          email: loginEmail,
+        });
+        let link = linkData;
+        if (linkError) {
+          await supabase.auth.admin.createUser({
+            email: loginEmail,
+            phone,
+            email_confirm: true,
+            phone_confirm: true,
+            user_metadata: { phone, full_name: phone },
+          });
+          const retry = await supabase.auth.admin.generateLink({ type: "magiclink", email: loginEmail });
+          if (retry.error) throw retry.error;
+          link = retry.data;
+        }
+        tokenHash = link?.properties?.hashed_token ?? null;
+      }
+
       return new Response(
-        JSON.stringify({ success: true, message: "OTP verified successfully" }),
+        JSON.stringify({ success: true, message: "OTP verified successfully", token_hash: tokenHash }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
