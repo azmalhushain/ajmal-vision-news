@@ -37,11 +37,14 @@ const AdminLayout = () => {
         return;
       }
 
-      const { data: roleData, error: roleError } = await supabase
+      const { data: roleRows, error: roleError } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", sessionUser.id)
-        .maybeSingle();
+        .in("role", ["admin", "moderator"]);
+      const roleData = roleRows?.length
+        ? { role: roleRows.some((r) => r.role === "admin") ? "admin" : "moderator" }
+        : null;
 
       if (!active) return;
       if (roleError || !roleData) {
