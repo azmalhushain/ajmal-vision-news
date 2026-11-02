@@ -164,9 +164,7 @@ const Auth = () => {
 
   const handlePhoneLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const formattedPhone = formatPhoneNumber(phone);
-    
+
     if (!validatePhoneNumber(phone)) {
       toast({
         title: "Invalid phone number",
