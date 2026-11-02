@@ -213,24 +213,14 @@ const Auth = () => {
 
     try {
       const formattedPhone = formatPhoneNumber(phone);
-      
-      // Verify OTP via our edge function
-      const { data, error } = await supabase.functions.invoke("send-otp", {
-        body: { action: "verify", phone: formattedPhone, otp: otpCode, type: "phone" },
+
+      const { error } = await supabase.auth.verifyOtp({
+        phone: formattedPhone,
+        token: otpCode,
+        type: "sms",
       });
 
       if (error) throw error;
-      
-      if (!data.success) {
-        throw new Error(data.error || "OTP verification failed");
-      }
-
-      if (!data.token_hash) throw new Error("Could not start your session. Please try again.");
-      const { error: authError } = await supabase.auth.verifyOtp({
-        token_hash: data.token_hash,
-        type: "magiclink",
-      });
-      if (authError) throw authError;
 
       toast({ title: "Welcome!", description: "You've successfully logged in via phone." });
       navigate("/");
