@@ -1,3 +1,4 @@
+import { authRedirectBase } from "@/lib/authRedirect";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -147,7 +148,7 @@ const Users = () => {
         data: {
           full_name: newUser.full_name,
         },
-        emailRedirectTo: `${window.location.origin}/`,
+        emailRedirectTo: `${authRedirectBase()}/`,
       },
     });
 

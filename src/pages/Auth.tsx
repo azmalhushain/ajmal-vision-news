@@ -1,3 +1,4 @@
+import { authRedirectBase } from "@/lib/authRedirect";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -73,7 +74,7 @@ const Auth = () => {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: `${authRedirectBase()}/`,
           data: { full_name: fullName },
         },
       });
@@ -130,7 +131,7 @@ const Auth = () => {
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: `${authRedirectBase()}/reset-password`,
       });
 
       if (error) throw error;
@@ -246,7 +247,7 @@ const Auth = () => {
         const { error } = await supabase.auth.resend({
           type: "signup",
           email: pendingSignupData?.email || email,
-          options: { emailRedirectTo: `${window.location.origin}/` },
+          options: { emailRedirectTo: `${authRedirectBase()}/` },
         });
         if (error) throw error;
       }
