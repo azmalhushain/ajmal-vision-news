@@ -61,25 +61,9 @@ const Auth = () => {
     }
   };
 
-  const sendEmailOtp = async (emailAddress: string) => {
-    const { error } = await supabase.functions.invoke("send-otp", {
-      body: { action: "send", email: emailAddress, type: "email" },
-    });
-    
-    if (error) throw error;
-  };
-
-  const verifyEmailOtp = async (emailAddress: string, otp: string) => {
-    const { data, error } = await supabase.functions.invoke("send-otp", {
-      body: { action: "verify", email: emailAddress, otp, type: "email" },
-    });
-    
-    if (error) throw error;
-    return data;
-  };
-
-  // Email signup uses Supabase's native auth flow which sends confirmation emails
-  // through Lovable's managed email infrastructure (no custom OTP, no Resend dependency).
+  // Phone OTP uses Lovable Cloud's native phone sign-in (signInWithOtp / verifyOtp).
+  // Email flows use native auth (signup, password sign-in, password reset) through
+  // Lovable's managed email infrastructure (no custom OTP, no Resend dependency).
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
