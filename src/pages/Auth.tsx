@@ -237,11 +237,18 @@ const Auth = () => {
     try {
       if (step === "phone-verify") {
         const formattedPhone = formatPhoneNumber(phone);
-        await supabase.functions.invoke("send-otp", {
-          body: { action: "send", phone: formattedPhone, type: "phone" },
+        const { error } = await supabase.auth.signInWithOtp({
+          phone: formattedPhone,
+          options: { channel: "sms" },
         });
+        if (error) throw error;
       } else if (step === "verify-email-otp") {
-        await sendEmailOtp(pendingSignupData?.email || email);
+        const { error } = await supabase.auth.resend({
+          type: "signup",
+          email: pendingSignupData?.email || email,
+          options: { emailRedirectTo: `${window.location.origin}/` },
+        });
+        if (error) throw error;
       }
       toast({ title: "OTP Resent!", description: "A new verification code has been sent." });
     } catch (error: any) {
