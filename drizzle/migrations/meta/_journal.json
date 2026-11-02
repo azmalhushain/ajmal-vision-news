@@ -29,6 +29,13 @@
       "when": 1791204222452,
       "tag": "0003_enable_admin_audit_realtime",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793626698622,
+      "tag": "0004_phone_profile_on_signup",
+      "breakpoints": true
     }
   ]
 }
