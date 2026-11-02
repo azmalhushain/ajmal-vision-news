@@ -61,25 +61,9 @@ const Auth = () => {
     }
   };
 
-  const sendEmailOtp = async (emailAddress: string) => {
-    const { error } = await supabase.functions.invoke("send-otp", {
-      body: { action: "send", email: emailAddress, type: "email" },
-    });
-    
-    if (error) throw error;
-  };
-
-  const verifyEmailOtp = async (emailAddress: string, otp: string) => {
-    const { data, error } = await supabase.functions.invoke("send-otp", {
-      body: { action: "verify", email: emailAddress, otp, type: "email" },
-    });
-    
-    if (error) throw error;
-    return data;
-  };
-
-  // Email signup uses Supabase's native auth flow which sends confirmation emails
-  // through Lovable's managed email infrastructure (no custom OTP, no Resend dependency).
+  // Phone OTP uses Lovable Cloud's native phone sign-in (signInWithOtp / verifyOtp).
+  // Email flows use native auth (signup, password sign-in, password reset) through
+  // Lovable's managed email infrastructure (no custom OTP, no Resend dependency).
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -180,9 +164,7 @@ const Auth = () => {
 
   const handlePhoneLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const formattedPhone = formatPhoneNumber(phone);
-    
+
     if (!validatePhoneNumber(phone)) {
       toast({
         title: "Invalid phone number",
@@ -195,12 +177,14 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      // Send OTP via our edge function
-      const { data, error } = await supabase.functions.invoke("send-otp", {
-        body: { action: "send", phone: formattedPhone, type: "phone" },
+      const formattedPhone = formatPhoneNumber(phone);
+      const { error, data } = await supabase.auth.signInWithOtp({
+        phone: formattedPhone,
+        options: { channel: "sms" },
       });
 
       if (error) throw error;
+      void data;
 
       toast({
         title: "OTP sent!",
@@ -229,24 +213,14 @@ const Auth = () => {
 
     try {
       const formattedPhone = formatPhoneNumber(phone);
-      
-      // Verify OTP via our edge function
-      const { data, error } = await supabase.functions.invoke("send-otp", {
-        body: { action: "verify", phone: formattedPhone, otp: otpCode, type: "phone" },
+
+      const { error } = await supabase.auth.verifyOtp({
+        phone: formattedPhone,
+        token: otpCode,
+        type: "sms",
       });
 
       if (error) throw error;
-      
-      if (!data.success) {
-        throw new Error(data.error || "OTP verification failed");
-      }
-
-      if (!data.token_hash) throw new Error("Could not start your session. Please try again.");
-      const { error: authError } = await supabase.auth.verifyOtp({
-        token_hash: data.token_hash,
-        type: "magiclink",
-      });
-      if (authError) throw authError;
 
       toast({ title: "Welcome!", description: "You've successfully logged in via phone." });
       navigate("/");
@@ -263,11 +237,18 @@ const Auth = () => {
     try {
       if (step === "phone-verify") {
         const formattedPhone = formatPhoneNumber(phone);
-        await supabase.functions.invoke("send-otp", {
-          body: { action: "send", phone: formattedPhone, type: "phone" },
+        const { error } = await supabase.auth.signInWithOtp({
+          phone: formattedPhone,
+          options: { channel: "sms" },
         });
+        if (error) throw error;
       } else if (step === "verify-email-otp") {
-        await sendEmailOtp(pendingSignupData?.email || email);
+        const { error } = await supabase.auth.resend({
+          type: "signup",
+          email: pendingSignupData?.email || email,
+          options: { emailRedirectTo: `${window.location.origin}/` },
+        });
+        if (error) throw error;
       }
       toast({ title: "OTP Resent!", description: "A new verification code has been sent." });
     } catch (error: any) {
