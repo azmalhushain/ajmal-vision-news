@@ -179,12 +179,14 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      // Send OTP via our edge function
-      const { data, error } = await supabase.functions.invoke("send-otp", {
-        body: { action: "send", phone: formattedPhone, type: "phone" },
+      const formattedPhone = formatPhoneNumber(phone);
+      const { error, data } = await supabase.auth.signInWithOtp({
+        phone: formattedPhone,
+        options: { channel: "sms" },
       });
 
       if (error) throw error;
+      void data;
 
       toast({
         title: "OTP sent!",
