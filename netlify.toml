@@ -21,6 +21,13 @@
   status = 200
   force = true
 
+# Google sign-in broker — must not fall through to the SPA
+[[redirects]]
+  from = "/~oauth/*"
+  to = "https://ajmalazad.lovable.app/~oauth/:splat"
+  status = 200
+  force = true
+
 # SPA fallback — every unknown path serves index.html so React Router can handle it
 [[redirects]]
   from = "/*"

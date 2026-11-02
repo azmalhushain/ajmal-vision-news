@@ -51,14 +51,13 @@ export const NewsModal = ({ article, isOpen, onClose }: NewsModalProps) => {
     if (!article || !isOpen) return;
     let cancelled = false;
     (async () => {
-      // Force translation for every selected language (including English — source may be Nepali/other).
+      // Default ("en") shows the original post; translate only when the reader picks another language.
       const result = await translatePost(
         String(article.id),
         language,
         article.title,
         article.fullContent,
-        article.summary,
-        { force: true }
+        article.summary
       );
       if (!cancelled) setTranslated(result);
     })();
