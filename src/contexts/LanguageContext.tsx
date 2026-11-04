@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { NE } from "./translations.ne";
 
 export type Language = "en" | "ne" | "es" | "fr" | "de" | "pt" | "zh" | "ar" | "ru";
 
@@ -258,6 +259,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const t = (key: string): string => {
     const translation = translations[key];
+    if (language === "ne" && NE[key]) return NE[key];
     if (!translation) return key;
     return translation[language] || translation.en || key;
   };
