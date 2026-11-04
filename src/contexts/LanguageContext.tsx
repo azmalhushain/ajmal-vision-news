@@ -1,9 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 
-export type Language = "en" | "es" | "fr" | "de" | "pt" | "zh" | "ar" | "ru";
+export type Language = "en" | "ne" | "es" | "fr" | "de" | "pt" | "zh" | "ar" | "ru";
 
 export const LANGUAGE_META: Record<Language, { label: string; native: string; flag: string }> = {
   en: { label: "English", native: "English", flag: "🇬🇧" },
+  ne: { label: "Nepali", native: "नेपाली", flag: "🇳🇵" },
   es: { label: "Spanish", native: "Español", flag: "🇪🇸" },
   fr: { label: "French", native: "Français", flag: "🇫🇷" },
   de: { label: "German", native: "Deutsch", flag: "🇩🇪" },
