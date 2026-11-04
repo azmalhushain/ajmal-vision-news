@@ -1,75 +1,53 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import webpush from "npm:web-push@3.6.7";
+import { serviceClient, requireAdmin } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+const json = (b: unknown, status = 200) =>
+  new Response(JSON.stringify(b), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
-
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const vapidPrivateKey = Deno.env.get("VAPID_PRIVATE_KEY");
-    const vapidPublicKey = Deno.env.get("VAPID_PUBLIC_KEY");
-    
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    await requireAdmin(req);
+  } catch (e: any) {
+    return json({ error: e.message }, e.status || 401);
+  }
+  try {
+    const { title, body, url, image } = await req.json();
+    if (!title || typeof title !== "string" || title.length > 120) return json({ error: "Invalid title" }, 400);
+    if (!body || typeof body !== "string" || body.length > 300) return json({ error: "Invalid message" }, 400);
+    const link = typeof url === "string" && url.startsWith("/") ? url : "/";
 
-    const { title, body, url, icon, postId } = await req.json();
-
-    // Get all push subscriptions
-    const { data: subscriptions, error: fetchError } = await supabase
-      .from("push_subscriptions")
-      .select("*");
-
-    if (fetchError) throw fetchError;
-
-    if (!subscriptions || subscriptions.length === 0) {
-      return new Response(
-        JSON.stringify({ success: true, message: "No subscribers", sent: 0 }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    console.log(`Sending push to ${subscriptions.length} subscribers`);
-
-    // For web push, we need the web-push library
-    // Since we can't use npm packages directly in Deno, we'll use a simpler approach
-    // Store notification for later retrieval via polling
-    
-    // Insert notification record
-    const { error: notifError } = await supabase
-      .from("push_notifications")
-      .insert({
-        title,
-        body,
-        url: url || "/news",
-        icon: icon || "/icons/icon-192x192.png",
-        post_id: postId,
-        sent_at: new Date().toISOString(),
-      });
-
-    if (notifError) {
-      console.error("Error storing notification:", notifError);
-    }
-
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: `Notification queued for ${subscriptions.length} subscribers`,
-        sent: subscriptions.length,
-      }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    webpush.setVapidDetails(
+      "mailto:info@ajmalakhtar.com.np",
+      Deno.env.get("VAPID_PUBLIC_KEY")!,
+      Deno.env.get("VAPID_PRIVATE_KEY")!,
     );
-  } catch (error: any) {
-    console.error("Send push error:", error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    const sb = serviceClient();
+    const { data: subs, error } = await sb.from("push_subscriptions").select("endpoint, keys");
+    if (error) throw error;
+
+    const payload = JSON.stringify({ title, body, url: link, image: image || undefined, icon: "/favicon.svg" });
+    let sent = 0, failed = 0;
+    const dead: string[] = [];
+    await Promise.all((subs || []).map(async (s: any) => {
+      try {
+        await webpush.sendNotification({ endpoint: s.endpoint, keys: s.keys }, payload, { TTL: 86400 });
+        sent++;
+      } catch (err: any) {
+        failed++;
+        if (err?.statusCode === 404 || err?.statusCode === 410) dead.push(s.endpoint);
+      }
+    }));
+    if (dead.length) await sb.from("push_subscriptions").delete().in("endpoint", dead);
+    await sb.from("push_notifications").insert({ title, body, url: link, icon: "/favicon.svg", sent_at: new Date().toISOString() });
+
+    return json({ success: true, sent, failed, total: subs?.length || 0 });
+  } catch (e: any) {
+    console.error("send-push error", e);
+    return json({ error: e.message }, 500);
   }
 });

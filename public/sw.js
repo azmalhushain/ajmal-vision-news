@@ -24,8 +24,8 @@ self.addEventListener('push', (event) => {
   let data = {
     title: 'Ajmal Vision News',
     body: 'New update available!',
-    icon: '/icons/icon-192x192.png',
-    badge: '/icons/badge-72x72.png',
+    icon: '/favicon.svg',
+    badge: '/favicon.svg',
     url: '/news',
   };
 
@@ -39,6 +39,7 @@ self.addEventListener('push', (event) => {
 
   const options = {
     body: data.body,
+    image: data.image,
     icon: data.icon,
     badge: data.badge,
     vibrate: [100, 50, 100],

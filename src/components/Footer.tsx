@@ -173,20 +173,18 @@ export const Footer = () => {
                 </Link>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link to="/privacy"
                   className="text-muted-foreground hover:text-accent transition-colors text-xs sm:text-sm"
                 >
                   Privacy Policy
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link to="/terms"
                   className="text-muted-foreground hover:text-accent transition-colors text-xs sm:text-sm"
                 >
                   Terms & Conditions
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

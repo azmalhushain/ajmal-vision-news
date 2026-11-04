@@ -48,6 +48,9 @@ import SubscriberPreferences from "./pages/SubscriberPreferences";
 import SportsManager from "./pages/admin/SportsManager";
 import SEODashboard from "./pages/admin/SEODashboard";
 import ContentCalendar from "./pages/admin/ContentCalendar";
+import PushNotifications from "./pages/admin/PushNotifications";
+import Legal from "./pages/Legal";
+import { NotificationPrompt } from "./components/NotificationPrompt";
 import Sports from "./pages/Sports";
 import MatchCenter from "./pages/sports/MatchCenter";
 import PlayerProfile from "./pages/sports/PlayerProfile";
@@ -84,6 +87,8 @@ const AnimatedRoutes = () => {
         <Route path="/auth" element={<Auth />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/profile" element={<><Navigation /><UserProfile /></>} />
+        <Route path="/privacy" element={<><Navigation /><Legal kind="privacy" /></>} />
+        <Route path="/terms" element={<><Navigation /><Legal kind="terms" /></>} />
         
         {/* Admin routes */}
         <Route path="/admin" element={<AdminLayout />}>
@@ -111,6 +116,7 @@ const AnimatedRoutes = () => {
           <Route path="calendar" element={<ContentCalendar />} />
           <Route path="engagement" element={<EngagementDashboard />} />
           <Route path="settings" element={<Settings />} />
+          <Route path="notifications" element={<PushNotifications />} />
           <Route path="sports" element={<SportsManager />} />
         </Route>
         
@@ -143,6 +149,7 @@ const App = () => (
       <TooltipProvider>
         <LanguageProvider>
           <Toaster />
+          <NotificationPrompt />
           <Sonner />
           <BrowserRouter>
             <AppContent />

@@ -60,8 +60,8 @@ export const usePushNotifications = () => {
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(
-          // This is a placeholder VAPID key - you should generate your own
-          'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U'
+          // Public VAPID key (safe to ship)
+          'BC8cY7dGGdrZoGKYkchAD7aHKEkkFYaKc8yNhd-nziO3c7h0Rk7Ru4rzNU2IC3CGxxk-se0YtXVqAZWIalT4B4I'
         ),
       });
 

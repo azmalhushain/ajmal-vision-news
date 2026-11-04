@@ -1,9 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { NE } from "./translations.ne";
 
-export type Language = "en" | "es" | "fr" | "de" | "pt" | "zh" | "ar" | "ru";
+export type Language = "en" | "ne" | "es" | "fr" | "de" | "pt" | "zh" | "ar" | "ru";
 
 export const LANGUAGE_META: Record<Language, { label: string; native: string; flag: string }> = {
   en: { label: "English", native: "English", flag: "🇬🇧" },
+  ne: { label: "Nepali", native: "नेपाली", flag: "🇳🇵" },
   es: { label: "Spanish", native: "Español", flag: "🇪🇸" },
   fr: { label: "French", native: "Français", flag: "🇫🇷" },
   de: { label: "German", native: "Deutsch", flag: "🇩🇪" },
@@ -257,6 +259,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const t = (key: string): string => {
     const translation = translations[key];
+    if (language === "ne" && NE[key]) return NE[key];
     if (!translation) return key;
     return translation[language] || translation.en || key;
   };
