@@ -62,6 +62,23 @@ const Auth = () => {
     }
   };
 
+  const handleAppleSignIn = async () => {
+    setLoading(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth("apple", {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) {
+        toast({ title: "Apple sign-in failed", description: String(result.error), variant: "destructive" });
+      }
+      if (result.redirected) return;
+    } catch (error: any) {
+      toast({ title: "Apple sign-in failed", description: error.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Phone OTP uses Lovable Cloud's native phone sign-in (signInWithOtp / verifyOtp).
   // Email flows use native auth (signup, password sign-in, password reset) through
   // Lovable's managed email infrastructure (no custom OTP, no Resend dependency).
