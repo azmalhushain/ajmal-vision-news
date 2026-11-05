@@ -30,7 +30,7 @@ const PushNotifications = () => {
     const [{ count }, { data: h }, { data: p }] = await Promise.all([
       supabase.from("push_subscriptions").select("*", { count: "exact", head: true }),
       supabase.from("push_notifications").select("*").order("sent_at", { ascending: false }).limit(10),
-      supabase.from("posts").select("id,title,excerpt,image_url").eq("published", true).order("created_at", { ascending: false }).limit(8),
+      (supabase.from("posts") as any).select("id,title,excerpt,image_url").eq("published", true).order("created_at", { ascending: false }).limit(8),
     ]);
     setSubs(count ?? 0);
     setHistory(h || []);
