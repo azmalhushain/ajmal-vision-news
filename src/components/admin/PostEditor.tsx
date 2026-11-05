@@ -14,6 +14,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { CropDialog } from "./CropDialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -65,6 +66,7 @@ const PostEditor = ({ open, onOpenChange, post, onSuccess }: PostEditorProps) =>
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
 
@@ -147,13 +149,24 @@ const PostEditor = ({ open, onOpenChange, post, onSuccess }: PostEditorProps) =>
     }
   };
 
-  const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
-      const url = await handleImageUpload(file);
-      if (url) setImageUrl(url);
+      setCropSrc(URL.createObjectURL(file));
     }
+    e.target.value = "";
+  };
+
+  const finishCrop = async (file: File | Blob | null) => {
+    const src = cropSrc;
+    setCropSrc(null);
+    if (src) URL.revokeObjectURL(src);
+    if (!file) return;
+    const upload =
+      file instanceof File ? file : new File([file], "featured.jpg", { type: "image/jpeg" });
+    const url = await handleImageUpload(upload);
+    if (url) setImageUrl(url);
   };
 
   const handleSave = async () => {
@@ -330,6 +343,22 @@ const PostEditor = ({ open, onOpenChange, post, onSuccess }: PostEditorProps) =>
               accept="image/*"
               onChange={handleImageFileChange}
               disabled={uploading}
+            />
+            <CropDialog
+              open={!!cropSrc}
+              imageUrl={cropSrc}
+              onClose={() => finishCrop(null)}
+              onCropComplete={(blob) => finishCrop(blob)}
+              onUseOriginal={() => finishCrop(imageFile)}
+              recommendedAspect={16 / 9}
+              recommendedLabel="16:9"
+              presets={[
+                { label: "16:9", value: 16 / 9, hint: "News card" },
+                { label: "9:16", value: 9 / 16, hint: "Portrait" },
+                { label: "1:1", value: 1, hint: "Square" },
+                { label: "Free", value: undefined },
+              ]}
+              title="Crop featured image"
             />
             {imageUrl && (
               <div className="mt-2">
